@@ -884,6 +884,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
           </div>
           <p class="eco-summary" id="ecoSummary">Launch fee 0.0005 LOOP. Graduates at 4.20 LOOP. Curve fee 1.0%.</p>
           <p class="hint" id="livePairNote" style="display:none;color:var(--red);font-weight:700"></p>
+          <p class="hint" id="ipfsNote" style="display:none"></p>
           <div class="form-nav"><button class="btn btn-ghost" type="button" data-act="step" data-step="1">‹ Back to Identity</button><span class="spacer"></span><button class="btn btn-primary" id="launchBtn" style="padding:14px 28px;font-size:15px" type="submit">Launch My Token</button></div>
         </div>
       </form>
@@ -1368,7 +1369,7 @@ function changeHtml(t,cls){
   return '<span class="'+cls+' '+(up?'up':'down')+'">'+(up?'+':'')+t.changePct.toFixed(1)+'%</span>';
 }
 function feedAvatar(t,cls){
-  if(t.img)return '<span class="'+(cls||'tavatar')+'" data-letter="'+escHtml(t.name.charAt(0))+'" data-bg="linear-gradient(140deg,'+t.c2+','+t.color+')" style="background:var(--surface2)"><img data-tokimg src="'+t.img+'" alt=""/></span>';
+  if(t.img)return '<span class="'+(cls||'tavatar')+'" data-letter="'+escHtml(t.name.charAt(0))+'" data-bg="linear-gradient(140deg,'+t.c2+','+t.color+')" style="background:var(--surface2)"><img data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/></span>';
   return '<span class="'+(cls||'tavatar')+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+escHtml(t.name.charAt(0))+'</span>';
 }
 /* Data-mode tag: the feed is snapshot-first — rows carry the gold
@@ -1405,7 +1406,7 @@ function renderTokens(){
         +(t.grad?'':'<span class="trow-prog"><i style="width:'+t.prog+'%"></i></span>')+'</span>'
         +'<span class="trow-right"><span class="trow-mcap">'+t.mcapText+'</span><br/>'+changeHtml(t,'trow-change')+'</span></button>';
     }else{
-      html+='<button class="gcard" data-act="live-token" data-addr="'+t.addr+'"><span class="gcard-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg src="'+t.img+'" alt=""/>':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+(t.grad?'<span class="graduated-tag" style="position:absolute;top:10px;right:10px;background:#fff">Graduated</span>':'')+'</span>'
+      html+='<button class="gcard" data-act="live-token" data-addr="'+t.addr+'"><span class="gcard-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+(t.grad?'<span class="graduated-tag" style="position:absolute;top:10px;right:10px;background:#fff">Graduated</span>':'')+'</span>'
         +'<span class="gcard-body" style="display:block"><span class="trow-name" style="font-size:16px">'+escHtml(t.name)+'</span>'
         +'<span class="trow-sub">by '+escHtml(t.creator)+' \u00b7 '+t.dateStr+' \u00b7 '+t.pair+' pair</span>'
         +'<span style="display:flex;justify-content:space-between;align-items:baseline;margin-top:9px"><span class="trow-mcap">'+t.mcapText+'</span>'+changeHtml(t,'')+'</span>'
@@ -1432,7 +1433,7 @@ function setFilter(btn){document.querySelectorAll('.ftab').forEach(function(b){b
 function setViewMode(m){viewMode=m;document.getElementById('segList').classList.toggle('active',m==='list');document.getElementById('segGrid').classList.toggle('active',m==='grid');renderTokens()}
 /* ===== Trending carousel + category rails (live feed only) ===== */
 function trendCard(t,r,sub){
-  return '<button class="trend-card" data-act="live-token" data-addr="'+t.addr+'" aria-label="'+escHtml(t.name)+' \u2014 open token details"><span class="trend-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg src="'+t.img+'" alt=""/>':'<span class="ring" style="width:300px;height:300px;right:-110px;top:-110px"></span><span class="ring" style="width:190px;height:190px;left:-70px;bottom:-80px"></span>')+'<span class="pair-tag">'+t.pair+' pair</span>'+(t.grad?'<span class="grad-tag">Graduated</span>':'')+(t.img?'':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+'</span>'
+  return '<button class="trend-card" data-act="live-token" data-addr="'+t.addr+'" aria-label="'+escHtml(t.name)+' \u2014 open token details"><span class="trend-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="ring" style="width:300px;height:300px;right:-110px;top:-110px"></span><span class="ring" style="width:190px;height:190px;left:-70px;bottom:-80px"></span>')+'<span class="pair-tag">'+t.pair+' pair</span>'+(t.grad?'<span class="grad-tag">Graduated</span>':'')+(t.img?'':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+'</span>'
     +'<span class="trend-meta" style="display:block"><span class="rank">'+(r+1)+'</span><span class="tname">'+escHtml(t.name)+'</span><span class="trend-vals" style="display:flex"><span class="mcap">'+t.mcapText+'</span>'+changeHtml(t,'')+'</span>'+(sub?'<span style="display:block;color:var(--faint);font-size:12.5px;font-weight:700;margin-top:2px">'+sub+'</span>':'')+'</span></button>';
 }
 function renderTrend(){
@@ -2349,6 +2350,25 @@ var SAKURA_WEB3_CONFIG={
      without it. Leave it empty ('') to turn WalletConnect off.
      This is the ONLY line you need to change. */
   WALLETCONNECT_PROJECT_ID:'839b7692d12e0df554c66bfae22a9346',
+  /* IPFS token-image storage via Pinata. Create Token uploads the
+     wizard's image here once the launch confirms; every renderer
+     discovers a token's image by its pin name
+     (sakura-token-<lowercase token address>) and serves it from the
+     gateway, falling back to the fallback gateway, then to the
+     designed default avatar. Discovery is a silent enhancement
+     layer only — if Pinata is unreachable the site renders exactly
+     as it did without it. */
+  ipfs:{
+    /* This is a scoped, public-by-design client key (pin/read only,
+       no admin), intentionally embedded because a static site has no
+       backend; it is revocable/regenerable in the Pinata dashboard
+       at any time. */
+    pinataJwt:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI5ZjJlZDM1ZS1kNjdjLTQwYzgtOGM2Yi0wOTYzMDg2Y2VkYTQiLCJlbWFpbCI6Im15Y29kaW5nODc4MEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiYTNmNzM4YjcwMzVjNDYxYzI4ZDEiLCJzY29wZWRLZXlTZWNyZXQiOiJmZDI2MGIyYTY5OGYxYmY0MGU2YzM0MjY2MmZhYTdiNGJiMzE0NzQzMDBiMGE0ZTIwOGYxYTJiYmNmYWZkNmQyIiwiZXhwIjoxODI2Mjk2NzU2fQ.9OO8ip-5NM-Z3Lmbta_YAoAMVd4ADUPIQ231gb3E0I8",
+    uploadUrl:"https://uploads.pinata.cloud/v3/files",
+    listUrl:"https://api.pinata.cloud/v3/files/public",
+    gateway:"https://gateway.pinata.cloud/ipfs/",
+    gatewayFallback:"https://dweb.link/ipfs/"
+  },
   contracts:{
     /* The Sakura stack on Loop. ALL writes (Create Token launches,
        curve trades, claims) target these addresses. The single
@@ -2472,9 +2492,9 @@ var SAKURA_SNAPSHOT={
     "nativeSymbol": "LOOP",
     "nativeDecimals": 18
   },
-  "blockNumber": 45265707,
-  "blockTimestamp": 1794760032,
-  "takenAtISO": "2026-11-15T16:27:12.000Z",
+  "blockNumber": 45266261,
+  "blockTimestamp": 1794761694,
+  "takenAtISO": "2026-11-15T16:54:54.000Z",
   "scanFromBlock": 45260000,
   "factory": "0x2cE51c433b05892D1fB4777B0c948cCc926fFcA4",
   "feeVault": "0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8",
@@ -2567,29 +2587,84 @@ var SAKURA_SNAPSHOT={
       "curve": "0xBC3EE04C868D56fA605FFD787E6cec7b06015890",
       "curveState": {
         "pairAsset": "0x0000000000000000000000000000000000000000",
-        "graduated": false,
-        "pool": "0x0000000000000000000000000000000000000000",
+        "graduated": true,
+        "pool": "0xdEe7ef51e3DF913dFBAFae17E40D23DaBb107FF4",
         "creatorTaxBps": 100,
         "tradingFeeBps": 100,
         "creatorShareBps": 7000,
         "feeDestination": 0,
         "launchTimestamp": 1794755940,
         "realPairReserves": "0",
-        "virtualPairReserves": "1000000000000000000",
-        "virtualTokenReserves": "1073000000000000000000000000",
-        "spotPrice": "931966449",
+        "virtualPairReserves": "10801025249525615391",
+        "virtualTokenReserves": "99342421224978296925082812",
+        "spotPrice": "108725206375",
         "graduationThreshold": "4200000000000000000",
         "graduationProgress": 0
       },
-      "trades": [],
+      "trades": [
+        {
+          "trader": "0x4F9dc1f6f45673def16873eE7B83fcd92Aecf171",
+          "isBuy": true,
+          "pairAmount": "980000000000000",
+          "tokenAmount": "1050510499710283921756678",
+          "spotPriceAfter": "933793998",
+          "blockNumber": 45266086,
+          "timestamp": 1794761169,
+          "txHash": "0x63e9336fdff16159bbc20e8ba5c2715dfa2379a9888ec683c5bce3f8d9a14850"
+        },
+        {
+          "trader": "0x4F9dc1f6f45673def16873eE7B83fcd92Aecf171",
+          "isBuy": true,
+          "pairAmount": "980000000000000",
+          "tokenAmount": "1048455526877603818272863",
+          "spotPriceAfter": "935623337",
+          "blockNumber": 45266091,
+          "timestamp": 1794761184,
+          "txHash": "0x50d360022236aca8494e61b3f12e5d7753b362a72b0fd3b238797ef5107faa68"
+        },
+        {
+          "trader": "0x4F9dc1f6f45673def16873eE7B83fcd92Aecf171",
+          "isBuy": false,
+          "pairAmount": "916055464896917",
+          "tokenAmount": "1000000000000000000000000",
+          "spotPriceAfter": "933878425",
+          "blockNumber": 45266122,
+          "timestamp": 1794761277,
+          "txHash": "0xd1c2e9ac08da32b64dbb7e5d6772a478ca2b31cc7c3cf374c9af74d9cc5390e5"
+        },
+        {
+          "trader": "0xd71380465035ECE79a5EE714A7457C0BAD06dB42",
+          "isBuy": true,
+          "pairAmount": "9800000000000000000",
+          "tokenAmount": "972558612748433815334887647",
+          "spotPriceAfter": "108725206375",
+          "blockNumber": 45266180,
+          "timestamp": 1794761451,
+          "txHash": "0xffc08310581abf6263e9819b17beb692aff8864ef774f38a03a808acdaf38639"
+        }
+      ],
       "stats": {
-        "tradeCount": 0,
-        "volumePair": "0",
-        "uniqueTraders": 0,
-        "firstSpotPriceAfter": null,
-        "lastSpotPriceAfter": null
+        "tradeCount": 4,
+        "volumePair": "9802876055464896917",
+        "uniqueTraders": 2,
+        "firstSpotPriceAfter": "933793998",
+        "lastSpotPriceAfter": "108725206375"
       },
-      "pair": null
+      "pair": {
+        "address": "0xdEe7ef51e3DF913dFBAFae17E40D23DaBb107FF4",
+        "token0": "0x3D7F729145a4CCEE11BBbfBE1A19F780e13Aab46",
+        "token1": "0x4Fc02eBf3B31F74ccb1866CAdB98f2ABE9296eE7",
+        "reserve0": "26342421224978296925082812",
+        "reserve1": "9801025249525615391",
+        "blockTimestampLast": 1794761670,
+        "totalSupply": "16068065706850086803693",
+        "factory": "0x01C2aBe539197Af3a4A70Dab3F6B12c170f95D6D",
+        "vintage": "legacy",
+        "router": "0x97c5990C11f59329a004922f490D7f60f83E0ef9",
+        "feeConfigured": null,
+        "feeCreator": null,
+        "feeTaxBps": null
+      }
     },
     {
       "address": "0x8c2860a8709072598b9D454D6E22c49724915988",
@@ -2690,7 +2765,7 @@ var SAKURA_SNAPSHOT={
       {
         "creator": "0xc5d9bc552253503b77bad10c7cf46f5795cf5de4",
         "asset": "0x0000000000000000000000000000000000000000",
-        "totalAccrued": "324000000000000"
+        "totalAccrued": "170373890758064538"
       },
       {
         "creator": "0xc5d9bc552253503b77bad10c7cf46f5795cf5de4",
@@ -2731,13 +2806,41 @@ var SAKURA_SNAPSHOT={
         "amount": "205000000000000000000000",
         "blockNumber": 45265138,
         "txHash": "0x9d4cc477b5deaff78896843b1fe4aad16129c76098fd3e59441f27bb3356433d"
+      },
+      {
+        "creator": "0xC5d9Bc552253503b77bAD10c7cF46F5795CF5DE4",
+        "asset": "0x0000000000000000000000000000000000000000",
+        "amount": "17000000000000",
+        "blockNumber": 45266086,
+        "txHash": "0x63e9336fdff16159bbc20e8ba5c2715dfa2379a9888ec683c5bce3f8d9a14850"
+      },
+      {
+        "creator": "0xC5d9Bc552253503b77bAD10c7cF46F5795CF5DE4",
+        "asset": "0x0000000000000000000000000000000000000000",
+        "amount": "17000000000000",
+        "blockNumber": 45266091,
+        "txHash": "0x50d360022236aca8494e61b3f12e5d7753b362a72b0fd3b238797ef5107faa68"
+      },
+      {
+        "creator": "0xC5d9Bc552253503b77bAD10c7cF46F5795CF5DE4",
+        "asset": "0x0000000000000000000000000000000000000000",
+        "amount": "15890758064538",
+        "blockNumber": 45266122,
+        "txHash": "0xd1c2e9ac08da32b64dbb7e5d6772a478ca2b31cc7c3cf374c9af74d9cc5390e5"
+      },
+      {
+        "creator": "0xC5d9Bc552253503b77bAD10c7cF46F5795CF5DE4",
+        "asset": "0x0000000000000000000000000000000000000000",
+        "amount": "170000000000000000",
+        "blockNumber": 45266180,
+        "txHash": "0xffc08310581abf6263e9819b17beb692aff8864ef774f38a03a808acdaf38639"
       }
     ],
     "claimable": [
       {
         "creator": "0xc5d9bc552253503b77bad10c7cf46f5795cf5de4",
         "asset": "0x0000000000000000000000000000000000000000",
-        "claimable": "324000000000000"
+        "claimable": "170373890758064538"
       },
       {
         "creator": "0xc5d9bc552253503b77bad10c7cf46f5795cf5de4",
@@ -2945,23 +3048,40 @@ function saveTokenSocials(addr,socials){
     localStorage.setItem(SOCIAL_STORE_KEY,JSON.stringify(m));
   }catch(e){}
 }
-/* ===== Token images: local uploads + resolution + fallback =======
+/* ===== Token images: local uploads + IPFS + resolution ==========
    Resolution order for a token's image: (1) metadata bound in code
    (TOKEN_META — e.g. MESIAH's cat photo, inlined as a data URI),
-   (2) the image the creator uploaded in the Create wizard in THIS
-   browser, persisted in localStorage keyed by the token's contract
-   address once its create transaction confirms, (3) the designed
-   default avatar (sakura gradient + the token's initial) that the
-   renderers paint whenever no image resolves. Any token <img> that
-   fails to load falls back to that avatar via the capture-phase
-   error listener below — never a blank tile or broken-image icon. */
+   (2) the local binding for the token's contract address in THIS
+   browser — either the IPFS CID stored when the Create wizard's
+   upload to Pinata succeeded (rendered from the Pinata gateway), or
+   the data URL the creator uploaded in the Create wizard here,
+   persisted in localStorage once its create transaction confirms,
+   (3) Pinata discovery by pin name — lazy and non-blocking: the
+   renderers paint immediately from (1)/(2)/(4), at most one lookup
+   per token per session runs in the background (results, including
+   negative ones, are cached in memory), and the image swaps in when
+   a CID resolves, (4) the designed default avatar (sakura gradient
+   + the token's initial) that the renderers paint whenever no image
+   resolves. Any token <img> that fails to load falls through the
+   gateway chain (Pinata gateway → fallback gateway) and then to
+   that avatar via the capture-phase error listener below — never a
+   blank tile or broken-image icon. Discovery is a pure enhancement
+   layer: if Pinata is unreachable, slow, or errors, the site
+   renders exactly as it did without it — silently, with no error
+   panels, no toasts, and no console logging. */
 var IMAGE_STORE_KEY='sakura.tokenImages.v1';
-function loadTokenImage(addr){
+function loadTokenImageBinding(addr){
   try{
     var m=JSON.parse(localStorage.getItem(IMAGE_STORE_KEY)||'{}');
     var v=m[String(addr||'').toLowerCase()];
-    return (typeof v==='string'&&v.indexOf('data:image/')===0)?v:null;
+    if(typeof v==='string'&&v.indexOf('data:image/')===0)return {dataUrl:v};
+    if(v&&typeof v==='object'&&v.cid)return {cid:String(v.cid)};
+    return null;
   }catch(e){return null}
+}
+function loadTokenImage(addr){
+  var b=loadTokenImageBinding(addr);
+  return (b&&b.dataUrl)?b.dataUrl:null;
 }
 function saveTokenImage(addr,dataUrl){
   if(!addr||!dataUrl||String(dataUrl).indexOf('data:image/')!==0)return;
@@ -2971,20 +3091,140 @@ function saveTokenImage(addr,dataUrl){
     localStorage.setItem(IMAGE_STORE_KEY,JSON.stringify(m));
   }catch(e){}
 }
+function saveTokenImageCid(addr,cid){
+  if(!addr||!cid)return;
+  try{
+    var m=JSON.parse(localStorage.getItem(IMAGE_STORE_KEY)||'{}');
+    m[String(addr).toLowerCase()]={cid:String(cid)};
+    localStorage.setItem(IMAGE_STORE_KEY,JSON.stringify(m));
+  }catch(e){}
+}
+/* ===== IPFS (Pinata): discovery + upload ==========================
+   Pin names are sakura-token-<lowercase token address>. Discovery
+   reads the Pinata public file list once per token per session;
+   uploads POST the wizard's downscaled image to the Pinata files
+   API and, because an upload response can lag even after the pin
+   lands server-side, re-check the list endpoint ONCE by exact pin
+   name before an upload is declared failed. */
+var IPFS_DISCOVERY={};
+function ipfsPinName(addr){return 'sakura-token-'+String(addr||'').toLowerCase()}
+function ipfsGatewayUrl(cid){return W3C.ipfs.gateway+cid}
+function pinataLookupCid(name){
+  return fetch(W3C.ipfs.listUrl+'?name='+encodeURIComponent(name),{headers:{'Authorization':'Bearer '+W3C.ipfs.pinataJwt}})
+    .then(function(r){return (r&&r.ok)?r.json():null})
+    .then(function(j){
+      try{
+        var f=j&&j.data&&j.data.files;
+        return (f&&f.length&&f[0].cid)?String(f[0].cid):null;
+      }catch(e){return null}
+    })
+    .catch(function(){return null});
+}
+function discoverTokenImage(addr){
+  var key=String(addr||'').toLowerCase();
+  if(!key||IPFS_DISCOVERY[key]!==undefined)return;
+  IPFS_DISCOVERY[key]='pending';
+  try{
+    var ctrl=('AbortController' in window)?new AbortController():null;
+    var timer=ctrl?setTimeout(function(){try{ctrl.abort()}catch(e){}},20000):null;
+    fetch(W3C.ipfs.listUrl+'?name='+encodeURIComponent(ipfsPinName(key)),{headers:{'Authorization':'Bearer '+W3C.ipfs.pinataJwt},signal:ctrl?ctrl.signal:undefined})
+      .then(function(r){return (r&&r.ok)?r.json():null})
+      .then(function(j){
+        if(timer)clearTimeout(timer);
+        var cid=null;
+        try{var f=j&&j.data&&j.data.files;if(f&&f.length&&f[0].cid)cid=String(f[0].cid)}catch(e){}
+        IPFS_DISCOVERY[key]=cid||'none';
+        if(cid)swapDiscoveredImage(key,cid);
+      })
+      .catch(function(){if(timer)clearTimeout(timer);IPFS_DISCOVERY[key]='none'});
+  }catch(e){IPFS_DISCOVERY[key]='none'}
+}
+function swapDiscoveredImage(addr,cid){
+  /* The CID is now in the discovery cache, so a re-render resolves
+     this token's image from the gateway everywhere it appears. */
+  try{renderLiveTokens()}catch(e){}
+  try{
+    if(detailMode==='live'&&currentLive&&String(currentLive.address).toLowerCase()===addr){
+      var av=el('dAvatar');
+      if(av){av.innerHTML='<img data-tokimg data-addr="'+addr+'" src="'+ipfsGatewayUrl(cid)+'" alt=""/>';av.style.cssText='background:var(--surface2)'}
+    }
+  }catch(e){}
+}
+function dataUrlToBlob(dataUrl){
+  var parts=String(dataUrl||'').split(',');
+  var mime=((parts[0]||'').match(/data:([^;]+)/)||[])[1]||'image/jpeg';
+  var bin=atob(parts[1]||'');
+  var arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+/* Uploads one token image to Pinata under its pin name. Resolves
+   the CID string on success, null on failure — failure includes the
+   one list-endpoint recheck, so a null here is a real failure. */
+function uploadTokenImageIpfs(addr,dataUrl){
+  var name=ipfsPinName(addr);
+  var attempt;
+  try{
+    var blob=dataUrlToBlob(dataUrl);
+    var ext=blob.type==='image/png'?'png':(blob.type==='image/webp'?'webp':'jpg');
+    var fd=new FormData();
+    fd.append('file',blob,name+'.'+ext);
+    fd.append('network','public');
+    fd.append('name',name);
+    var ctrl=('AbortController' in window)?new AbortController():null;
+    var timer=ctrl?setTimeout(function(){try{ctrl.abort()}catch(e){}},60000):null;
+    attempt=fetch(W3C.ipfs.uploadUrl,{method:'POST',headers:{'Authorization':'Bearer '+W3C.ipfs.pinataJwt},body:fd,signal:ctrl?ctrl.signal:undefined})
+      .then(function(r){
+        if(timer)clearTimeout(timer);
+        return (r&&r.ok)?r.json():null;
+      })
+      .then(function(j){
+        var cid=j&&j.data&&j.data.cid;
+        return cid?String(cid):null;
+      })
+      .catch(function(){if(timer)clearTimeout(timer);return null});
+  }catch(e){attempt=Promise.resolve(null)}
+  return attempt.then(function(cid){
+    if(cid)return cid;
+    return pinataLookupCid(name);
+  });
+}
 function resolveTokenImg(addr){
   var meta=tokenMeta(addr);
   if(meta&&meta.img)return meta.img;
-  return loadTokenImage(addr);
+  var b=loadTokenImageBinding(addr);
+  if(b){
+    if(b.cid)return ipfsGatewayUrl(b.cid);
+    if(b.dataUrl)return b.dataUrl;
+  }
+  var key=String(addr||'').toLowerCase();
+  var d=IPFS_DISCOVERY[key];
+  if(d&&d!=='pending'&&d!=='none')return ipfsGatewayUrl(d);
+  /* Nothing local: kick off the one-per-session Pinata discovery
+     lookup in the background and render without an image for now —
+     swapDiscoveredImage re-renders if a CID resolves. */
+  if(/^0x[0-9a-f]{40}$/.test(key))discoverTokenImage(key);
+  return null;
 }
 function liveAvatarHtml(t,sz){
   var img=resolveTokenImg(t.address);
   var st='width:'+sz+'px;height:'+sz+'px;border-radius:13px;font-size:19px;';
-  if(img)return '<span class="tavatar" data-letter="'+escHtml(t.symbol.charAt(0))+'" data-bg="linear-gradient(140deg,#F2789F,#D63A6E)" style="'+st+'background:var(--surface2)"><img data-tokimg src="'+img+'" alt=""/></span>';
+  if(img)return '<span class="tavatar" data-letter="'+escHtml(t.symbol.charAt(0))+'" data-bg="linear-gradient(140deg,#F2789F,#D63A6E)" style="'+st+'background:var(--surface2)"><img data-tokimg data-addr="'+String(t.address).toLowerCase()+'" src="'+img+'" alt=""/></span>';
   return '<span class="tavatar" style="'+st+'background:linear-gradient(140deg,#F2789F,#D63A6E)">'+escHtml(t.symbol.charAt(0))+'</span>';
 }
 document.addEventListener('error',function(e){
   var img=e.target;
   if(!img||img.tagName!=='IMG'||!img.hasAttribute||!img.hasAttribute('data-tokimg'))return;
+  /* Gateway chain for IPFS images: a failed Pinata-gateway load is
+     retried once from the fallback gateway before the avatar
+     fallback below takes over. */
+  var isrc=img.getAttribute('src')||'';
+  var ipm=isrc.match(/\/ipfs\/([A-Za-z0-9]+)/);
+  if(ipm&&isrc.indexOf('gateway.pinata.cloud')>-1&&!img.getAttribute('data-ipfs-fb')){
+    img.setAttribute('data-ipfs-fb','1');
+    img.src=W3C.ipfs.gatewayFallback+ipm[1];
+    return;
+  }
   var p=img.parentElement; if(!p)return;
   var letter=p.getAttribute('data-letter')||'';
   var bg=p.getAttribute('data-bg')||'';
@@ -3990,7 +4230,7 @@ function paintLiveDetail(t){
   av.className='tavatar d-avatar';
   var dImg=resolveTokenImg(t.address);
   av.setAttribute('data-letter',t.symbol.charAt(0)); av.setAttribute('data-bg','linear-gradient(140deg,#F2789F,#D63A6E)');
-  if(dImg){av.innerHTML='<img data-tokimg src="'+dImg+'" alt=""/>';av.style.cssText='background:var(--surface2)'}
+  if(dImg){av.innerHTML='<img data-tokimg data-addr="'+String(t.address).toLowerCase()+'" src="'+dImg+'" alt=""/>';av.style.cssText='background:var(--surface2)'}
   else{av.innerHTML=''; av.style.cssText='background:linear-gradient(140deg,#F2789F,#D63A6E)'; av.textContent=t.symbol.charAt(0)}
   el('dName').textContent=t.name;
   el('dTicker').textContent='$'+t.symbol;
@@ -4540,9 +4780,31 @@ async function liveCreate(){
     if(createdTok){
       if(soc.socials)saveTokenSocials(createdTok.address,soc.socials);
       /* The wizard's uploaded image (already downscaled for preview)
-         persists in this browser, keyed by the new token's contract
-         address, and renders everywhere that token appears here. */
-      if(typeof logoDataUrl!=='undefined'&&logoDataUrl)saveTokenImage(createdTok.address,logoDataUrl);
+         goes to IPFS via Pinata, pinned under the new token's
+         contract address: on success the binding stores the CID and
+         the image renders from the gateway on any device. If the
+         upload fails (after the one list-endpoint recheck inside
+         uploadTokenImageIpfs), the image persists in this browser
+         only, keyed by the token address exactly as before, and an
+         honest inline note says so — IPFS success is never claimed
+         when it did not happen. */
+      if(typeof logoDataUrl!=='undefined'&&logoDataUrl){
+        if(btn)btn.textContent='Saving token image…';
+        var ipfsCid=await uploadTokenImageIpfs(createdTok.address,logoDataUrl);
+        if(ipfsCid){
+          saveTokenImageCid(createdTok.address,ipfsCid);
+          IPFS_DISCOVERY[String(createdTok.address).toLowerCase()]=ipfsCid;
+        }else{
+          saveTokenImage(createdTok.address,logoDataUrl);
+          var ipfsNote=el('ipfsNote');
+          if(ipfsNote){
+            ipfsNote.style.display='block';
+            ipfsNote.textContent='Your token is live, but its image could not be uploaded to IPFS, so it was saved on this device only — it will appear here, but not on other devices.';
+          }
+          await sleep(4000);
+        }
+        try{renderLiveTokens()}catch(e){}
+      }
     }
     liveScansFor=null;
     goToView('jelajahi');
