@@ -2383,17 +2383,21 @@ var SAKURA_WEB3_CONFIG={
   chainName:'Loop Network',
   nativeSymbol:'LOOP',
   rpcUrl:'https://api.mainnetloop.com',
-  /* Loop reads run over TWO public endpoints with automatic
-     failover: the official RPC (api.mainnetloop.com) and the
+  /* Loop reads run over TWO public endpoints with HEDGED parallel
+     reads: the official RPC (api.mainnetloop.com) and the
      Blockscout explorer's JSON-RPC gateway
      (explorer.mainnetloop.com/api/eth-rpc — same chain, CORS-open).
-     Both are slow at times and can drop connections, so a read
-     cycle tries the current endpoint first and, on any failure or
-     timeout, switches to the other endpoint and retries the same
-     read once within the same cycle; whichever endpoint answered
-     becomes the current one for the next cycles. rpcUrl is the
-     primary. There is no manual refresh control anywhere — the
-     continuous auto-refresh loop keeps the page in sync. */
+     Both are slow at times, and on some networks one of them HANGS
+     instead of failing — a sequential failover would only try the
+     second endpoint after a full timeout, leaving the page blank
+     for 40s+. So every read cycle fires the same read at BOTH
+     endpoints at once (each with a ~15s timeout) and the FIRST
+     successful response wins and renders; the loser is ignored.
+     The winner becomes the preferred endpoint for the next cycles
+     and is what the Live badge names ("via rpc" / "via explorer").
+     rpcUrl is the primary. There is no manual refresh control
+     anywhere — the continuous auto-refresh loop keeps the page in
+     sync. */
   rpcUrls:[
     'https://api.mainnetloop.com',
     'https://explorer.mainnetloop.com/api/eth-rpc'
@@ -2770,7 +2774,10 @@ function saveTokenSocials(addr,socials){
    + the token's initial) that the renderers paint whenever no image
    resolves. Any token <img> that fails to load falls through the
    gateway chain (Pinata gateway → fallback gateway) and then to
-   that avatar via the capture-phase error listener below — never a
+   that avatar — on a load error via the capture-phase error
+   listener below, and on a load TIMEOUT (a gateway that hangs
+   fires neither event) via a watchdog that advances any image
+   still unloaded after ~9s down the same chain — never a
    blank tile or broken-image icon. Discovery is a pure enhancement
    layer: if Pinata is unreachable, slow, or errors, the site
    renders exactly as it did without it — silently, with no error
@@ -2996,16 +3003,18 @@ function liveAvatarHtml(t,sz){
   if(img)return '<span class="tavatar" data-letter="'+escHtml(t.symbol.charAt(0))+'" data-bg="linear-gradient(140deg,#F2789F,#D63A6E)" style="'+st+'background:var(--surface2)"><img data-tokimg data-addr="'+String(t.address).toLowerCase()+'" src="'+img+'" alt=""/></span>';
   return '<span class="tavatar" style="'+st+'background:linear-gradient(140deg,#F2789F,#D63A6E)">'+escHtml(t.symbol.charAt(0))+'</span>';
 }
-document.addEventListener('error',function(e){
-  var img=e.target;
-  if(!img||img.tagName!=='IMG'||!img.hasAttribute||!img.hasAttribute('data-tokimg'))return;
-  /* Gateway chain for IPFS images: a failed Pinata-gateway load is
-     retried once from the fallback gateway before the avatar
-     fallback below takes over. */
+/* Advance one token image down its fallback chain by one step:
+   Pinata gateway → fallback gateway (dweb.link) → designed letter
+   avatar. Called on a load ERROR and by the watchdog below on a
+   load TIMEOUT — a gateway that hangs fires neither load nor
+   error, so without the watchdog the tile would sit as an empty
+   box forever on exactly the networks that hang. */
+function advanceTokImg(img){
   var isrc=img.getAttribute('src')||'';
   var ipm=isrc.match(/\/ipfs\/([A-Za-z0-9]+)/);
   if(ipm&&isrc.indexOf('gateway.pinata.cloud')>-1&&!img.getAttribute('data-ipfs-fb')){
     img.setAttribute('data-ipfs-fb','1');
+    img.removeAttribute('data-tokimg-seen');
     img.src=W3C.ipfs.gatewayFallback+ipm[1];
     return;
   }
@@ -3019,7 +3028,34 @@ document.addEventListener('error',function(e){
     if(bg)p.style.background=bg;
     if(letter&&!p.textContent.trim())p.textContent=letter;
   }
+}
+document.addEventListener('error',function(e){
+  var img=e.target;
+  if(!img||img.tagName!=='IMG'||!img.hasAttribute||!img.hasAttribute('data-tokimg'))return;
+  advanceTokImg(img);
 },true);
+/* Image load watchdog: every 1.5s, any token image that has been
+   sitting unloaded (not complete with real pixels) for ~9s is
+   advanced down the same fallback chain — Pinata → dweb.link →
+   letter avatar — so a stalled gateway degrades cleanly instead
+   of leaving a blank tile. Successfully loaded images (including
+   data-URI artwork) are never touched. */
+setInterval(function(){
+  try{
+    var now=Date.now();
+    var imgs=document.querySelectorAll('img[data-tokimg]');
+    for(var i=0;i<imgs.length;i++){
+      var img=imgs[i];
+      if(img.complete&&img.naturalWidth>0)continue;
+      var seen=Number(img.getAttribute('data-tokimg-seen')||0);
+      if(!seen){img.setAttribute('data-tokimg-seen',String(now));continue}
+      if(now-seen>=9000){
+        img.setAttribute('data-tokimg-seen',String(now));
+        advanceTokImg(img);
+      }
+    }
+  }catch(e){}
+},1500);
 var ANALYTICS={feesAccruedWei:null,feesByAsset:null};
 function openSakuraToken(){
   var t=null;
@@ -3184,20 +3220,23 @@ function ensureEthers(){
   })();
   return ethersLoadPromise;
 }
-/* ===== Loop read providers — dual-endpoint failover ==============
+/* ===== Loop read providers — dual-endpoint HEDGED reads =========
    Loop reads can go through TWO public endpoints: the official RPC
    (api.mainnetloop.com) and the Blockscout explorer's JSON-RPC
    gateway (explorer.mainnetloop.com/api/eth-rpc). liveRpcUrl names
-   the CURRENT endpoint (it starts on the official RPC). A read
-   cycle tries the current endpoint with a ~20s timeout; on ANY
-   failure or timeout it switches to the other endpoint and retries
-   the same read once within the same cycle (withReadFailover
-   below). Whichever endpoint succeeded becomes current for the
-   next cycles; if both fail, the caller's normal failure handling
-   applies (backoff loop + honest badge/panel). Wallet-signed
-   writes never touch these endpoints — they go through the user's
-   wallet provider. A static network object skips the eth_chainId
-   detection round-trip. */
+   the PREFERRED endpoint (it starts on the official RPC and then
+   tracks whichever endpoint won the last hedged read). A read
+   cycle fires the same read at BOTH endpoints in parallel, each
+   with a ~15s timeout (withReadFailover below): the first success
+   wins and renders, the loser is ignored, and the winner becomes
+   the preferred endpoint. Hedging matters because on some
+   networks an endpoint HANGS instead of failing fast — sequential
+   failover would leave the first paint waiting out two full
+   timeouts. If both endpoints fail, the caller's normal failure
+   handling applies (backoff loop + honest badge/panel).
+   Wallet-signed writes never touch these endpoints — they go
+   through the user's wallet provider. A static network object
+   skips the eth_chainId detection round-trip. */
 function readEndpoints(){
   return (W3C.rpcUrls&&W3C.rpcUrls.length)?W3C.rpcUrls.slice():[W3C.rpcUrl];
 }
@@ -3214,21 +3253,53 @@ function rpcCandidates(){
   if(liveRpcUrl){list=list.filter(function(u){return u!==liveRpcUrl});list.unshift(liveRpcUrl)}
   return list;
 }
-/* Run one read against the current endpoint; on any failure or
-   timeout, switch the read provider to the other endpoint and run
-   the same read once more. makeRead() MUST build its promise from
-   the current readProvider / contract globals at invocation time,
-   because setReadProvider rebinds them — so it is invoked fresh
-   for each attempt, never hoisted out of this function. */
+/* HEDGED parallel read: fire the same read at EVERY configured
+   endpoint at once, each with its own ~15s timeout; the FIRST
+   successful response wins and is returned, the loser is ignored
+   (its late rejection is swallowed so it can never surface as an
+   unhandled rejection), and the winning endpoint becomes the
+   preferred one (liveRpcUrl — the Live badge names it). This is
+   what keeps the page fast on networks where one endpoint HANGS:
+   a sequential failover would burn a full timeout before even
+   trying the healthy endpoint. Throws only when every endpoint
+   failed — the caller's backoff loop then schedules the next
+   cycle. Cycles themselves never overlap (loadLiveTokens joins
+   the in-flight promise); the hedge lives INSIDE one cycle.
+   makeRead() MUST build its promise from the current readProvider
+   / contract globals at invocation time, because setReadProvider
+   rebinds them — so it is invoked fresh, synchronously, right
+   after each attempt's setReadProvider call, which binds that
+   attempt's contract/provider objects before the next attempt
+   rebinds the globals. */
 async function withReadFailover(label,timeoutMs,makeRead){
-  try{
-    return await withTimeout(makeRead(),timeoutMs,label);
-  }catch(e){
-    var alt=otherReadEndpoint(liveRpcUrl);
-    if(!alt)throw e;
-    setReadProvider(alt);
+  var urls=readEndpoints();
+  if(urls.length<2){
     return await withTimeout(makeRead(),timeoutMs,label);
   }
+  var hedgeMs=Math.min(timeoutMs,15000);
+  var racers=rpcCandidates().map(function(url){
+    setReadProvider(url);
+    var p;
+    try{p=Promise.resolve(makeRead())}catch(e){p=Promise.reject(e)}
+    var timed=withTimeout(p,hedgeMs,label);
+    timed.catch(function(){}); /* the loser's rejection is expected */
+    return timed.then(function(v){return {url:url,value:v}});
+  });
+  return await new Promise(function(resolve,reject){
+    var pending=racers.length,done=false,firstErr=null;
+    racers.forEach(function(r){
+      r.then(function(res){
+        if(done)return;
+        done=true;
+        if(liveRpcUrl!==res.url)setReadProvider(res.url);
+        resolve(res.value);
+      },function(e){
+        if(!firstErr)firstErr=e;
+        pending--;
+        if(pending===0&&!done){done=true;reject(firstErr||e)}
+      });
+    });
+  });
 }
 function setReadProvider(url){
   readProvider=new ethers.JsonRpcProvider(url,{chainId:W3C.chainId,name:'loop'});
@@ -3342,8 +3413,9 @@ async function queryChunkedOnce(contract,filter){
   out.sort(function(a,b){return a.blockNumber-b.blockNumber||((a.index||0)-(b.index||0))});
   return out;
 }
-/* Event scans get the same dual-endpoint failover as every other
-   read: if the scan fails outright on the current endpoint (the
+/* Event scans are NOT hedged (they are long multi-chunk reads);
+   they run on the current preferred endpoint — the winner of the
+   last hedged Lens read. If a scan fails outright on it (the
    head-block read died, or every chunk failed), the read provider
    switches to the other endpoint and the scan runs once more with
    a freshly built contract + filter — callers pass rebuild(), a
@@ -4141,18 +4213,24 @@ function lensTokenToLive(lt,block){
   return {address:lt.token,curve:lt.curve,creator:lt.creator,factoryAddr:lt.factory,factoryGeneration:generationForFactoryAddr(lt.factory),gradDex:isActiveFactory(lt.factory)?'Uniswap V2':null,name:lt.name,symbol:lt.symbol,decimals:dec,totalSupply:lt.totalSupply,pairAsset:lt.pairAsset,spotPrice:spot,realReserves:lt.realPairReserves,virtualPair:lt.virtualPairReserves,virtualToken:lt.virtualTokenReserves,threshold:lt.graduationThreshold,taxBps:Number(lt.creatorTaxBps),tradingFeeBps:Number(lt.tradingFeeBps),creatorShareBps:Number(lt.creatorShareBps),feeDestination:Number(lt.feeDestination),snipeBps:0,graduated:!!lt.graduated,migrated:!!lt.migrated,pendingMigration:pendMig,launchTs:Number(lt.launchTimestamp),pairAddr:poolAddr,pairRes:pairRes,pairFactory:pFac,router:v2RouterForFactory(pFac),pairVintage:v2VintageForFactory(pFac),feeConfigured:poolAddr?!!lt.feeConfigured:null,pairFeeTaxBps:(poolAddr&&lt.feeConfigured)?Number(lt.feeTaxBps):null,feeCreator:lt.feeCreator,pairToken0:poolAddr?lt.pairToken0:null,tradeCount:null,tradeEvents:null,volumeWei:null,firstSpot:null,traderSet:null,_block:block,_priceSrc:pairRes?'pool':'curve'};
 }
 /* One Lens refresh cycle: getState for the whole registry plus one
-   eth_blockNumber to label freshness. Dual-endpoint failover: the
-   current read endpoint gets ~20s; on any failure or timeout the
-   SAME read runs once more against the other endpoint inside this
-   cycle, and whichever endpoint answered becomes the current one.
-   Throws only when both endpoints failed in this cycle — the
-   caller's backoff loop then schedules the next cycle. */
+   eth_blockNumber to label freshness. The read is HEDGED: the same
+   getState fires at both read endpoints in parallel (~15s timeout
+   each) and the first successful response wins — so a hung
+   endpoint costs nothing beyond the healthy endpoint's own
+   latency, never two sequential timeouts. The winner becomes the
+   preferred endpoint the Live badge names. Throws only when both
+   endpoints failed in this cycle — the caller's backoff loop then
+   schedules the next cycle. */
 async function fetchLensState(){
   var out=await withReadFailover('Lens registry read',20000,function(){
+    /* Capture THIS attempt's provider + Lens contract synchronously:
+       the hedged read rebinds the globals for the rival attempt
+       immediately after this invocation returns its promise. */
+    var prov=readProvider,lens=lensRO;
     return (async function(){
-      var res=await lensRO.getState(LENS_FACTORY_ADDRS,W3C.contracts.config);
+      var res=await lens.getState(LENS_FACTORY_ADDRS,W3C.contracts.config);
       var blk=null;
-      try{blk=await withTimeout(readProvider.getBlockNumber(),10000,'Block number read')}catch(e){}
+      try{blk=await withTimeout(prov.getBlockNumber(),10000,'Block number read')}catch(e){}
       return {config:res[0],tokens:res[1],block:blk};
     })();
   });
