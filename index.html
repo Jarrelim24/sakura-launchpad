@@ -661,16 +661,15 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .ls-main strong{display:block;font-size:15px}
 .ls-main span{display:block;color:var(--muted);font-weight:600;font-size:13.5px;margin-top:2px;line-height:1.55}
 .ls-main .ls-error{color:var(--red);font-weight:700;word-break:break-word;font-size:13px}
-.ls-retry{flex:none;padding:11px 22px;min-height:44px}
-@media(max-width:560px){.live-status{flex-wrap:wrap}.ls-retry{width:100%}}
+@media(max-width:560px){.live-status{flex-wrap:wrap}}
 /* ===== Stale state (live data on screen, refresh failing) =====
    The last successful live read stays fully rendered; the badge
    turns gold and the status panel becomes a compact, non-blocking
-   warning with a small Retry — never the dead full error panel. */
+   warning that Sakura is retrying automatically — never the dead
+   full error panel, and never a button the reader must press. */
 .live-tag.stale{background:color-mix(in srgb,var(--gold) 16%, transparent);color:var(--gold)}
 .live-tag.stale::before{background:var(--gold)}
 .live-status.is-stale{border-color:color-mix(in srgb,var(--gold) 42%, var(--line2));background:color-mix(in srgb,var(--gold) 7%, var(--surface))}
-.live-status.is-stale .ls-retry{width:auto;flex:none}
 
 /* ===== Fix round: amount row + MAX, wallet menu, image fallback ===== */
 .amount-row{display:flex;gap:8px;align-items:stretch}
@@ -785,9 +784,9 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
         <div class="ls-main">
           <strong id="lsTitle">Loading live data from Loop…</strong>
           <span id="lsDetail">Reading the Sakura factory registry on-chain in a single aggregated read. Loop’s RPC can be slow, so this can take a little while.</span>
+          <span id="lsSlow" style="display:none">Loop’s server is slow — still loading real data from the chain, please wait…</span>
           <span class="ls-error" id="lsError" style="display:none"></span>
         </div>
-        <button class="btn btn-ghost ls-retry" id="lsRetry" data-act="live-retry" style="display:none">Retry</button>
       </div>
       <p id="liveNote" style="display:none;color:var(--muted);font-weight:600;font-size:13.5px;margin:8px 2px 14px"></p>
     <div class="filter-tabs" role="tablist" aria-label="Filter tokens">
@@ -1439,8 +1438,8 @@ function liveEmptyMsg(kind){
   var st=window.__liveLoadState||'loading';
   if(st==='loading')return 'Loading live tokens from Loop…';
   if(st==='error')return kind==='list'
-    ? 'Live tokens could not be loaded — see the error above and tap Retry.'
-    : 'Live tokens could not be loaded — tap Retry below to try again.';
+    ? 'Live tokens could not be loaded — see the status above. Sakura is retrying automatically.'
+    : 'Live tokens could not be loaded. Sakura is retrying automatically.';
   if(kind==='trend')return 'No live tokens yet — trending fills in from on-chain market caps.';
   if(kind==='near')return 'No tokens on the curve right now.';
   if(kind==='grad')return 'No graduated tokens yet — the first token to fill its curve to 4.2 LOOP graduates here.';
@@ -2384,15 +2383,20 @@ var SAKURA_WEB3_CONFIG={
   chainName:'Loop Network',
   nativeSymbol:'LOOP',
   rpcUrl:'https://api.mainnetloop.com',
-  /* Loop has exactly ONE public RPC endpoint and it is SLOW
-     (~6s latency, occasional dropped connections). There is no
-     failover list to fabricate: rpcUrls holds that single endpoint,
-     and the read layer uses patient ~30s timeouts, renders the
-     registry progressively (registry first, enrichment after), and
-     surfaces failures in the honest loading/error panel with the
-     real error and a Retry button. */
+  /* Loop reads run over TWO public endpoints with automatic
+     failover: the official RPC (api.mainnetloop.com) and the
+     Blockscout explorer's JSON-RPC gateway
+     (explorer.mainnetloop.com/api/eth-rpc — same chain, CORS-open).
+     Both are slow at times and can drop connections, so a read
+     cycle tries the current endpoint first and, on any failure or
+     timeout, switches to the other endpoint and retries the same
+     read once within the same cycle; whichever endpoint answered
+     becomes the current one for the next cycles. rpcUrl is the
+     primary. There is no manual refresh control anywhere — the
+     continuous auto-refresh loop keeps the page in sync. */
   rpcUrls:[
-    'https://api.mainnetloop.com'
+    'https://api.mainnetloop.com',
+    'https://explorer.mainnetloop.com/api/eth-rpc'
   ],
   explorer:'https://explorer.mainnetloop.com',
   /* ★ WALLETCONNECT — the project ID from cloud.reown.com powers the
@@ -3034,7 +3038,9 @@ function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
    'loading' | 'ok' | 'error', mirrored to window.__liveLoadState so
    the (earlier) UI script's empty-state wording can follow it. The
    #liveStatus panel shows a spinner while loading, and the REAL
-   error plus a Retry button when every read path has failed. */
+   error when every read path has failed — with plain text saying
+   the auto-refresh loop keeps retrying on its own; there is no
+   retry button anywhere in the UI. */
 var liveLoadState='loading', liveLoadError='', liveRpcUrl=null, liveLoadPromise=null, liveEnrichSeq=0;
 window.__liveLoadState='loading';
 /* ===== Live-only state ==============================================
@@ -3057,20 +3063,35 @@ function liveTimeStr(d){
   function p2(n){return (n<10?'0':'')+n}
   return p2(d.getHours())+':'+p2(d.getMinutes())+':'+p2(d.getSeconds());
 }
+/* " · updated 3s ago" suffix for the freshness badge, derived from
+   LIVE_READ_AT — the stamp of the last successful Lens read. The
+   1-second ticker in init repaints it between reads. */
+function liveAgoSuffix(){
+  if(!LIVE_READ_AT)return '';
+  var s=Math.max(0,Math.floor((Date.now()-LIVE_READ_AT.getTime())/1000));
+  return s<2?' · updated just now':' · updated '+s+'s ago';
+}
+/* When the initial load started — drives the "server is slow"
+   reassurance line that joins the loading panel after ~12s, so a
+   slow first read never looks like a dead page. */
+var liveLoadStartAt=0, liveSlowTimerSet=false;
 /* ===== Live status machine (live-only) ==============================
    States: 'loading' (no data yet — spinner panel, zero token rows),
    'ok' (fresh Lens read on screen — panel hidden, badge carries the
-   block + read time), 'stale' (a refresh failed AFTER data loaded:
-   the live data STAYS on screen, the badge and panel say plainly
-   that it is the last successful read and that Sakura is retrying),
-   'error' (the INITIAL load failed — honest error panel with the
-   real error and a Retry button, zero token data). There is no
+   block + read time + which read endpoint answered), 'stale' (a
+   refresh failed AFTER data loaded: the live data STAYS on screen,
+   the badge and panel say plainly that it is the last successful
+   read and that Sakura is retrying), 'error' (the INITIAL load
+   failed — honest error panel with the real error and a plain-text
+   note that Sakura keeps retrying automatically, zero token data).
+   There is NO refresh or retry button anywhere: the continuous
+   auto-refresh loop retries on its own with backoff. There is no
    fallback dataset behind any of these states. */
 function setLiveStatus(state,detail,errorMsg,refreshing){
   liveLoadState=state;
   if(errorMsg!=null)liveLoadError=errorMsg;
   window.__liveLoadState=(state==='ok'||state==='stale')?(LIVE_TOKENS.length?'ok':'empty'):state;
-  var panel=el('liveStatus'),title=el('lsTitle'),det=el('lsDetail'),err=el('lsError'),spin=el('lsSpinner'),retry=el('lsRetry'),note=el('liveNote');
+  var panel=el('liveStatus'),title=el('lsTitle'),det=el('lsDetail'),err=el('lsError'),spin=el('lsSpinner'),slow=el('lsSlow'),note=el('liveNote');
   var badge=el('feedBadge'),foot=el('footDataNote'),anaNote=el('anaDataNote'),head=el('allTokensHead');
   var stamp=(LIVE_BLOCK!=null?'block '+LIVE_BLOCK:'')+(LIVE_READ_AT?((LIVE_BLOCK!=null?' · ':'')+liveTimeStr(LIVE_READ_AT)):'');
   if(state==='loading'){
@@ -3081,12 +3102,12 @@ function setLiveStatus(state,detail,errorMsg,refreshing){
       if(title)title.textContent='Loading live data from Loop…';
       if(det)det.textContent=detail||'Reading the Sakura factory registry on-chain in a single aggregated read.';
       if(err)err.style.display='none';
-      if(retry)retry.style.display='none';
+      if(slow)slow.style.display=(liveLoadStartAt&&Date.now()-liveLoadStartAt>=12000)?'block':'none';
       if(note)note.style.display='none';
     }
   }else if(state==='ok'){
     if(panel){panel.classList.remove('show'); panel.classList.remove('is-error'); panel.classList.remove('is-stale')}
-    if(badge){badge.textContent='Live · Loop · '+stamp;badge.classList.remove('stale')}
+    if(badge){badge.textContent='Live · Loop · '+stamp+liveAgoSuffix()+' · via '+liveEndpointLabel();badge.classList.remove('stale')}
     if(head)head.textContent='All Tokens — Live on Loop';
     if(foot)foot.textContent='Live on Loop Network — every token and number on this page is read from the contracts. Last read: '+stamp+'.';
     if(anaNote)anaNote.textContent='Read live from the Loop contracts — the factory registry, curve state, and pool reserves, aggregated on-chain by the Sakura Lens contract. Last read: '+stamp+'. A figure shown as — could not be computed from live data.';
@@ -3098,20 +3119,20 @@ function setLiveStatus(state,detail,errorMsg,refreshing){
       panel.classList.add('show'); panel.classList.remove('is-error'); panel.classList.add('is-stale');
       if(spin)spin.style.display='';
       if(title)title.textContent='Live data unreachable — retrying';
-      if(det)det.textContent=detail||('The Loop RPC did not answer the latest refresh. Everything below is the last successful live read ('+stamp+') and stays on screen while Sakura retries.');
+      if(det)det.textContent=detail||('The Loop read endpoints did not answer the latest refresh. Everything below is the last successful live read ('+stamp+') and stays on screen while Sakura retries automatically.');
       if(err)err.style.display='none';
-      if(retry){retry.style.display='';retry.textContent='Retry now'}
+      if(slow)slow.style.display='none';
       if(note)note.style.display='none';
     }
   }else if(state==='error'){
-    if(badge){badge.textContent='Live data unreachable';badge.classList.add('stale')}
+    if(badge){badge.textContent='Live data unreachable — retrying automatically';badge.classList.add('stale')}
     if(panel){
       panel.classList.add('show'); panel.classList.add('is-error'); panel.classList.remove('is-stale');
-      if(spin)spin.style.display='none';
+      if(spin)spin.style.display='';
       if(title)title.textContent='Live data couldn’t be loaded';
-      if(det)det.textContent=detail||'Sakura couldn’t read Loop Network through its only public RPC endpoint ('+liveHost(W3C.rpcUrl)+'). That endpoint is slow and sometimes drops connections — your tokens themselves are safe on-chain. Tap Retry to try again.';
+      if(det)det.textContent=detail||'Sakura couldn’t read Loop Network through either public read endpoint ('+readEndpoints().map(liveHost).join(' · ')+'). Both are slow and sometimes drop connections — your tokens themselves are safe on-chain. Sakura keeps retrying automatically, so this page will fill in on its own as soon as an endpoint answers — there is nothing you need to press.';
       if(err){err.style.display='block';err.textContent='Details: '+(liveLoadError||'unknown error')}
-      if(retry){retry.style.display='';retry.textContent='Retry'}
+      if(slow)slow.style.display='none';
       if(note)note.style.display='none';
     }
   }
@@ -3163,17 +3184,51 @@ function ensureEthers(){
   })();
   return ethersLoadPromise;
 }
-/* ===== Loop read provider =========================================
-   Loop has ONE public RPC endpoint (api.mainnetloop.com) and it is
-   slow (~6s latency). There is no failover list: rpcCandidates()
-   returns that single endpoint, reads use patient ~30s timeouts,
-   and a failure lands in the status panel's error state with the
-   real error and a Retry button. A static network object skips the
-   eth_chainId detection round-trip. */
+/* ===== Loop read providers — dual-endpoint failover ==============
+   Loop reads can go through TWO public endpoints: the official RPC
+   (api.mainnetloop.com) and the Blockscout explorer's JSON-RPC
+   gateway (explorer.mainnetloop.com/api/eth-rpc). liveRpcUrl names
+   the CURRENT endpoint (it starts on the official RPC). A read
+   cycle tries the current endpoint with a ~20s timeout; on ANY
+   failure or timeout it switches to the other endpoint and retries
+   the same read once within the same cycle (withReadFailover
+   below). Whichever endpoint succeeded becomes current for the
+   next cycles; if both fail, the caller's normal failure handling
+   applies (backoff loop + honest badge/panel). Wallet-signed
+   writes never touch these endpoints — they go through the user's
+   wallet provider. A static network object skips the eth_chainId
+   detection round-trip. */
+function readEndpoints(){
+  return (W3C.rpcUrls&&W3C.rpcUrls.length)?W3C.rpcUrls.slice():[W3C.rpcUrl];
+}
+function otherReadEndpoint(url){
+  var list=readEndpoints();
+  for(var i=0;i<list.length;i++){if(list[i]!==url)return list[i]}
+  return null;
+}
+function liveEndpointLabel(){
+  return (liveRpcUrl&&liveRpcUrl.indexOf('explorer.')>-1)?'explorer':'rpc';
+}
 function rpcCandidates(){
-  var list=(W3C.rpcUrls&&W3C.rpcUrls.length)?W3C.rpcUrls.slice():[W3C.rpcUrl];
+  var list=readEndpoints();
   if(liveRpcUrl){list=list.filter(function(u){return u!==liveRpcUrl});list.unshift(liveRpcUrl)}
   return list;
+}
+/* Run one read against the current endpoint; on any failure or
+   timeout, switch the read provider to the other endpoint and run
+   the same read once more. makeRead() MUST build its promise from
+   the current readProvider / contract globals at invocation time,
+   because setReadProvider rebinds them — so it is invoked fresh
+   for each attempt, never hoisted out of this function. */
+async function withReadFailover(label,timeoutMs,makeRead){
+  try{
+    return await withTimeout(makeRead(),timeoutMs,label);
+  }catch(e){
+    var alt=otherReadEndpoint(liveRpcUrl);
+    if(!alt)throw e;
+    setReadProvider(alt);
+    return await withTimeout(makeRead(),timeoutMs,label);
+  }
 }
 function setReadProvider(url){
   readProvider=new ethers.JsonRpcProvider(url,{chainId:W3C.chainId,name:'loop'});
@@ -3269,7 +3324,7 @@ function txErrorToast(e){toast(humanTxError(e))}
    The public RPC prunes old log history, so a chunk covering pruned
    blocks can fail while recent chunks succeed — tolerate per-chunk
    failures and only give up when every chunk failed. */
-async function queryChunked(contract,filter){
+async function queryChunkedOnce(contract,filter){
   var latest=await readProvider.getBlockNumber();
   var from=W3C.scanFromBlock,out=[];
   if(latest<from)return out;
@@ -3286,6 +3341,25 @@ async function queryChunked(contract,filter){
   if(ranges.length&&failures>=ranges.length)throw new Error('event scan failed');
   out.sort(function(a,b){return a.blockNumber-b.blockNumber||((a.index||0)-(b.index||0))});
   return out;
+}
+/* Event scans get the same dual-endpoint failover as every other
+   read: if the scan fails outright on the current endpoint (the
+   head-block read died, or every chunk failed), the read provider
+   switches to the other endpoint and the scan runs once more with
+   a freshly built contract + filter — callers pass rebuild(), a
+   zero-arg function returning [contract, filter] bound to whatever
+   provider is current when it is invoked. A scan that merely
+   tolerated some pruned chunks is a success and never re-runs. */
+async function queryChunked(contract,filter,rebuild){
+  try{
+    return await queryChunkedOnce(contract,filter);
+  }catch(e){
+    var alt=otherReadEndpoint(liveRpcUrl);
+    if(!alt||typeof rebuild!=='function')throw e;
+    setReadProvider(alt);
+    var pair=rebuild();
+    return await queryChunkedOnce(pair[0],pair[1]);
+  }
 }
 /* =====================================================================
    FIX ROUND 3 — stable trades, monotonic freshness, real holders
@@ -3576,7 +3650,7 @@ async function ensureHoldersLoaded(t){
     if(!readProvider)setReadProvider(W3C.rpcUrl);
     if(!readProvider)throw new Error('no read provider');
     var tc=tokenContract(t.address);
-    var evs=await withTimeout(queryChunked(tc,tc.filters.Transfer()),90000,'Holder transfer scan');
+    var evs=await withTimeout(queryChunked(tc,tc.filters.Transfer(),function(){var c=tokenContract(t.address);return [c,c.filters.Transfer()]}),90000,'Holder transfer scan');
     var bal={};
     var latest=0;
     evs.forEach(function(e){
@@ -4067,24 +4141,23 @@ function lensTokenToLive(lt,block){
   return {address:lt.token,curve:lt.curve,creator:lt.creator,factoryAddr:lt.factory,factoryGeneration:generationForFactoryAddr(lt.factory),gradDex:isActiveFactory(lt.factory)?'Uniswap V2':null,name:lt.name,symbol:lt.symbol,decimals:dec,totalSupply:lt.totalSupply,pairAsset:lt.pairAsset,spotPrice:spot,realReserves:lt.realPairReserves,virtualPair:lt.virtualPairReserves,virtualToken:lt.virtualTokenReserves,threshold:lt.graduationThreshold,taxBps:Number(lt.creatorTaxBps),tradingFeeBps:Number(lt.tradingFeeBps),creatorShareBps:Number(lt.creatorShareBps),feeDestination:Number(lt.feeDestination),snipeBps:0,graduated:!!lt.graduated,migrated:!!lt.migrated,pendingMigration:pendMig,launchTs:Number(lt.launchTimestamp),pairAddr:poolAddr,pairRes:pairRes,pairFactory:pFac,router:v2RouterForFactory(pFac),pairVintage:v2VintageForFactory(pFac),feeConfigured:poolAddr?!!lt.feeConfigured:null,pairFeeTaxBps:(poolAddr&&lt.feeConfigured)?Number(lt.feeTaxBps):null,feeCreator:lt.feeCreator,pairToken0:poolAddr?lt.pairToken0:null,tradeCount:null,tradeEvents:null,volumeWei:null,firstSpot:null,traderSet:null,_block:block,_priceSrc:pairRes?'pool':'curve'};
 }
 /* One Lens refresh cycle: getState for the whole registry plus one
-   eth_blockNumber to label freshness — up to 2 retries with
-   backoff, because the single Loop RPC is slow and occasionally
-   drops a call. Throws the last error when every attempt failed. */
+   eth_blockNumber to label freshness. Dual-endpoint failover: the
+   current read endpoint gets ~20s; on any failure or timeout the
+   SAME read runs once more against the other endpoint inside this
+   cycle, and whichever endpoint answered becomes the current one.
+   Throws only when both endpoints failed in this cycle — the
+   caller's backoff loop then schedules the next cycle. */
 async function fetchLensState(){
-  var lastErr=null;
-  for(var attempt=0;attempt<3;attempt++){
-    try{
-      var res=await withTimeout(lensRO.getState(LENS_FACTORY_ADDRS,W3C.contracts.config),45000,'Lens registry read');
+  var out=await withReadFailover('Lens registry read',20000,function(){
+    return (async function(){
+      var res=await lensRO.getState(LENS_FACTORY_ADDRS,W3C.contracts.config);
       var blk=null;
-      try{blk=await withTimeout(readProvider.getBlockNumber(),15000,'Block number read')}catch(e){}
-      if(blk==null)blk=LIVE_BLOCK;
+      try{blk=await withTimeout(readProvider.getBlockNumber(),10000,'Block number read')}catch(e){}
       return {config:res[0],tokens:res[1],block:blk};
-    }catch(e){
-      lastErr=e;
-      if(attempt<2)await sleep(1500*(attempt+1));
-    }
-  }
-  throw lastErr||new Error('Lens registry read failed');
+    })();
+  });
+  if(out.block==null)out.block=LIVE_BLOCK;
+  return out;
 }
 /* Background enrichment: each token's real curve Trade history
    (count, volume, unique traders, first traded price) plus the
@@ -4092,8 +4165,8 @@ async function fetchLensState(){
    This only ever FILLS IN statistics the Lens payload cannot carry
    — a failed or slow scan leaves the statistic unknown (shown as
    —), never zero and never stale. Concurrency is capped and each
-   token re-scans at most once per 5 minutes, so the 30-second
-   Lens refresh stays the page's heartbeat. */
+   token re-scans at most once per 5 minutes, so the continuous
+   Lens refresh loop stays the page's heartbeat. */
 var ENRICHED_AT={};
 async function enrichLiveTokens(tokens){
   var seq=++liveEnrichSeq;
@@ -4108,7 +4181,7 @@ async function enrichLiveTokens(tokens){
       var tt=todo[idx++];
       try{
         var cvv=curveContract(tt.curve);
-        var evs=await withTimeout(queryChunked(cvv,cvv.filters.Trade()),60000,'Trade history scan');
+        var evs=await withTimeout(queryChunked(cvv,cvv.filters.Trade(),function(){var c=curveContract(tt.curve);return [c,c.filters.Trade()]}),60000,'Trade history scan');
         if(seq!==liveEnrichSeq)return;
         var vol=0n,first=null,tset={};
         evs.forEach(function(e){vol+=e.args.pairAmount;if(first===null)first=e.args.spotPriceAfter;tset[String(e.args.trader).toLowerCase()]=1});
@@ -4122,7 +4195,7 @@ async function enrichLiveTokens(tokens){
   for(var w=0;w<Math.min(3,todo.length);w++)workers.push(worker());
   await Promise.all(workers);
   try{
-    var fevs=await withTimeout(queryChunked(vaultRO,vaultRO.filters.FeesAccrued()),60000,'Fee history scan');
+    var fevs=await withTimeout(queryChunked(vaultRO,vaultRO.filters.FeesAccrued(),function(){return [vaultRO,vaultRO.filters.FeesAccrued()]}),60000,'Fee history scan');
     var acc=0n,feeByA2={},feeOrd2=[];
     fevs.forEach(function(e){
       var a=String(e.args.asset).toLowerCase();
@@ -4135,10 +4208,49 @@ async function enrichLiveTokens(tokens){
     renderLiveTokens();
   }catch(e){}
 }
+/* ===== Continuous auto-refresh loop ================================
+   The page keeps itself in sync — nobody has to press anything.
+   Every completed Lens cycle, however it was triggered (boot, this
+   loop, a visibility kick, a post-transaction re-read), schedules the
+   next one from its own completion: 5 seconds later after a
+   success, which is as fast as the slow Loop RPC usefully allows.
+   Reads NEVER overlap: loadLiveTokens() joins the in-flight
+   promise instead of starting a second call, and a tick that
+   would fire mid-read is absorbed by that same join — the
+   in-flight read's completion is what schedules the next cycle.
+   Failures back off progressively (5s → 10s → 20s → 30s cap) so a
+   struggling RPC is not hammered; the next success resets the
+   delay to 5s. The badge/panel honesty rules are unchanged: while
+   reads fail, the last successful read stays on screen, badged as
+   unreachable / retrying. */
+var liveRefreshTimer=null, liveRefreshFailStreak=0;
+function scheduleNextLiveRefresh(){
+  var delay;
+  if(liveLoadState==='ok'){liveRefreshFailStreak=0;delay=5000}
+  else{liveRefreshFailStreak++;delay=Math.min(5000*Math.pow(2,liveRefreshFailStreak-1),30000)}
+  if(liveRefreshTimer)clearTimeout(liveRefreshTimer);
+  liveRefreshTimer=setTimeout(function(){
+    liveRefreshTimer=null;
+    /* If the Web3 library itself never loaded, the tick re-runs
+       the boot path (which retries the library load) instead of
+       the Lens read. */
+    if(typeof window.ethers==='undefined'){bootLiveData()}
+    else{loadLiveTokens()}
+  },delay);
+}
+/* Immediate out-of-band refresh — tab visible again, window focus,
+   a confirmed transaction: if a read is already in flight there is
+   nothing extra to do (its completion schedules the next cycle);
+   otherwise cancel the pending wait and read right now. */
+function kickLiveRefresh(){
+  if(liveLoadPromise)return;
+  if(liveRefreshTimer){clearTimeout(liveRefreshTimer);liveRefreshTimer=null}
+  loadLiveTokens();
+}
 function loadLiveTokens(){
   if(liveLoadPromise)return liveLoadPromise;
   liveLoadPromise=(async function(){
-    try{await loadLiveTokensInner()}finally{liveLoadPromise=null}
+    try{await loadLiveTokensInner()}finally{liveLoadPromise=null;scheduleNextLiveRefresh()}
   })();
   return liveLoadPromise;
 }
@@ -4905,7 +5017,7 @@ async function loadLiveChartAndTrades(t){
       return;
     }
     var cv=curveContract(t.curve);
-    var evs=await queryChunked(cv,cv.filters.Trade());
+    var evs=await queryChunked(cv,cv.filters.Trade(),function(){var c=curveContract(t.curve);return [c,c.filters.Trade()]});
     if(detailMode!=='live'||!currentLive||currentLive.address!==t.address)return;
     var added=mergeTradesIntoStore(t,evs,scanBlock);
     if(tradeStoreHasRows(t)){
@@ -5131,7 +5243,7 @@ async function renderLiveProfile(){
     var rows=[];
     try{
       if(!lensRO)throw new Error('Lens read path unavailable');
-      var amts=await withTimeout(lensRO.getClaimable(W3C.contracts.feeVault,acct,[ZERO_ADDR,W3C.contracts.wloop]),30000,'Claimable read');
+      var amts=await withReadFailover('Claimable read',20000,function(){return lensRO.getClaimable(W3C.contracts.feeVault,acct,[ZERO_ADDR,W3C.contracts.wloop])});
       var assets=[ZERO_ADDR,W3C.contracts.wloop],syms=['LOOP','WLOOP'];
       for(var ci2=0;ci2<assets.length;ci2++){
         if(amts[ci2]>0n)rows.push({asset:assets[ci2],amount:amts[ci2],symbol:syms[ci2],decimals:18});
@@ -5211,7 +5323,7 @@ async function renderLiveHoldings(acct){
 async function scanLiveStats(acct,myTokens){
   var sfe=el('statFeesEarned');
   try{
-    var evs=await queryChunked(vaultRO,vaultRO.filters.FeesAccrued(acct));
+    var evs=await queryChunked(vaultRO,vaultRO.filters.FeesAccrued(acct),function(){return [vaultRO,vaultRO.filters.FeesAccrued(acct)]});
     var accrued=0n,accByA={},accOrd=[];
     evs.forEach(function(e){
       var a=String(e.args.asset).toLowerCase();
@@ -5227,7 +5339,8 @@ async function scanLiveStats(acct,myTokens){
     var vol=0n;
     for(var i=0;i<myTokens.length;i++){
       var cv=curveContract(myTokens[i].curve);
-      var tev=await queryChunked(cv,cv.filters.Trade());
+      var ca6=myTokens[i].curve;
+      var tev=await queryChunked(cv,cv.filters.Trade(),function(){var c=curveContract(ca6);return [c,c.filters.Trade()]});
       tev.forEach(function(e){vol+=e.args.pairAmount});
     }
     var sv=el('statVolume'); if(sv)sv.textContent=fmtEth(vol)+' LOOP';
@@ -5249,7 +5362,8 @@ async function scanLiveActivity(acct){
     for(var i=0;i<LIVE_TOKENS.length;i++){
       var t=LIVE_TOKENS[i];
       var cv=curveContract(t.curve);
-      var evs=await queryChunked(cv,cv.filters.Trade(acct));
+      var ca7=t.curve;
+      var evs=await queryChunked(cv,cv.filters.Trade(acct),function(){var c=curveContract(ca7);return [c,c.filters.Trade(acct)]});
       evs.forEach(function(e){all.push({t:t,e:e})});
     }
     all.sort(function(a,b){return b.e.blockNumber-a.e.blockNumber||((b.e.index||0)-(a.e.index||0))});
@@ -5305,6 +5419,9 @@ async function liveClaimAll(){
     var tx=await vault.claimAll();
     toastTx('Claim transaction pending…',tx.hash);
     await tx.wait();
+    /* Confirmed: pull a fresh Lens read right away, in addition
+       to the continuous loop. */
+    kickLiveRefresh();
     claimBusy=false; pendingClaim=null;
     el('claimModal').classList.remove('open');
     document.body.style.overflow='';
@@ -5525,11 +5642,24 @@ function activateLiveMode(){
 }
 /* ================= Live data boot =================
    Ensures ethers.js exists (static tag first, CDN fallbacks after),
-   then hands over to loadLiveTokens(), which owns RPC failover,
-   progressive rendering, and the loading/error status panel. The
-   Retry button in that panel calls this again. */
+   then hands over to loadLiveTokens(), which owns the dual-endpoint
+   read failover, progressive rendering, and the loading/error
+   status panel. Nothing here waits for a user press: the
+   auto-refresh loop re-runs this path on its own backoff schedule
+   whenever reads keep failing. */
 async function bootLiveData(){
   if(!liveEverOk){
+    if(!liveLoadStartAt)liveLoadStartAt=Date.now();
+    /* If the first read is still in flight after ~12s, the loading
+       panel gains a plain-text "server is slow" line so the page
+       never looks dead. It is a status line, not a control —
+       nothing on this page ever needs a press to refresh. */
+    if(!liveSlowTimerSet){
+      liveSlowTimerSet=true;
+      setTimeout(function(){
+        if(!liveEverOk&&liveLoadState==='loading'){var s=el('lsSlow');if(s)s.style.display='block'}
+      },12000);
+    }
     setLiveStatus('loading',(typeof window.ethers!=='undefined')
       ? 'Reading the Sakura factory registry on-chain in a single aggregated read. Loop’s RPC can be slow, so this can take a little while.'
       : 'Loading the Web3 library…');
@@ -5539,6 +5669,9 @@ async function bootLiveData(){
     if(liveEverOk){LIVE_STALE=true;setLiveStatus('stale')}
     else setLiveStatus('error','Sakura couldn’t load the library it needs to read the blockchain, so no tokens can be shown right now.',liveLoadError);
     renderLiveAnalytics();
+    /* Even this pre-read failure self-retries on the loop's
+       backoff schedule — refreshing never depends on a click. */
+    scheduleNextLiveRefresh();
     return;
   }
   refreshDetection();
@@ -5563,14 +5696,29 @@ async function bootLiveData(){
   setTimeout(function(){requestProviders();activateLiveMode()},900);
   /* Live-only boot: nothing renders until the first Lens read
      lands. The status panel shows the loading state; if that read
-     fails, the honest error panel with a Retry button is the whole
-     story — there is no stored dataset to fall back to. After the
-     first success, a Lens refresh re-runs every 30 seconds; a
-     failed refresh never blanks what is on screen (see the status
-     machine's 'stale' state). */
+     fails, the honest error panel (plain text: Sakura is retrying
+     automatically) is the whole story — there is no stored dataset
+     to fall back to and no button to press. From the
+     first read on, the continuous auto-refresh loop (see
+     scheduleNextLiveRefresh above) keeps the page in sync on its
+     own: the next read is scheduled 5 seconds after each completed
+     one, backing off while the RPC fails; a failed refresh never
+     blanks what is on screen (see the status machine's 'stale'
+     state). Returning to the tab or window refreshes immediately
+     instead of waiting out the timer. */
   bootLiveData();
   renderTokens();
-  setInterval(function(){loadLiveTokens()},30000);
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')kickLiveRefresh()});
+  window.addEventListener('focus',function(){kickLiveRefresh()});
+  /* Freshness ticker: once a second, repaint only the header
+     badge's "updated Xs ago" suffix from the last successful
+     read's stamp, so its age stays honest between reads. */
+  setInterval(function(){
+    if(liveLoadState!=='ok'||!LIVE_READ_AT)return;
+    var b=el('feedBadge'); if(!b)return;
+    var stamp=(LIVE_BLOCK!=null?'block '+LIVE_BLOCK:'')+(LIVE_READ_AT?((LIVE_BLOCK!=null?' · ':'')+liveTimeStr(LIVE_READ_AT)):'');
+    b.textContent='Live · Loop · '+stamp+liveAgoSuffix()+' · via '+liveEndpointLabel();
+  },1000);
   /* Fix G: any token image still pending its IPFS upload gets one
      background retry per page load — silent on failure. */
   setTimeout(function(){retryPendingIpfsUploads()},2500);
@@ -5624,7 +5772,6 @@ async function bootLiveData(){
     if(act==='max-amt')applyMaxAmount();
     else if(act==='wallet-profile'){var wm3=el('walletMenu');if(wm3)wm3.classList.remove('show');goToView('profil')}
     else if(act==='live-token')openLiveDetail(b.getAttribute('data-addr'));
-    else if(act==='live-retry'){toast('Retrying — reading Loop again…');bootLiveData()}
     else if(act==='trade-live')doLiveTrade();
     else if(act==='migrate')doMigrate();
     else if(act==='wallet-wc'){closeWallet();connectViaWalletConnect()}
