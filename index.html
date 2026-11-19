@@ -703,6 +703,41 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 /* ===== Fix H: pending-migration chip on list/rails ===== */
 .pending-tag{background:#FDF0DC;color:#8A5A00;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800}
 @media(prefers-color-scheme:dark){.pending-tag{background:#3A2C10;color:#FFC86B}}
+/* ===== Trade panel feel: sliding side toggle, tactile controls,
+   stable quote lines. Presentation only — every state class and
+   hook below is driven by the existing panel logic, unchanged. == */
+.trade-toggle{position:relative}
+.tt-thumb{position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 8px);border-radius:9px;background:var(--green);box-shadow:0 4px 14px rgba(0,0,0,.20);transition:transform .22s cubic-bezier(.4,0,.2,1),background-color .22s ease;pointer-events:none}
+.tt-thumb.sell{transform:translateX(calc(100% + 6px));background:var(--red)}
+.trade-toggle button{position:relative;z-index:1;min-height:44px;font-size:14.5px;letter-spacing:.03em;transition:color .2s ease,transform .15s ease}
+.trade-toggle button:hover{color:var(--ink)}
+.trade-toggle button.active-buy,.trade-toggle button.active-sell{background:transparent;color:#fff}
+.trade-toggle button.active-buy:hover,.trade-toggle button.active-sell:hover{color:#fff}
+.trade-toggle button:active{transform:scale(.96)}
+.amount{transition:border-color .2s ease,box-shadow .2s ease}
+.amount:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3.5px color-mix(in srgb,var(--pink) 26%, transparent)}
+.btn-max{transition:border-color .2s ease,background-color .2s ease,color .2s ease,transform .15s ease}
+.btn-max:hover{background:var(--pink-pale)}
+.btn-max:active{transform:scale(.94)}
+.quick button{min-height:44px;transition:border-color .2s ease,background-color .2s ease,color .2s ease,transform .15s ease,box-shadow .2s ease}
+.quick button:hover{transform:translateY(-1px)}
+.quick button:active{transform:scale(.95)}
+.quick button:disabled:hover{transform:none}
+.quick button.sel{border-color:var(--pink);background:var(--pink);color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--pink) 38%, transparent)}
+.slip-group{flex-wrap:wrap;justify-content:flex-end}
+.slip-group button{min-height:44px;padding:6px 13px;transition:border-color .2s ease,background-color .2s ease,color .2s ease,transform .15s ease,box-shadow .2s ease}
+.slip-group button:active{transform:scale(.94)}
+.slip-group button.sel{border-color:var(--pink);background:var(--pink);color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--pink) 38%, transparent)}
+.slip-custom-input{min-height:44px;transition:border-color .2s ease,box-shadow .2s ease}
+.slip-custom-input:focus{outline:none;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--pink) 26%, transparent)}
+#liveBalanceLine{min-height:19px;line-height:1.45}
+#tradeBtn{transition:background .25s ease,box-shadow .25s ease,transform .2s ease,opacity .2s ease}
+#tradeBtn:disabled{opacity:.85;cursor:wait;transform:none;box-shadow:var(--cta-shadow)}
+#tradeBtn::before{content:'';width:0;height:17px;flex:none;border-radius:50%;opacity:0;transition:width .2s ease,opacity .2s ease}
+#tradeBtn:disabled::before{width:17px;opacity:1;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+#tradeBtn.flash-ok{background:var(--green);box-shadow:0 10px 26px color-mix(in srgb,var(--green) 45%, transparent)}
+#tradeBtn.flash-err{background:var(--red);box-shadow:0 10px 26px color-mix(in srgb,var(--red) 45%, transparent)}
+@media(prefers-reduced-motion:reduce){.tt-thumb,.trade-toggle button,.quick button,.slip-group button,.btn-max,.amount,.slip-custom-input,#tradeBtn,#tradeBtn::before{transition:none}#tradeBtn:disabled::before{animation-duration:1.8s}}
 </style>
 </head>
 <body>
@@ -1210,7 +1245,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
           <p class="trade-error" id="migError" role="alert"></p>
         </div>
         <div id="tradeFormBody">
-        <div class="trade-toggle"><button id="btnBuy" class="active-buy" data-act="side" data-side="buy">BUY</button><button id="btnSell" data-act="side" data-side="sell">SELL</button></div>
+        <div class="trade-toggle"><span class="tt-thumb" id="ttThumb" aria-hidden="true"></span><button id="btnBuy" class="active-buy" data-act="side" data-side="buy" aria-pressed="true">BUY</button><button id="btnSell" data-act="side" data-side="sell" aria-pressed="false">SELL</button></div>
         <p id="liveBalanceLine" style="display:none;font-size:13px;font-weight:700;color:var(--muted);margin:0 0 10px"></p>
         <label for="tradeAmount" style="font-weight:800;font-size:13px" id="tradeAmountLabel">Amount (LOOP)</label>
         <div class="amount-row"><input class="amount" id="tradeAmount" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="0.10" aria-label="Trade amount"/><button type="button" class="btn-max" data-act="max-amt" aria-label="Use maximum available amount">MAX</button></div>
@@ -1446,37 +1481,186 @@ function liveEmptyMsg(kind){
   if(kind==='list')return 'No live tokens found on Loop yet — the first launch will appear here automatically.';
   return 'No live tokens yet.';
 }
+/* ===== Keyed, flicker-free rendering ================================
+   Refresh cycles used to rebuild the token list and carousels with
+   innerHTML on every live read: each row was recreated, its entry
+   animation replayed, token images reloaded, and carousel scroll
+   positions reset — the visible blink/movement on every refresh.
+   Now every row/card is keyed by token address and reconciled in
+   place: existing DOM nodes are kept, only the values that actually
+   changed are written, an already-displayed image is never
+   re-created or re-assigned while its URL is unchanged, and nodes
+   are moved only when the sort order really changes the sequence.
+   If nothing changed, the DOM is not touched at all. View state
+   (scroll, Show-more count, active filter, carousel scrollLeft)
+   survives because the nodes — and the state variables — persist. */
+function elFromHtml(html){var d=document.createElement('div');d.innerHTML=html;return d.firstElementChild}
+function setTextIf(elm,txt){if(elm&&elm.textContent!==txt)elm.textContent=txt}
+function reconcileKids(box,items,keyOf,createEl,updateEl,emptyMsg){
+  if(!items.length){
+    if(emptyMsg==null){if(box.firstChild)box.innerHTML='';return}
+    var only=box.children.length===1?box.children[0]:null;
+    if(only&&only.classList&&only.classList.contains('rail-empty')&&only.textContent===emptyMsg)return;
+    box.innerHTML='<p class="rail-empty">'+emptyMsg+'</p>';
+    return;
+  }
+  var existing={},i,k;
+  for(i=0;i<box.children.length;i++){k=box.children[i].getAttribute('data-rkey');if(k)existing[k]=box.children[i]}
+  var seen={},prev=null;
+  items.forEach(function(it,idx){
+    var key=keyOf(it,idx);
+    if(seen[key])return;
+    seen[key]=1;
+    var node=existing[key];
+    if(!node){node=createEl(it,idx);node.setAttribute('data-rkey',key)}
+    else updateEl(node,it,idx);
+    var ref=prev?prev.nextSibling:box.firstChild;
+    if(ref!==node)box.insertBefore(node,ref);
+    prev=node;
+  });
+  /* Drop rows whose token disappeared, plus any stale unkeyed
+     children (e.g. a leftover empty-state line). */
+  var kids=Array.prototype.slice.call(box.children);
+  for(i=0;i<kids.length;i++){k=kids[i].getAttribute('data-rkey');if(!k||!seen[k])kids[i].remove()}
+}
+/* The change-% span lives inside a .js-chg wrapper so refresh
+   updates can rewrite just that fragment — and only when the
+   rendered fragment actually changed. */
+function syncChange(node,t,cls){
+  var wrap=node.querySelector('.js-chg'); if(!wrap)return;
+  var h=changeHtml(t,cls);
+  if(node.__chg!==h){node.__chg=h;wrap.innerHTML=h}
+}
+/* Artwork media (grid cards + carousel cards): swap the <img> only
+   when the token's image URL genuinely changed. A loaded image —
+   including one the fallback watchdog already advanced to another
+   gateway — is left exactly as it is, so it never reloads. */
+function syncArtMedia(art,t,rings){
+  var want=t.img||'';
+  if(art.__imgKey===want)return;
+  art.__imgKey=want;
+  var img=art.querySelector('img.cover'), glyph=art.querySelector('.big-glyph');
+  if(want){
+    if(img){if((img.getAttribute('src')||'')!==want)img.setAttribute('src',want)}
+    else{
+      img=document.createElement('img'); img.className='cover';
+      img.setAttribute('data-tokimg',''); img.setAttribute('data-addr',String(t.addr||'').toLowerCase());
+      img.alt=''; img.setAttribute('src',want);
+      art.insertBefore(img,art.firstChild);
+    }
+    if(glyph)glyph.remove();
+    art.querySelectorAll('.ring').forEach(function(r){r.remove()});
+  }else{
+    if(img)img.remove();
+    if(rings&&!art.querySelector('.ring')){
+      art.insertBefore(elFromHtml('<span class="ring" style="width:190px;height:190px;left:-70px;bottom:-80px"></span>'),art.firstChild);
+      art.insertBefore(elFromHtml('<span class="ring" style="width:300px;height:300px;right:-110px;top:-110px"></span>'),art.firstChild);
+    }
+    if(!art.querySelector('.big-glyph')){
+      var g=document.createElement('span'); g.className='big-glyph'; g.textContent=t.name.charAt(0); art.appendChild(g);
+    }
+  }
+}
+function syncArtTag(art,sig,html,sel){
+  if(art.__tagSig===sig)return;
+  art.__tagSig=sig;
+  var cur=art.querySelector(sel); if(cur)cur.remove();
+  if(html)art.appendChild(elFromHtml(html));
+}
+function primeArt(art,t,tagSig){if(!art)return;art.__imgKey=t.img||'';art.__tagSig=tagSig}
+/* ===== Launches list rows (list + grid) ===== */
+function rowSubHtml(t){
+  return '<span class="pair-ic" style="background:'+t.color+'">'+t.pair.charAt(0)+'</span>by '+escHtml(t.creator)+' · '+t.dateStr+(t.pendMig?' · <span class="pending-tag">Graduated · pending migration</span>':(t.grad?' · <span class="graduated-tag">Graduated'+(t.gradDex?' · '+escHtml(t.gradDex):'')+'</span>':' · '+t.prog.toFixed(2)+'% to graduation'));
+}
+function listRowHtml(t){
+  return '<button class="trow" data-act="live-token" data-addr="'+t.addr+'">'+feedAvatar(t)
+    +'<span class="trow-main"><span class="trow-name">'+escHtml(t.name)+' '+feedTagHtml()+'</span>'
+    +'<span class="trow-sub">'+rowSubHtml(t)+'</span>'
+    +(t.grad?'':'<span class="trow-prog"><i style="width:'+t.prog+'%"></i></span>')+'</span>'
+    +'<span class="trow-right"><span class="trow-mcap">'+t.mcapText+'</span><br/><span class="js-chg">'+changeHtml(t,'trow-change')+'</span></span></button>';
+}
+function updateListRow(node,t){
+  /* Avatar: replace the avatar element only when the image URL
+     changed; a displayed image keeps its element, src and loaded
+     pixels across every refresh. */
+  if(node.__imgKey!==(t.img||'')){
+    node.__imgKey=t.img||'';
+    var old=node.querySelector('.tavatar'), fresh=elFromHtml(feedAvatar(t));
+    if(old&&fresh)node.replaceChild(fresh,old);
+  }
+  var nameEl=node.querySelector('.trow-name');
+  if(nameEl&&nameEl.__v!==t.name){
+    nameEl.__v=t.name;
+    var tn=nameEl.childNodes[0];
+    if(tn&&tn.nodeType===3)tn.nodeValue=t.name+' ';
+  }
+  var sub=node.querySelector('.trow-sub'), sh=rowSubHtml(t);
+  if(sub&&node.__sub!==sh){node.__sub=sh;sub.innerHTML=sh}
+  var main=node.querySelector('.trow-main'), prog=node.querySelector('.trow-prog');
+  if(t.grad){if(prog)prog.remove()}
+  else{
+    if(!prog&&main){prog=document.createElement('span');prog.className='trow-prog';prog.innerHTML='<i></i>';main.appendChild(prog)}
+    if(prog){var bar=prog.querySelector('i'), w=t.prog+'%';if(bar&&bar.style.width!==w)bar.style.width=w}
+  }
+  setTextIf(node.querySelector('.trow-mcap'),t.mcapText);
+  syncChange(node,t,'trow-change');
+}
+function gridCardHtml(t){
+  return '<button class="gcard" data-act="live-token" data-addr="'+t.addr+'"><span class="gcard-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+(t.pendMig?'<span class="pending-tag" style="position:absolute;top:10px;right:10px">Graduated · pending migration</span>':(t.grad?'<span class="graduated-tag" style="position:absolute;top:10px;right:10px;background:#fff">Graduated</span>':''))+'</span>'
+    +'<span class="gcard-body" style="display:block"><span class="trow-name" style="font-size:16px">'+escHtml(t.name)+'</span>'
+    +'<span class="trow-sub">by '+escHtml(t.creator)+' · '+t.dateStr+' · '+t.pair+' pair</span>'
+    +'<span style="display:flex;justify-content:space-between;align-items:baseline;margin-top:9px"><span class="trow-mcap">'+t.mcapText+'</span><span class="js-chg">'+changeHtml(t,'')+'</span></span>'
+    +(t.grad?'':'<span class="progress" style="margin-top:9px"><i style="width:'+t.prog+'%"></i></span><span class="progress-label"><span>Graduation</span><span class="js-pct">'+t.prog.toFixed(2)+'%</span></span>')+'</span></button>';
+}
+function updateGridCard(node,t){
+  var art=node.querySelector('.gcard-art');
+  if(art){
+    syncArtMedia(art,t,false);
+    syncArtTag(art,t.pendMig?'pend':(t.grad?'grad':''),
+      t.pendMig?'<span class="pending-tag" style="position:absolute;top:10px;right:10px">Graduated · pending migration</span>':(t.grad?'<span class="graduated-tag" style="position:absolute;top:10px;right:10px;background:#fff">Graduated</span>':''),
+      '.pending-tag,.graduated-tag');
+  }
+  setTextIf(node.querySelector('.trow-name'),t.name);
+  setTextIf(node.querySelector('.trow-sub'),'by '+t.creator+' · '+t.dateStr+' · '+t.pair+' pair');
+  setTextIf(node.querySelector('.trow-mcap'),t.mcapText);
+  syncChange(node,t,'');
+  var body=node.querySelector('.gcard-body');
+  var pr=node.querySelector('.progress'), pl=node.querySelector('.progress-label');
+  if(t.grad){if(pr)pr.remove();if(pl)pl.remove()}
+  else{
+    if(!pr&&body){pr=elFromHtml('<span class="progress" style="margin-top:9px"><i></i></span>');body.appendChild(pr)}
+    if(!pl&&body){pl=elFromHtml('<span class="progress-label"><span>Graduation</span><span class="js-pct"></span></span>');body.appendChild(pl)}
+    if(pr){var b=pr.querySelector('i'), w2=t.prog+'%';if(b&&b.style.width!==w2)b.style.width=w2}
+    if(pl)setTextIf(pl.querySelector('.js-pct'),t.prog.toFixed(2)+'%');
+  }
+}
 function renderTokens(){
   var list=filteredTokens(), total=list.length;
-  var shown=list.slice(0,visibleLimit), html="";
-  shown.forEach(function(t){
-    if(viewMode==="list"){
-      html+='<button class="trow" data-act="live-token" data-addr="'+t.addr+'">'+feedAvatar(t)
-        +'<span class="trow-main"><span class="trow-name">'+escHtml(t.name)+' '+feedTagHtml()+'</span>'
-        +'<span class="trow-sub"><span class="pair-ic" style="background:'+t.color+'">'+t.pair.charAt(0)+'</span>by '+escHtml(t.creator)+' \u00b7 '+t.dateStr+(t.pendMig?' \u00b7 <span class="pending-tag">Graduated \u00b7 pending migration</span>':(t.grad?' \u00b7 <span class="graduated-tag">Graduated'+(t.gradDex?' \u00b7 '+escHtml(t.gradDex):'')+'</span>':' \u00b7 '+t.prog.toFixed(2)+'% to graduation'))+'</span>'
-        +(t.grad?'':'<span class="trow-prog"><i style="width:'+t.prog+'%"></i></span>')+'</span>'
-        +'<span class="trow-right"><span class="trow-mcap">'+t.mcapText+'</span><br/>'+changeHtml(t,'trow-change')+'</span></button>';
-    }else{
-      html+='<button class="gcard" data-act="live-token" data-addr="'+t.addr+'"><span class="gcard-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+(t.pendMig?'<span class="pending-tag" style="position:absolute;top:10px;right:10px">Graduated \u00b7 pending migration</span>':(t.grad?'<span class="graduated-tag" style="position:absolute;top:10px;right:10px;background:#fff">Graduated</span>':''))+'</span>'
-        +'<span class="gcard-body" style="display:block"><span class="trow-name" style="font-size:16px">'+escHtml(t.name)+'</span>'
-        +'<span class="trow-sub">by '+escHtml(t.creator)+' \u00b7 '+t.dateStr+' \u00b7 '+t.pair+' pair</span>'
-        +'<span style="display:flex;justify-content:space-between;align-items:baseline;margin-top:9px"><span class="trow-mcap">'+t.mcapText+'</span>'+changeHtml(t,'')+'</span>'
-        +(t.grad?'':'<span class="progress" style="margin-top:9px"><i style="width:'+t.prog+'%"></i></span><span class="progress-label"><span>Graduation</span><span>'+t.prog.toFixed(2)+'%</span></span>')+'</span></button>';
-    }
-  });
+  var shown=list.slice(0,visibleLimit);
   var box=document.getElementById('tokenList');
-  box.className='token-list'+(viewMode==="grid"?' grid':'');
-  box.innerHTML=html;
+  var cls='token-list'+(viewMode==="grid"?' grid':'');
+  if(box.className!==cls)box.className=cls;
+  reconcileKids(box,shown,
+    function(t){return viewMode+':'+String(t.addr||'').toLowerCase()},
+    function(t){
+      var n=elFromHtml(viewMode==="grid"?gridCardHtml(t):listRowHtml(t));
+      if(viewMode==="grid"){n.__chg=changeHtml(t,'');primeArt(n.querySelector('.gcard-art'),t,t.pendMig?'pend':(t.grad?'grad':''))}
+      else{n.__imgKey=t.img||'';n.__sub=rowSubHtml(t);n.__chg=changeHtml(t,'trow-change')}
+      return n;
+    },
+    function(n,t){if(viewMode==="grid")updateGridCard(n,t);else updateListRow(n,t)},
+    null);
   var es=document.getElementById('emptyState');
   if(!total){
     var q=(document.getElementById('searchInput').value||"").trim();
-    es.textContent=!FEED.length
+    var msg=!FEED.length
       ? liveEmptyMsg('list')
       : (q?('No live tokens match your search for \u201C'+q+'\u201D.'):'No live tokens match your filters. Try a different filter or pair.');
+    if(es.textContent!==msg)es.textContent=msg;
   }
   es.style.display=total?"none":"block";
   var sm=document.getElementById('showMoreBtn');
-  if(total>visibleLimit){sm.style.display='inline-flex';sm.textContent='Show more ('+(total-visibleLimit)+' more)';}
+  if(total>visibleLimit){sm.style.display='inline-flex';var lbl='Show more ('+(total-visibleLimit)+' more)';if(sm.textContent!==lbl)sm.textContent=lbl;}
   else sm.style.display='none';
 }
 function showMore(){visibleLimit+=8;renderTokens()}
@@ -1484,13 +1668,38 @@ function setFilter(btn){document.querySelectorAll('.ftab').forEach(function(b){b
 function setViewMode(m){viewMode=m;document.getElementById('segList').classList.toggle('active',m==='list');document.getElementById('segGrid').classList.toggle('active',m==='grid');renderTokens()}
 /* ===== Trending carousel + category rails (live feed only) ===== */
 function trendCard(t,r,sub){
-  return '<button class="trend-card" data-act="live-token" data-addr="'+t.addr+'" aria-label="'+escHtml(t.name)+' \u2014 open token details"><span class="trend-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="ring" style="width:300px;height:300px;right:-110px;top:-110px"></span><span class="ring" style="width:190px;height:190px;left:-70px;bottom:-80px"></span>')+'<span class="pair-tag">'+t.pair+' pair</span>'+(t.grad?'<span class="grad-tag">Graduated</span>':'')+(t.img?'':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+'</span>'
-    +'<span class="trend-meta" style="display:block"><span class="rank">'+(r+1)+'</span><span class="tname">'+escHtml(t.name)+'</span><span class="trend-vals" style="display:flex"><span class="mcap">'+t.mcapText+'</span>'+changeHtml(t,'')+'</span>'+(sub?'<span style="display:block;color:var(--faint);font-size:12.5px;font-weight:700;margin-top:2px">'+sub+'</span>':'')+'</span></button>';
+  return '<button class="trend-card" data-act="live-token" data-addr="'+t.addr+'" aria-label="'+escHtml(t.name)+' — open token details"><span class="trend-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="ring" style="width:300px;height:300px;right:-110px;top:-110px"></span><span class="ring" style="width:190px;height:190px;left:-70px;bottom:-80px"></span>')+'<span class="pair-tag">'+t.pair+' pair</span>'+(t.grad?'<span class="grad-tag">Graduated</span>':'')+(t.img?'':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+'</span>'
+    +'<span class="trend-meta" style="display:block"><span class="rank">'+(r+1)+'</span><span class="tname">'+escHtml(t.name)+'</span><span class="trend-vals" style="display:flex"><span class="mcap">'+t.mcapText+'</span><span class="js-chg">'+changeHtml(t,'')+'</span></span>'+(sub?'<span class="trend-sub" style="display:block;color:var(--faint);font-size:12.5px;font-weight:700;margin-top:2px">'+sub+'</span>':'')+'</span></button>';
 }
+function updateTrendCard(node,t,r,sub){
+  var art=node.querySelector('.trend-art');
+  if(art){
+    syncArtMedia(art,t,true);
+    syncArtTag(art,t.grad?'grad':'',t.grad?'<span class="grad-tag">Graduated</span>':'','.grad-tag');
+    setTextIf(art.querySelector('.pair-tag'),t.pair+' pair');
+  }
+  setTextIf(node.querySelector('.rank'),String(r+1));
+  setTextIf(node.querySelector('.tname'),t.name);
+  setTextIf(node.querySelector('.mcap'),t.mcapText);
+  syncChange(node,t,'');
+  var sEl=node.querySelector('.trend-sub');
+  if(sub){
+    if(!sEl){
+      var meta=node.querySelector('.trend-meta');
+      if(meta){sEl=elFromHtml('<span class="trend-sub" style="display:block;color:var(--faint);font-size:12.5px;font-weight:700;margin-top:2px"></span>');meta.appendChild(sEl)}
+    }
+    setTextIf(sEl,sub);
+  }else if(sEl)sEl.remove();
+}
+function primeTrendCard(n,t){n.__chg=changeHtml(t,'');primeArt(n.querySelector('.trend-art'),t,t.grad?'grad':'');return n}
 function renderTrend(){
   var top=FEED.slice().sort(function(a,b){return b.mcapN-a.mcapN}).slice(0,6);
   var box=document.getElementById('trendTrack'); if(!box)return;
-  box.innerHTML=top.length?top.map(function(t,r){return trendCard(t,r,'')}).join(''):'<p class="rail-empty">'+liveEmptyMsg('trend')+'</p>';
+  reconcileKids(box,top,
+    function(t){return 't:'+String(t.addr||'').toLowerCase()},
+    function(t,r){return primeTrendCard(elFromHtml(trendCard(t,r,'')),t)},
+    function(n,t,r){updateTrendCard(n,t,r,'')},
+    liveEmptyMsg('trend'));
 }
 function scrollTrend(dir){
   var tr=document.getElementById('trendTrack'); if(!tr)return;
@@ -1502,9 +1711,24 @@ function renderRails(){
   var byMcap=FEED.slice().sort(function(a,b){return b.mcapN-a.mcapN}).slice(0,8);
   var near=FEED.filter(function(t){return !t.grad}).sort(function(a,b){return b.prog-a.prog}).slice(0,8);
   var grad=FEED.filter(function(t){return t.grad}).sort(function(a,b){return b.mcapN-a.mcapN});
-  var m=document.getElementById('railMcap'); if(m)m.innerHTML=byMcap.length?byMcap.map(function(t,r){return trendCard(t,r,'Market cap rank #'+(r+1))}).join(''):'<p class="rail-empty">'+liveEmptyMsg('mcap')+'</p>';
-  var n=document.getElementById('railNear'); if(n)n.innerHTML=near.length?near.map(function(t,r){return trendCard(t,r,t.progText)}).join(''):'<p class="rail-empty">'+liveEmptyMsg('near')+'</p>';
-  var g=document.getElementById('railGrad'); if(g)g.innerHTML=grad.length?grad.map(function(t,r){return trendCard(t,r,'Graduated \u00b7 trading on '+(t.gradDex||'Uniswap'))}).join(''):'<p class="rail-empty">'+liveEmptyMsg('grad')+'</p>';
+  var m=document.getElementById('railMcap');
+  if(m)reconcileKids(m,byMcap,
+    function(t){return 't:'+String(t.addr||'').toLowerCase()},
+    function(t,r){return primeTrendCard(elFromHtml(trendCard(t,r,'Market cap rank #'+(r+1))),t)},
+    function(n,t,r){updateTrendCard(n,t,r,'Market cap rank #'+(r+1))},
+    liveEmptyMsg('mcap'));
+  var n=document.getElementById('railNear');
+  if(n)reconcileKids(n,near,
+    function(t){return 't:'+String(t.addr||'').toLowerCase()},
+    function(t,r){return primeTrendCard(elFromHtml(trendCard(t,r,t.progText)),t)},
+    function(nd,t,r){updateTrendCard(nd,t,r,t.progText)},
+    liveEmptyMsg('near'));
+  var g=document.getElementById('railGrad');
+  if(g)reconcileKids(g,grad,
+    function(t){return 't:'+String(t.addr||'').toLowerCase()},
+    function(t,r){return primeTrendCard(elFromHtml(trendCard(t,r,'Graduated · trading on '+(t.gradDex||'Uniswap'))),t)},
+    function(nd,t,r){updateTrendCard(nd,t,r,'Graduated · trading on '+(t.gradDex||'Uniswap'))},
+    liveEmptyMsg('grad'));
 }
 function scrollRail(id,dir){
   var tr=document.getElementById(id); if(!tr)return;
@@ -1708,7 +1932,7 @@ function openDetail(i){
   if(t&&typeof openLiveDetail==='function')openLiveDetail(t.addr);
 }
 function closeDetail(){goToView('jelajahi')}
-function setSide(s){side=s;document.getElementById('btnBuy').className=s==='buy'?'active-buy':'';document.getElementById('btnSell').className=s==='sell'?'active-sell':'';calcTrade()}
+function setSide(s){side=s;var bb=document.getElementById('btnBuy'),bs=document.getElementById('btnSell');bb.className=s==='buy'?'active-buy':'';bs.className=s==='sell'?'active-sell':'';bb.setAttribute('aria-pressed',s==='buy'?'true':'false');bs.setAttribute('aria-pressed',s==='sell'?'true':'false');var tt=document.getElementById('ttThumb');if(tt)tt.className='tt-thumb'+(s==='sell'?' sell':'');calcTrade()}
 function setAmt(v){document.getElementById('tradeAmount').value=String(v);calcTrade()}
 function calcTrade(){
   var amt=parseFloat(document.getElementById('tradeAmount').value)||0, t=TOKENS[currentToken];
@@ -2268,7 +2492,7 @@ document.addEventListener('click',function(e){
     else if(act==='token')openDetail(parseInt(el.getAttribute('data-i'),10));
     else if(act==='detail-close')closeDetail();
     else if(act==='side')setSide(el.getAttribute('data-side'));
-    else if(act==='amt')setAmt(parseFloat(el.getAttribute('data-amt')));
+    else if(act==='amt'){chipSelKey='amt:'+el.getAttribute('data-amt');setAmt(parseFloat(el.getAttribute('data-amt')));if(detailMode==='live')paintQuickChips()}
     else if(act==='toast')toast(el.getAttribute('data-msg'));
     else if(act==='sakura-token'){if(typeof openSakuraToken==='function')openSakuraToken();else goToView('jelajahi')}
     else if(act==='step')goStep(parseInt(el.getAttribute('data-step'),10));
@@ -2423,7 +2647,7 @@ var SAKURA_WEB3_CONFIG={
        no admin), intentionally embedded because a static site has no
        backend; it is revocable/regenerable in the Pinata dashboard
        at any time. */
-    pinataJwt:"" /* No Pinata credential ships in this page. The previous scoped-key JWT was removed from the client source (it must be revoked in the Pinata dashboard — it was already public). IPFS uploads and cross-device image discovery stay off until uploads are routed through a server-side signed-upload grant; token images resolve from the code-bound MESIAH image, on-device bindings, and letter avatars meanwhile. */,
+    pinataJwt:"" /* No Pinata credential ships in this page. The previous scoped-key JWT was removed from the client source (it must be revoked in the Pinata dashboard — it was already public). IPFS uploads and cross-device image discovery stay off until uploads are routed through a server-side signed-upload grant; token images resolve from the code-bound MESIAH image, the code-bound IPFS pins seeded in IPFS_DISCOVERY below, on-device bindings, and letter avatars meanwhile. */,
     uploadUrl:"https://uploads.pinata.cloud/v3/files",
     listUrl:"https://api.pinata.cloud/v3/files/public",
     gateway:"https://gateway.pinata.cloud/ipfs/",
@@ -2841,7 +3065,46 @@ function saveTokenImagePending(addr,dataUrl){
    API and, because an upload response can lag even after the pin
    lands server-side, re-check the list endpoint ONCE by exact pin
    name before an upload is declared failed. */
-var IPFS_DISCOVERY={};
+/* Code-bound token images (address → IPFS CID), bound at build time
+   exactly like MESIAH's artwork: these tokens' images were pinned to
+   the owner's Pinata account (the launch-time uploads landed there),
+   but client-side Pinata discovery is off in this build, so the pins
+   are bound here directly. resolveTokenImg serves them through the
+   normal chain — gateway.pinata.cloud first, the dweb.link fallback
+   on error/timeout, and the designed letter avatar as last resort.
+   Seeded keys also make discoverTokenImage a no-op for these tokens,
+   and because the bindings never change, the flicker-free renderer
+   never re-assigns their <img> src. Tokens NOT listed here have no
+   image anywhere and keep their letter avatars. */
+var IPFS_DISCOVERY={
+  '0x6d3855b49e65d7f4403fef6e4d29068f068ef644':'bafkreidb7wqcq3sjoftiytifxbt5t7ldlauredqu7spwjtw6dkbnvc4lqy',
+  '0xca67c67222733bdb4e210c713e22ea7aaa026f56':'bafkreieayrf2pt3mj2g2aop37bi35fgqhkrzv4bkc7bv77at6kzedb6f2q',
+  '0x5da894b495c173c54fa76c09f8f46a2f8819cd57':'bafkreibmmxkpjwr5jx3frymlhzs7laz3vkviqmjsxmtnxvyf3lw26b4wjq',
+  '0x2d0d166068a2b82e6e9dd46e5345558f59ee1e67':'bafkreia7g33gq7u3emeoyh5jysi236vhpqrlqi57yembji4unmrv4k4bru',
+  '0x125424e5db8ddbe464b43062a41e6835306dadf3':'bafkreifqnp6zrihg7jcculqgxnvinz7kiey6ra4cann354hyfwq6qelf2q',
+  '0x60d82f8b2af67985c35965fd291532f7717ec14e':'bafkreifl3we3txjmvz5zlppvrrqlzac4vk2fcf3xugi7thoktbnq2t56au',
+  '0x2c26bb39bdb9d6f1a3781c736a8fc4d050099749':'bafkreibuchz6rfb3ekos53uwji5tiog4jhqzras5r3uui2pqhz6fexkuqq',
+  '0xe2af43ae78a2ad4c447be1a7d364c40974fd3721':'bafkreicx3ssdnuoc4cf4ain2odflm7amm6qclpj7l4ynddo5bfvd474lwm',
+  '0xfcd9ff3abfefe9b5dc48d6d537abf5c99c1ad4b0':'bafkreihepdxmylzmhjffyjwdgkk2ksfzsprfjgbcrn2l72bilgjm72uzdu',
+  '0x50298473f3867a7831353291c55505e75fab89cc':'bafkreicrxogx5nauabk5kzlwptwsm6mm7cccsqnfq5yfpxgopxvjmtq3p4',
+  '0xc3bd3ca805d1f68595467ccc6b2b3743b0b09780':'bafkreiepf3jhaozcgtrqgp3xhmwj5wufzlaoomos4mmas5raytj4tsx5w4',
+  '0x86423b3bd2aada72bdf1b715fd2b98ff44da44fe':'bafkreiezra5cnvrzsctyiyaczd2f4delrih34nj6oo23gdb3a2c4othbxy',
+  '0xf56a5ffc9d24c403a44e1a29b559fb48b493ec6c':'bafkreicnxsju73qw7bi7lelx4zuiuz6hrdsvbujgovimyztattlhrsmdd4',
+  '0x5438bb092b74cac8a3bfa6dc7203a749795edf29':'bafkreiarmbnk3sa3qpiyjp7nqzinik6lsfvpokbgnfwmltn6pds5il7k4i',
+  '0xc6ca5cb8823251f5fa05275db8ca5a0bce86c322':'bafkreifrpomtke4wwjxumshqoqqbbup4vty7tqbtrk7icosonaoysb2oeq',
+  '0x3f464ffbf33b7d0d982126da8da1c4cb96ed8a45':'bafkreibqcmkwmkawlnswrujcmqdpftqs2m6iabcf2txgp2ugq4thgpgojy',
+  '0x74cd08e74ef94e26d4c618803ff78bd9c7a3d463':'bafkreielk3jr2zz3snoyegu5fmrcicx2n7xsoktn5xvaga6rlkdrx6khhy',
+  '0x7b89e599f22883fca0c6432fa5364e5cceda4717':'bafkreiato3ftcownddxkcw7tu2fnzo7rchgxpuvc4q5cdtyokoojwtituq',
+  '0xb9b6e9e3b1cf3c8d212122c4b4e0c739c1b963ed':'bafkreiavp5o3yup3sviyygwkh4ubcmd4ppch5e7bf7dttsmajsslxi4dve',
+  '0x056a42e2a59e6b052f8f834d8c93355279b39257':'bafkreia3pskadyiaegf7cggd76gwpw4pwqtsf2sfkisgjvbd4ymylnoqkm',
+  '0xdb6cb95d45fbdceb028a21322856c47b39e29644':'bafkreifqr2xbwwt7rnzoznqirmgr5czstu4m2okxdq5ia7ysaatac3hnm4',
+  '0x0ba4fa7dcbdff8a40f3836305c9bba2a18afef40':'bafkreicjmfzv23oasxazwxf2cgz5oi5rhpke5ladjclsmgvxqvw7mmx3du',
+  '0x04f8b12eb317b270cc7bb976356bbf113aadef7d':'bafkreicbzkd4c6f2mft6bzuh65wr6g7ibgkqopaslcyng55os2eetkcsqe',
+  '0x8cc1ddd3abc7b457d9d22217160741f88234f58f':'bafkreiexvjvvfiw45vfem7sgkhzztsp52zdky3xup3r3gnp7fzqldrtlxm',
+  '0xb1ca4e7f7db3c2f0c5e30aa7a915dd9836bff597':'bafkreidxxqv67kcdesnfykzskajmcmavxtz6zpfj2hhk5cl5yvybg4jbey',
+  '0x05825fbf74b647fe75e3f59abc8ef7138bf5ea01':'bafkreifhhmiwngaubhyqxahwchhaha3czpm6jfc3kxwugxr2hb5ycltnci',
+  '0x115c4d5b3df41a612a085eb0ae9ce5e125708951':'bafkreic5z3iksyqf3jozq4atus3a3z7kidwyck5cykhve2nawpquqkfmqm'
+};
 function ipfsPinName(addr){return 'sakura-token-'+String(addr||'').toLowerCase()}
 function ipfsGatewayUrl(cid){return W3C.ipfs.gateway+cid}
 function pinataLookupCid(name){
@@ -2881,7 +3144,7 @@ function swapDiscoveredImage(addr,cid){
   try{
     if(detailMode==='live'&&currentLive&&String(currentLive.address).toLowerCase()===addr){
       var av=el('dAvatar');
-      if(av){av.innerHTML='<img data-tokimg data-addr="'+addr+'" src="'+ipfsGatewayUrl(cid)+'" alt=""/>';av.style.cssText='background:var(--surface2)'}
+      if(av){av.__imgKey=ipfsGatewayUrl(cid);av.innerHTML='<img data-tokimg data-addr="'+addr+'" src="'+ipfsGatewayUrl(cid)+'" alt=""/>';av.style.cssText='background:var(--surface2)'}
     }
   }catch(e){}
 }
@@ -3744,14 +4007,35 @@ async function ensureHoldersLoaded(t){
   }
 }
 /* ---------- Sell % chips + custom slippage (Fixes D & E) ---------- */
+/* Which quick chip the user last picked ('amt:0.10' / 'pct:25'), so
+   the selected chip stays unmistakably highlighted. Presentation
+   state only — amounts are still set by setAmt / applySellPct
+   exactly as before; typing in the amount field, pressing MAX, or
+   switching side clears the selection. */
+var chipSelKey=null;
 function paintQuickChips(){
   var qc=el('quickChips'); if(!qc||detailMode!=='live'||!currentLive)return;
+  var html,sig;
   if(side==='buy'){
-    qc.innerHTML='<button data-act="amt" data-amt="0.01">0.01</button><button data-act="amt" data-amt="0.05">0.05</button><button data-act="amt" data-amt="0.10">0.10</button><button data-act="amt" data-amt="0.50">0.50</button>';
+    html=['0.01','0.05','0.10','0.50'].map(function(a){
+      var on=chipSelKey==='amt:'+a;
+      return '<button type="button" data-act="amt" data-amt="'+a+'"'+(on?' class="sel" aria-pressed="true"':' aria-pressed="false"')+'>'+a+'</button>';
+    }).join('');
+    sig='buy|'+(chipSelKey||'');
   }else{
     var dis=liveConnected?'':' disabled aria-disabled="true"';
-    qc.innerHTML=[10,25,50,100].map(function(p){return '<button type="button" data-act="sell-pct" data-pct="'+p+'"'+dis+'>'+p+'%</button>'}).join('');
+    html=[10,25,50,100].map(function(p){
+      var on=chipSelKey==='pct:'+p;
+      return '<button type="button" data-act="sell-pct" data-pct="'+p+'"'+dis+(on?' class="sel" aria-pressed="true"':' aria-pressed="false"')+'>'+p+'%</button>';
+    }).join('');
+    sig='sell|'+(liveConnected?'1':'0')+'|'+(chipSelKey||'');
   }
+  /* Rebuild only when the chip set or its selection actually
+     changed — repainting identical chips on every balance refresh
+     would kill hover/press states mid-interaction. */
+  if(qc.__sig===sig)return;
+  qc.__sig=sig;
+  qc.innerHTML=html;
 }
 async function applySellPct(pct){
   var t=currentLive; if(!t||detailMode!=='live')return;
@@ -4570,13 +4854,26 @@ function paintLiveDetail(t){
   av.className='tavatar d-avatar';
   var dImg=resolveTokenImg(t.address);
   av.setAttribute('data-letter',t.symbol.charAt(0)); av.setAttribute('data-bg','linear-gradient(140deg,#F2789F,#D63A6E)');
-  if(dImg){av.innerHTML='<img data-tokimg data-addr="'+String(t.address).toLowerCase()+'" src="'+dImg+'" alt=""/>';av.style.cssText='background:var(--surface2)'}
-  else{av.innerHTML=''; av.style.cssText='background:linear-gradient(140deg,#F2789F,#D63A6E)'; av.textContent=t.symbol.charAt(0)}
+  /* In-place refresh: the avatar <img> is only rebuilt when the
+     resolved image URL actually changed — on a plain refresh the
+     loaded image element, its src and its pixels stay untouched,
+     so the header never blinks. All figures below are plain
+     textContent writes, which are no-ops when the value is the
+     same as what is already on screen. */
+  if(dImg){
+    if(av.__imgKey!==dImg){av.__imgKey=dImg;av.innerHTML='<img data-tokimg data-addr="'+String(t.address).toLowerCase()+'" src="'+dImg+'" alt=""/>'}
+    av.style.cssText='background:var(--surface2)';
+  }else{
+    if(av.__imgKey){av.__imgKey='';av.innerHTML='';av.textContent=t.symbol.charAt(0)}
+    else if(!av.querySelector('img')&&av.textContent!==t.symbol.charAt(0))av.textContent=t.symbol.charAt(0);
+    av.style.cssText='background:linear-gradient(140deg,#F2789F,#D63A6E)';
+  }
   el('dName').textContent=t.name;
   el('dTicker').textContent='$'+t.symbol;
   el('dVerified').innerHTML='';
   var fav=el('dFav'); if(fav)fav.style.display='none';
-  el('dMeta').innerHTML='by <strong style="color:var(--ink)">'+truncAddr(t.creator)+'</strong> · LOOP pair · '+feedTagHtml()+(t.gradDex?' · '+(t.graduated?'Graduated to ':'Graduates to ')+t.gradDex:'');
+  var dMetaEl=el('dMeta'), dMetaHtml='by <strong style="color:var(--ink)">'+truncAddr(t.creator)+'</strong> · LOOP pair · '+feedTagHtml()+(t.gradDex?' · '+(t.graduated?'Graduated to ':'Graduates to ')+t.gradDex:'');
+  if(dMetaEl.__h!==dMetaHtml){dMetaEl.__h=dMetaHtml;dMetaEl.innerHTML=dMetaHtml}
   var mcapWei=t.spotPrice*t.totalSupply/(10n**BigInt(t.decimals));
   el('dMcapBig').textContent=fmtEth(mcapWei)+' LOOP';
   el('dMcapPrice').textContent=fmtPriceEth(t.spotPrice)+' LOOP per token';
@@ -4848,6 +5145,21 @@ function liveCalc(){
     el('tradeReceive').textContent='—';
   }
 }
+/* Presentation-only feedback for the main trade button: a brief
+   green/red wash after a trade confirms or a check fails. The
+   processing spinner is pure CSS (#tradeBtn:disabled::before) —
+   the button is disabled for exactly the in-flight window and its
+   label keeps changing via textContent as before, so no state
+   handling here touches the trade flow itself. */
+var tradeBtnFlashTimer=null;
+function tradeBtnFlash(ok){
+  var btn=el('tradeBtn'); if(!btn)return;
+  btn.classList.remove('flash-ok','flash-err');
+  void btn.offsetWidth;
+  btn.classList.add(ok?'flash-ok':'flash-err');
+  if(tradeBtnFlashTimer)clearTimeout(tradeBtnFlashTimer);
+  tradeBtnFlashTimer=setTimeout(function(){var b=el('tradeBtn');if(b)b.classList.remove('flash-ok','flash-err')},1800);
+}
 async function doLiveTrade(){
   var t=currentLive;
   if(!t||detailMode!=='live')return;
@@ -4859,7 +5171,7 @@ async function doLiveTrade(){
   if(!walletProvider()){toast('Connect your wallet first');return}
   if(!liveChainOk){toast('Wrong network — switch to Loop to trade');ensureLoop();return}
   var amtStr=parseTradeAmountStr();
-  if(!amtStr){showTradeError('Enter an amount greater than 0 — decimals like 0.0001 (or 0,0001) are fine.');toast('Enter an amount greater than 0');return}
+  if(!amtStr){showTradeError('Enter an amount greater than 0 — decimals like 0.0001 (or 0,0001) are fine.');toast('Enter an amount greater than 0');tradeBtnFlash(false);return}
   showTradeError('');
   var amt=Number(amtStr);
   var btn=el('tradeBtn');
@@ -4900,6 +5212,7 @@ async function doLiveTrade(){
         if(amtWeiIn+gasCost>loopBal){
           showTradeError('Insufficient LOOP for gas — reduce the amount or top up your wallet. Your balance is '+fmtEth(loopBal)+' LOOP; this buy plus gas needs about '+fmtEth(amtWeiIn+gasCost)+' LOOP.');
           toast('Insufficient LOOP for gas — reduce the amount or top up your wallet');
+          tradeBtnFlash(false);
           return;
         }
       }
@@ -4910,6 +5223,7 @@ async function doLiveTrade(){
       if(tokBalNow!=null&&amtWeiSell>tokBalNow){
         showTradeError('You only hold '+fmtTokUnits(tokBalNow,t.decimals)+' $'+t.symbol+' — reduce the sell amount.');
         toast('Sell amount exceeds your token balance');
+        tradeBtnFlash(false);
         return;
       }
       if(loopBal!=null){
@@ -4917,6 +5231,7 @@ async function doLiveTrade(){
         if(gasCostS>loopBal){
           showTradeError('Insufficient LOOP for gas — your wallet needs a little LOOP to pay for this sell. Top up your wallet.');
           toast('Insufficient LOOP for gas');
+          tradeBtnFlash(false);
           return;
         }
       }
@@ -4989,6 +5304,7 @@ async function doLiveTrade(){
       toastTx((side==='buy'?'Bought':'Sold')+' $'+t.symbol+' — confirmed',tx2.hash);
       if(btn)btn.disabled=false;
       paintLiveTradePanel();
+      tradeBtnFlash(true);
       refreshLiveWalletUI();
       refreshLiveAfterTx();
       return;
@@ -5032,11 +5348,13 @@ async function doLiveTrade(){
     toastTx((side==='buy'?'Bought':'Sold')+' $'+t.symbol+' — confirmed',tx.hash);
     if(btn)btn.disabled=false;
     paintLiveTradePanel();
+    tradeBtnFlash(true);
     refreshLiveWalletUI();
     refreshLiveAfterTx();
   }catch(e){
     if(btn)btn.disabled=false;
     paintLiveTradePanel();
+    tradeBtnFlash(false);
     showTradeError(humanTxError(e));
     txErrorToast(e);
   }
@@ -5596,6 +5914,7 @@ setDTab=function(name){
 };
 var _setSide=setSide;
 setSide=function(s){
+  chipSelKey=null;
   _setSide(s);
   if(detailMode==='live')paintLiveTradePanel();
 };
@@ -5813,7 +6132,7 @@ async function bootLiveData(){
   });
   var si=el('searchInput'); if(si)si.addEventListener('input',renderLiveTokens);
   var ps=el('pairSelect'); if(ps)ps.addEventListener('change',renderLiveTokens);
-  var ta=el('tradeAmount'); if(ta)ta.addEventListener('input',function(){if(detailMode==='live')liveCalc()});
+  var ta=el('tradeAmount'); if(ta)ta.addEventListener('input',function(){if(chipSelKey){chipSelKey=null;paintQuickChips()}if(detailMode==='live')liveCalc()});
   /* Custom slippage input (Fix E): '.' or ',' decimals, 0.1–50%.
      A valid value applies immediately to the single slippage state
      every builder consumes; an invalid one is rejected inline and
@@ -5847,7 +6166,7 @@ async function bootLiveData(){
     var b=e.target&&e.target.closest?e.target.closest('[data-act]'):null;
     if(!b)return;
     var act=b.getAttribute('data-act');
-    if(act==='max-amt')applyMaxAmount();
+    if(act==='max-amt'){chipSelKey=null;paintQuickChips();applyMaxAmount()}
     else if(act==='wallet-profile'){var wm3=el('walletMenu');if(wm3)wm3.classList.remove('show');goToView('profil')}
     else if(act==='live-token')openLiveDetail(b.getAttribute('data-addr'));
     else if(act==='trade-live')doLiveTrade();
@@ -5871,7 +6190,7 @@ async function bootLiveData(){
       if(!isNaN(sv2)){closeSlipCustom();applySlippageValue(sv2)}
     }
     else if(act==='slip-custom'){openSlipCustom()}
-    else if(act==='sell-pct'){applySellPct(parseInt(b.getAttribute('data-pct'),10)||0)}
+    else if(act==='sell-pct'){var pctV=parseInt(b.getAttribute('data-pct'),10)||0;if(pctV){chipSelKey='pct:'+pctV;paintQuickChips()}applySellPct(pctV)}
     else if(act==='copy-holder'){e.stopPropagation();copyText(b.getAttribute('data-addr'),'Holder address copied')}
     else if(detailMode==='live'&&currentLive&&(act==='copy-contract'||act==='copy-pool')){
       e.stopPropagation();
