@@ -108,6 +108,29 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .btn-soft:hover{background:var(--pink-soft)}
 .btn .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(3.2);opacity:0}}
+/* ===== Tap responsiveness (every button, every page) =====
+   touch-action:manipulation removes the ~300ms tap delay mobile
+   browsers and wallet WebViews (TokenPocket etc.) otherwise impose
+   on every tap — the delay made buttons feel dead on first press.
+   The tap-highlight reset kills the grey flash some WebViews paint
+   instead of the button's own press state. */
+button,a,[data-act],select,input,textarea,label{touch-action:manipulation}
+*{-webkit-tap-highlight-color:transparent}
+.btn:disabled{cursor:wait;opacity:.82}
+/* The Launch button gets the same working spinner as the trade
+   button: it is disabled from the first tap (see liveCreate), so
+   the user sees it working immediately instead of tapping again. */
+#launchBtn:disabled{transform:none;box-shadow:var(--cta-shadow)}
+#launchBtn::before{content:'';width:0;height:17px;flex:none;border-radius:50%;opacity:0;transition:width .2s ease,opacity .2s ease}
+#launchBtn:disabled::before{width:17px;opacity:1;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+/* Press feedback for tappables that had none of their own. */
+.nav a:active{background:var(--surface2);color:var(--ink)}
+.seg button:active{transform:scale(.92)}
+.pager-btn:active:not(:disabled){transform:scale(.97)}
+.menu-pop a:active,.menu-pop button:active{background:var(--surface2)}
+.ftab:active{color:var(--ink)}
+.dest-opt:active{transform:scale(.99)}
+.pair-opt:active{background:var(--surface2)}
 .burst-petal{position:fixed;width:11px;height:9px;border-radius:70% 4px 70% 4px;background:#F78FB2;pointer-events:none;z-index:200;animation:burst .7s ease-out forwards}
 @keyframes burst{to{transform:translate(var(--bx),var(--by)) rotate(160deg) scale(.5);opacity:0}}
 /* ===== Page head (Launches) ===== */
@@ -762,7 +785,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .wallet-menu button{display:flex;align-items:center;width:100%;text-align:left;background:none;border:none;border-radius:9px;padding:12px 12px;font-weight:700;font-size:14.5px;color:var(--ink);cursor:pointer;min-height:44px}
 .wallet-menu button:hover{background:var(--surface2)}
 .menu-wrap{position:relative}
-.menu-pop{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:6px;min-width:224px;box-shadow:0 18px 44px rgba(20,4,12,.28);display:none;z-index:80}
+.menu-pop{position:absolute;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:6px;min-width:252px;max-height:min(74vh,620px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 18px 44px rgba(20,4,12,.28);display:none;z-index:80}
 .menu-pop.show{display:block}
 .menu-pop a,.menu-pop button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;border-radius:9px;padding:11px 12px;font-weight:700;font-size:14.5px;color:var(--ink);cursor:pointer;min-height:44px;text-decoration:none}
 .menu-pop a:hover,.menu-pop button:hover{background:var(--surface2)}
@@ -904,6 +927,52 @@ main,.view,footer,header.topbar{max-width:100%}
 .tier-row input{accent-color:var(--pink);width:17px;height:17px;flex:none;margin:0}
 .tier-row:has(input:checked){border-color:var(--pink);background:var(--pink-pale)}
 .tier-price{margin-left:auto;font-weight:800;white-space:nowrap}
+.menu-label{padding:8px 12px 2px;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.menu-cta{color:var(--pink-dark)!important}
+/* ===== Promote page (banner purchase + queue) ===== */
+.promo-wrap{max-width:780px;margin:0 auto}
+.promo-wallet{display:flex;align-items:center;gap:12px;border:1px solid var(--line2);border-radius:14px;padding:13px 15px;margin-bottom:16px;background:var(--surface2)}
+.promo-wallet.off{justify-content:space-between}
+.promo-wallet-txt{flex:1;min-width:0}
+.promo-wallet-txt strong{display:block;font-size:14.5px}
+.promo-wallet-txt span{display:block;color:var(--muted);font-size:12.5px;font-weight:600;margin-top:1px}
+.promo-wdot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:none}
+.promo-pick{position:relative}
+.promo-options{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:5px;max-height:318px;overflow-y:auto;z-index:60;box-shadow:0 18px 44px rgba(20,4,12,.28)}
+.promo-opt{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--ink);min-height:52px}
+.promo-opt:hover{background:var(--surface2)}
+.promo-opt.sel{background:var(--pink-pale)}
+.promo-optmain{min-width:0}
+.promo-optmain strong{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.promo-optmain span{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.promo-selrow{display:flex;align-items:center;gap:11px;border:1.5px solid color-mix(in srgb,var(--pink) 45%, var(--line2));background:var(--pink-pale);border-radius:14px;padding:9px 12px;margin-top:9px}
+.promo-selmain{flex:1;min-width:0}
+.promo-selmain strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.promo-selmain span{display:block;color:var(--muted);font-size:12.5px;font-weight:600}
+.promo-sym{color:var(--pink-dark);font-weight:800}
+.promo-clear{flex:none;width:34px;height:34px;border-radius:9px;border:1px solid var(--line2);background:var(--surface);color:var(--muted);cursor:pointer;font-size:13px}
+.banner-static{cursor:default}
+.banner-static:hover{border-color:var(--line)}
+.tier-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tier-card{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:1.5px solid var(--line2);border-radius:14px;padding:13px 15px;background:var(--surface);cursor:pointer;color:var(--ink);text-align:left;transition:border-color .15s,background .15s;min-height:74px}
+.tier-card:hover{border-color:var(--pink)}
+.tier-card.sel{border-color:var(--pink);background:var(--pink-pale)}
+.tier-card .tier-dur{font-weight:800;font-size:16.5px}
+.tier-card .tier-price{margin-left:0;color:var(--muted);font-size:13.5px}
+.tier-card.sel .tier-price{color:var(--pink-dark)}
+.tier-card.loading{grid-column:1/-1;align-items:center;justify-content:center;color:var(--muted);font-weight:700;cursor:default}
+@media(max-width:560px){.tier-cards{grid-template-columns:1fr}.tier-card{min-height:0}}
+.qrow{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:12px 2px;color:var(--ink);font:inherit}
+button.qrow{cursor:pointer}
+.qrow:last-child{border-bottom:0}
+.qmain{flex:1;min-width:0}
+.qname{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
+.qchip{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--line2);color:var(--muted)}
+.qchip.now{background:color-mix(in srgb,var(--pink) 15%, transparent);color:var(--pink-dark);border-color:transparent}
+.qtag{color:var(--muted);font-weight:600;font-size:13.5px;margin-top:2px}
+.qwin{color:var(--faint);font-weight:600;font-size:12.5px;margin-top:3px}
+.promo-empty{border:1px dashed var(--line2);border-radius:14px;padding:18px;text-align:center;color:var(--muted);font-weight:600}
+.promo-done-head{font-weight:800;font-size:19px;margin-bottom:6px}
 @media(max-width:560px){
   .banner-panel{min-height:172px}
   .banner-art{font-size:64px}
@@ -991,7 +1060,7 @@ main,.view,footer,header.topbar{max-width:100%}
   </nav>
   <div class="top-actions">
     <button class="icon-btn" id="themeBtn" aria-label="Toggle dark / light theme" data-act="theme"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none"/></svg></button>
-    <div class="menu-wrap"><button class="icon-btn" id="menuBtn" aria-label="More links" aria-haspopup="menu" aria-expanded="false" data-act="menu"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.9" fill="currentColor" stroke="none"/></svg></button><div class="menu-pop" id="menuPop" role="menu" aria-label="More links"><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X (Twitter)</button><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on Telegram — coming soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Telegram</button><div class="menu-sep" aria-hidden="true"></div><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x17E313b8fd29c3fa3232DBc911C4AE29A781c228" target="_blank" rel="noopener">Factory<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0xFbbfc3a9b78881aF996Ca890826596513002487a" target="_blank" rel="noopener">Banner Ads<span class="ext">↗</span></a></div></div>
+    <div class="menu-wrap"><button class="icon-btn" id="menuBtn" aria-label="More links" aria-haspopup="menu" aria-expanded="false" data-act="menu"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.9" fill="currentColor" stroke="none"/></svg></button><div class="menu-pop" id="menuPop" role="menu" aria-label="More links"><button type="button" role="menuitem" class="menu-cta" data-act="promote-page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>Promote your token</button><div class="menu-sep" aria-hidden="true"></div><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X (Twitter)</button><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on Telegram — coming soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Telegram</button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Resources</div><button type="button" role="menuitem" data-act="toast" data-msg="Docs coming soon">Docs<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="Support opens soon">Support</button><a role="menuitem" href="https://explorer.mainnetloop.com" target="_blank" rel="noopener">Explorer<span class="ext">↗</span></a><a role="menuitem" href="#jelajahi" data-act="sakura-token">Sakura Token</a><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon">Updates on X<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="GitHub opens after the contract audit">GitHub<span class="ext">↗</span></button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Contracts</div><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x17E313b8fd29c3fa3232DBc911C4AE29A781c228" target="_blank" rel="noopener">Factory<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury<span class="ext">↗</span></a><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Legal</div><button type="button" role="menuitem" data-act="toast" data-msg="Terms of Use coming soon">Terms of Use</button><button type="button" role="menuitem" data-act="toast" data-msg="Privacy Policy coming soon">Privacy Policy</button><button type="button" role="menuitem" data-act="toast" data-msg="Takedown requests open soon">Takedown Requests</button><button type="button" role="menuitem" data-act="toast" data-msg="This channel opens soon">Law Enforcement Requests</button></div></div>
     <div class="wallet-wrap"><button class="wallet-pill" id="walletPill" data-act="wallet" aria-label="Connect wallet"><span class="wico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span><span class="waddr" id="pillAddr">Connect Wallet</span><span class="waddr" id="pillBal" style="color:var(--muted);font-weight:700"></span><span class="net-tag" id="pillNetTag" style="display:none">Loop</span><span class="wdot" id="pillDot" aria-hidden="true"></span></button><div class="wallet-menu" id="walletMenu" role="menu" aria-label="Wallet menu"><button data-act="wallet-profile" role="menuitem">View Profile</button><button data-act="disconnect" role="menuitem" style="color:var(--red)">Disconnect wallet</button></div></div>
   </div>
 </div></header>
@@ -1139,6 +1208,7 @@ main,.view,footer,header.topbar{max-width:100%}
 <div class="field"><label>Creator fee wallet</label><p class="hint" style="margin:0">Fees go straight to the wallet you launch with. Nothing to set.</p></div>
           <div class="field"><label id="taxLabel">Creator tax</label>
             <div class="tax-seg" role="radiogroup" aria-labelledby="taxLabel">
+              <button type="button" class="tax-opt" data-act="tax" data-tax="0" role="radio" aria-checked="false">0%</button>
               <button type="button" class="tax-opt sel" data-act="tax" data-tax="1" role="radio" aria-checked="true">1%</button>
               <button type="button" class="tax-opt" data-act="tax" data-tax="2" role="radio" aria-checked="false">2%</button>
               <button type="button" class="tax-opt" data-act="tax" data-tax="3" role="radio" aria-checked="false">3%</button>
@@ -1156,6 +1226,7 @@ main,.view,footer,header.topbar{max-width:100%}
           <p class="eco-summary" id="ecoSummary">Launch fee 0.0005 LOOP. Graduates at 4.20 LOOP. Curve fee 1.0%.</p>
           <p class="hint" id="livePairNote" style="display:none;color:var(--red);font-weight:700"></p>
           <p class="hint" id="ipfsNote" style="display:none"></p>
+          <div id="launchCheck" style="display:none;margin:0 0 14px"></div>
           <div class="form-nav"><button class="btn btn-ghost" type="button" data-act="step" data-step="1">‹ Back to Identity</button><span class="spacer"></span><button class="btn btn-primary" id="launchBtn" style="padding:14px 28px;font-size:15px" type="submit">Launch My Token</button></div>
         </div>
       </form>
@@ -1491,6 +1562,59 @@ main,.view,footer,header.topbar{max-width:100%}
     <button class="btn btn-primary" data-act="sticky-side" data-side="buy">Buy</button>
   </div>
   </div><!-- /view-detail -->
+
+  <!-- ================= PAGE: PROMOTE ================= -->
+  <div class="view" id="view-promote">
+  <div class="wrap view-top"><button class="btn btn-ghost" data-act="view" data-view="jelajahi">← Back to Launches</button></div>
+  <section class="section" style="padding-top:16px"><div class="wrap">
+    <div class="promo-wrap">
+      <div class="sec-head" style="display:block"><h2 style="font-size:30px">Promote your token</h2><p>Buy the banner at the top of Launches. Banners run in purchase order — first paid, first shown.</p></div>
+      <section class="panel" style="margin-top:16px">
+        <div id="promoWallet"></div>
+        <div id="promoForm">
+          <div class="field"><label for="promoSearch">Token</label>
+            <div class="promo-pick" id="promoPick">
+              <input id="promoSearch" type="text" autocomplete="off" spellcheck="false" placeholder="Search name, ticker, or address…"/>
+              <div class="promo-options" id="promoOptions" style="display:none"></div>
+            </div>
+            <div id="promoSelected"></div>
+            <p class="hint">Pick any token launched on Sakura.</p>
+          </div>
+          <div class="field"><label for="promoAddr">Or paste a token address</label>
+            <input id="promoAddr" type="text" autocomplete="off" spellcheck="false" placeholder="0x…"/>
+            <p class="hint" id="promoAddrHint"></p>
+          </div>
+          <div class="field"><label for="promoImg">Banner image</label>
+            <input id="promoImg" type="text" autocomplete="off" spellcheck="false" placeholder="ipfs://… or https://…"/>
+            <p class="hint" id="promoImgHint">Paste an ipfs:// or https:// link — direct upload isn’t configured on this build.</p>
+          </div>
+          <div class="field"><label>Preview</label>
+            <div id="promoPreview"></div>
+          </div>
+          <div class="field"><label for="promoTag">Tagline</label>
+            <input id="promoTag" type="text" maxlength="80" autocomplete="off" placeholder="One short line"/>
+            <p class="hint"><span id="promoTagCount">0</span>/80</p>
+          </div>
+          <div class="field"><label>Duration</label>
+            <div id="promoTiers"><div class="tier-cards"><div class="tier-card loading">Loading prices…</div></div></div>
+          </div>
+          <div class="fee-row"><span style="color:var(--muted)">Starts</span><strong id="promoStart">…</strong></div>
+          <div class="fee-row"><span style="color:var(--muted)">Your position</span><strong id="promoPos">…</strong></div>
+          <p class="trade-error" id="promoError" role="alert"></p>
+          <div class="wm-connecting" id="promoBusy"><div class="spinner"></div><p style="font-weight:800;margin:0">Sending to your wallet…</p><p style="color:var(--muted);font-size:13px;margin:4px 0 0">Confirm the transaction in your wallet app.</p></div>
+          <button class="btn btn-primary" id="promoPayBtn" data-act="promote-pay" style="width:100%;margin-top:14px;padding:14px">Buy banner</button>
+          <p class="wm-foot">Paid in LOOP. Banners run in purchase order.</p>
+        </div>
+        <div id="promoDone" style="display:none"></div>
+      </section>
+      <section class="panel" style="margin-top:16px">
+        <h3 style="margin:0 0 6px;font-size:19px">Banner queue</h3>
+        <p class="hint" style="margin:0 0 10px">First paid, first shown. The queue updates live.</p>
+        <div id="promoQueue"><p class="hint">Loading the queue…</p></div>
+      </section>
+    </div>
+  </div></section>
+  </div>
 </main>
 
 <footer><div class="wrap">
@@ -1580,30 +1704,10 @@ main,.view,footer,header.topbar{max-width:100%}
       <button class="wm-close" aria-label="Close claim dialog" data-act="claim-close"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div id="claimBody"></div>
+    <p id="claimError" style="display:none;color:var(--red);font-weight:700;font-size:14px;line-height:1.5;margin:12px 0 0"></p>
     <div class="wm-connecting" id="claimBusy"><div class="spinner"></div><p style="font-weight:800;margin:0">Sending to your wallet…</p><p style="color:var(--muted);font-size:13px;margin:4px 0 0">Confirm the transaction in your wallet app.</p></div>
     <button class="btn btn-primary" id="claimConfirmBtn" data-act="claim-confirm" style="width:100%;margin-top:14px;padding:14px">Confirm Claim</button>
     <p class="wm-foot" id="claimFoot">One transaction on Loop.<br/>Fees never expire, and claiming never touches curve liquidity.</p>
-  </div>
-</div>
-
-<!-- ===== PROMOTE (BANNER ADS) MODAL ===== -->
-<div class="modal-overlay" id="promoteModal" role="dialog" aria-modal="true" aria-label="Promote this token">
-  <div class="wallet-modal">
-    <div class="wm-head">
-      <div><h3 id="promoteTitle">Promote this token</h3><p>Your banner runs at the top of Launches.</p></div>
-      <button class="wm-close" aria-label="Close promote dialog" data-act="promote-close"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-    </div>
-    <div id="promoteBody">
-      <div class="field"><label id="promoteTierLabel">Duration</label><div id="promoteTiers" role="radiogroup" aria-labelledby="promoteTierLabel"><p class="hint">Loading prices…</p></div></div>
-      <div class="field"><label for="promoteImg">Banner image URL</label><input id="promoteImg" type="text" autocomplete="off" spellcheck="false" placeholder="ipfs://… or https://…"/><p class="hint" id="promoteImgHint">An IPFS or HTTPS image link is required.</p></div>
-      <div class="field"><label for="promoteTag">Tagline</label><input id="promoteTag" type="text" maxlength="80" autocomplete="off" placeholder="One short line"/><p class="hint"><span id="promoteTagCount">0</span>/80</p></div>
-      <div class="fee-row"><span style="color:var(--muted)">Starts</span><strong id="promoteStart">…</strong></div>
-      <p class="trade-error" id="promoteError" role="alert"></p>
-    </div>
-    <div id="promoteDone" style="display:none"></div>
-    <div class="wm-connecting" id="promoteBusy"><div class="spinner"></div><p style="font-weight:800;margin:0">Sending to your wallet…</p><p style="color:var(--muted);font-size:13px;margin:4px 0 0">Confirm the transaction in your wallet app.</p></div>
-    <button class="btn btn-primary" id="promoteBuyBtn" data-act="promote-buy" style="width:100%;margin-top:14px;padding:14px">Buy banner</button>
-    <p class="wm-foot">Paid in LOOP. Banners run in purchase order.</p>
   </div>
 </div>
 
@@ -2803,7 +2907,7 @@ bindEv('createForm','submit',function(e){e.preventDefault();if(createStep===1){g
 bindEv('walletModal','click',function(e){if(e.target===this)closeWallet()});
 bindEv('claimModal','click',function(e){if(e.target===this)closeClaim()});
 /* ===== Separate pages navigation ===== */
-var VIEWS={jelajahi:'view-jelajahi',cara:'view-cara',buat:'view-buat',profil:'view-profil',analytics:'view-analytics',detail:'view-detail'};
+var VIEWS={jelajahi:'view-jelajahi',cara:'view-cara',buat:'view-buat',profil:'view-profil',analytics:'view-analytics',detail:'view-detail',promote:'view-promote'};
 function goToView(name,anchor){
   closeMenu();
   if(!VIEWS[name])name='jelajahi';
@@ -2825,6 +2929,7 @@ function goToView(name,anchor){
   else if(h==='buat') goToView('buat');
   else if(h==='profil') goToView('profil');
   else if(h==='analytics') goToView('analytics');
+  else if(h==='promote') goToView('promote');
   else if(h==='explore'){ setTimeout(function(){var e=document.getElementById('explore'); if(e) e.scrollIntoView();},90); }
 })();
 /* ===== Analytics: Top Coins — interactive ranking (example data from the sample tokens) =====
@@ -2908,11 +3013,18 @@ var SAKURA_WEB3_CONFIG={
      layer only — if Pinata is unreachable the site renders exactly
      as it did without it. */
   ipfs:{
-    /* This is a scoped, public-by-design client key (pin/read only,
-       no admin), intentionally embedded because a static site has no
-       backend; it is revocable/regenerable in the Pinata dashboard
-       at any time. */
-    pinataJwt:"" /* No Pinata credential ships in this page. The previous scoped-key JWT was removed from the client source (it must be revoked in the Pinata dashboard — it was already public). IPFS uploads and cross-device image discovery stay off until uploads are routed through a server-side signed-upload grant; token images resolve from the code-bound MESIAH image, the code-bound IPFS pins seeded in IPFS_DISCOVERY below, on-device bindings, and letter avatars meanwhile. */,
+    /* No Pinata credential ships in this page: pinataJwt stays
+       empty, and every lookup/upload call below early-returns
+       while it is empty, so no credential is ever sent from a
+       viewer's browser. (A previous build embedded a scoped key;
+       it was removed from the source and must be revoked in the
+       Pinata dashboard — it was already public.) IPFS uploads and
+       cross-device image discovery stay off until uploads are
+       routed through a server-side signed-upload grant; token
+       images resolve from the code-bound MESIAH image, the
+       code-bound IPFS pins seeded in IPFS_DISCOVERY below,
+       on-device bindings, and letter avatars meanwhile. */
+    pinataJwt:"",
     uploadUrl:"https://uploads.pinata.cloud/v3/files",
     listUrl:"https://api.pinata.cloud/v3/files/public",
     gateway:"https://gateway.pinata.cloud/ipfs/",
@@ -3037,7 +3149,10 @@ var SAKURA_WEB3_CONFIG={
       'function previewStart() view returns (uint256)',
       'function tiers(uint256) view returns (uint256 durationSeconds, uint256 priceWei, bool active)',
       'function tierCount() view returns (uint256)',
-      'function isSakuraToken(address) view returns (bool)'
+      'function isSakuraToken(address) view returns (bool)',
+      'function bannerCount() view returns (uint256)',
+      'function banners(uint256) view returns (address payer, address token, string imageURI, string tagline, uint256 start, uint256 end, bool removed)',
+      'event BannerPurchased(uint256 indexed id, address indexed payer, address indexed token, uint256 tierIndex, uint256 priceWei, uint256 start, uint256 end)'
     ],
     /* Canonical Uniswap V2 ABIs (Sakura's fork on Loop is interface-
        identical). The pair ABI is only used to read reserves/token0
@@ -5480,6 +5595,7 @@ async function loadLiveTokensInner(){
     if(st.block==null||LIVE_BLOCK==null||st.block>=LIVE_BLOCK){LIVE_BLOCK=st.block; LIVE_READ_AT=new Date()}
     renderLiveTokens();
     refreshBanner();
+    refreshPromoteData();
     refreshLoopUsd();
     setLiveStatus('ok');
     syncConfigChrome();
@@ -5868,6 +5984,10 @@ var liveTokBalWei=null;
 /* Slippage for graduated (V2 pool) swaps — default 1%, deadline
    ~20 minutes. Curve trades don't use it (the curve quotes exactly). */
 var v2SlippagePct=1;
+/* Set synchronously at doLiveTrade entry, before any awaited
+   read; paintLiveTradePanel must not repaint the button back to
+   its idle label/enabled state while a trade is in flight. */
+var tradeBusy=false;
 function paintLiveTradePanel(){
   var t=currentLive; if(!t||detailMode!=='live')return;
   try{window.__sakuraRouters=window.__sakuraRouters||{};window.__sakuraRouters[t.symbol]=t.router||null;window.__sakuraRouters[String(t.address).toLowerCase()]=t.router||null}catch(e){}
@@ -5897,7 +6017,7 @@ function paintLiveTradePanel(){
       : 'Graduated \u2014 trading on its Uniswap V2 pool. Swaps pay the standard 0.3% pool fee, which stays in the pool. LP locked permanently.')
     : 'The price climbs as people buy. Sell back into the curve any time before graduation.';
   var tb=el('tradeBtn');
-  if(tb){tb.setAttribute('data-act','trade-live');tb.textContent=(side==='buy'?'Buy $':'Sell $')+t.symbol;tb.disabled=false}
+  if(tb){tb.setAttribute('data-act','trade-live');if(tradeBusy){tb.disabled=true}else{tb.textContent=(side==='buy'?'Buy $':'Sell $')+t.symbol;tb.disabled=false}}
   var qn=el('quoteNote');
   if(qn)qn.style.display='none';
   refreshLiveBalance();
@@ -6008,7 +6128,7 @@ function tradeBtnFlash(ok){
 }
 async function doLiveTrade(){
   var t=currentLive;
-  if(!t||detailMode!=='live')return;
+  if(!t||detailMode!=='live'||tradeBusy)return;
   if(!liveConnected){
     if(hasInjected()||wcEnabled())connectWallet('MetaMask');
     else openWallet();
@@ -6021,6 +6141,14 @@ async function doLiveTrade(){
   showTradeError('');
   var amt=Number(amtStr);
   var btn=el('tradeBtn');
+  /* The busy lock + busy state land NOW, before the pre-trade
+     reads. The old flow ran a full Lens refresh, an anti-snipe
+     read, balance and gas reads — seconds on a slow RPC — before
+     disabling the button, so taps looked dead and repeat taps
+     queued duplicate trades. The CSS spinner on #tradeBtn:disabled
+     shows from this same tap. */
+  tradeBusy=true;
+  if(btn){btn.disabled=true;btn.textContent='Preparing…'}
   try{
     /* Fresh pre-trade re-read: a full Lens refresh runs before any
        quote is computed, so the trade always prices off the latest
@@ -6075,7 +6203,7 @@ async function doLiveTrade(){
       if(loopBal!=null){
         var gasCostS=await estimateGasCostWei(450000);
         if(gasCostS>loopBal){
-          showTradeError('Insufficient LOOP for gas — your wallet needs a little LOOP to pay for this sell. Top up your wallet.');
+          showTradeError('Insufficient LOOP for gas — this sell needs about '+fmtEth(gasCostS)+' LOOP for gas, and you have '+fmtEth(loopBal)+' LOOP. Top up your wallet.');
           toast('Insufficient LOOP for gas');
           tradeBtnFlash(false);
           return;
@@ -6203,6 +6331,15 @@ async function doLiveTrade(){
     tradeBtnFlash(false);
     showTradeError(humanTxError(e));
     txErrorToast(e);
+  }finally{
+    /* Release the lock on EVERY exit (success returns, pre-flight
+       rejections, errors). If the button is still in its busy
+       state, repaint it back to the idle Buy/Sell label — the
+       in-flight paths above repaint through paintLiveTradePanel,
+       which deliberately leaves a busy button alone. */
+    tradeBusy=false;
+    var fb=el('tradeBtn');
+    if(fb&&fb.disabled)paintLiveTradePanel();
   }
 }
 /* Stale-read rule: the public RPC has served stale reads right after a
@@ -6755,7 +6892,37 @@ function gateLiveLaunch(){
     note.style.display='none';
   }
 }
+/* Launch balance pre-flight display: a plain-language box under
+   the Economics form. `remedy` (when the opening buy is what pushes
+   the launch over the connected balance) adds a one-tap "Remove
+   opening buy" button that zeroes the field and re-checks against
+   the figures captured at check time. */
+function hideLaunchCheck(){var c=el('launchCheck');if(c){c.style.display='none';c.innerHTML=''}}
+function showLaunchCheck(msg,remedy,ok){
+  var c=el('launchCheck'); if(!c)return;
+  var col=ok?'var(--green)':'var(--red)';
+  c.style.display='block';
+  c.innerHTML='<div style="border:1.5px solid '+col+';background:color-mix(in srgb,'+col+' 7%, var(--surface));border-radius:14px;padding:13px 14px;font-weight:600;font-size:14px;line-height:1.55">'
+    +escHtml(msg)
+    +(remedy?'<br/><button type="button" id="launchRemedyBtn" class="btn btn-soft" style="min-height:42px;padding:9px 16px;margin-top:10px">Remove opening buy</button>':'')
+    +'</div>';
+  if(remedy){
+    var rb=el('launchRemedyBtn');
+    if(rb)rb.addEventListener('click',function(){
+      var ob=el('fOpenBuy');
+      if(ob){ob.value='0';try{ob.dispatchEvent(new Event('input',{bubbles:true}))}catch(e){}}
+      var need2=remedy.fee+remedy.gas;
+      if(remedy.bal>=need2){
+        showLaunchCheck('Opening buy removed. You need ≈ '+fmtEth(need2)+' LOOP (launch fee '+fmtEth(remedy.fee)+' + gas ≈ '+fmtEth(remedy.gas)+') and you have '+fmtEth(remedy.bal)+' LOOP — tap Launch My Token to continue.',null,true);
+      }else{
+        showLaunchCheck('Opening buy removed, but you still need ≈ '+fmtEth(need2)+' LOOP (launch fee '+fmtEth(remedy.fee)+' + gas ≈ '+fmtEth(remedy.gas)+'). You have '+fmtEth(remedy.bal)+' LOOP.',null,false);
+      }
+    });
+  }
+}
+var launchBusy=false;
 async function liveCreate(){
+  if(launchBusy)return;
   if(!liveConnected){connectWallet('MetaMask');return}
   if(!liveChainOk){toast('Wrong network — switch to Loop to launch');ensureLoop();return}
   if(selPair.sym!=='LOOP'){toast('Only the LOOP pair for now');return}
@@ -6768,13 +6935,51 @@ async function liveCreate(){
   showSocialError('');
   var prevAddrs={}; LIVE_TOKENS.forEach(function(t){prevAddrs[t.address.toLowerCase()]=1});
   var btn=el('launchBtn');
+  /* The busy lock + busy label land NOW, before the first network
+     read. The old flow awaited the launch-fee read and the signer
+     before touching the button, so on a slow Loop RPC the button
+     sat unchanged for seconds: taps looked dead, and every extra
+     tap queued another full launch flow (another wallet prompt,
+     another createToken). Same synchronous-lock pattern as
+     doMigrate / buyPromoteBanner / confirmClaim. */
+  launchBusy=true;
+  if(btn){btn.disabled=true;btn.textContent='Preparing launch…'}
+  hideLaunchCheck();
   try{
     var launchFee=await configRO.launchFee();
     var openBuyEth=parseFloat(el('fOpenBuy').value)||0;
     var openBuyWei=openBuyEth>0?ethers.parseEther(String(openBuyEth)):0n;
+    /* Balance pre-flight — BEFORE the wallet is ever asked to
+       confirm anything. The connected account must cover opening
+       buy + launch fee + gas, read hedged (wallet provider first,
+       the dual-endpoint read provider as fallback). If the read
+       itself fails, the launch stops with a "check couldn't be
+       completed" message: insufficient is never guessed, and no
+       wallet prompt is shown for a launch that cannot pay. (The
+       owner's real case: 0.5 LOOP opening buy against a 0.0564
+       LOOP balance — correct outcome, but it surfaced as a bare
+       error after a wallet confirmation, with no breakdown.) */
+    var bp=new ethers.BrowserProvider(walletProvider());
+    var launchBal=null;
+    try{launchBal=await bp.getBalance(liveAccount)}catch(e){}
+    if(launchBal==null&&readProvider){try{launchBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+    var launchGas=await estimateGasCostWei(3000000);
+    var launchNeed=launchFee+openBuyWei+launchGas;
+    if(launchBal==null){
+      if(btn){btn.disabled=false;btn.textContent='Launch My Token'}
+      showLaunchCheck('Couldn\'t check your LOOP balance — the Loop read didn\'t respond, so nothing was sent. Check your connection and tap Launch again.',null,false);
+      toast('Balance check couldn\'t be completed');
+      return;
+    }
+    if(launchBal<launchNeed){
+      if(btn){btn.disabled=false;btn.textContent='Launch My Token'}
+      var canDropOpenBuy=openBuyWei>0n&&launchBal>=launchFee+launchGas;
+      showLaunchCheck('You need ≈ '+fmtEth(launchNeed)+' LOOP — opening buy '+fmtEth(openBuyWei)+' + launch fee '+fmtEth(launchFee)+' + gas ≈ '+fmtEth(launchGas)+'. You have '+fmtEth(launchBal)+' LOOP.',canDropOpenBuy?{fee:launchFee,gas:launchGas,bal:launchBal}:null,false);
+      toast('Insufficient LOOP for this launch');
+      return;
+    }
     var metadataURI=JSON.stringify({name:name,symbol:ticker,description:desc});
     var destIdx=feeDest==='buyback'?1:(feeDest==='holders'?2:0);
-    var bp=new ethers.BrowserProvider(walletProvider());
     var signer=await bp.getSigner();
     /* Writes target the gen-2 launch factory ONLY
        (W3C.contracts.launchFactory). The FeeVault/Treasury factory
@@ -6841,6 +7046,8 @@ async function liveCreate(){
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent='Launch My Token'}
     txErrorToast(e);
+  }finally{
+    launchBusy=false;
   }
 }
 /* ===== Fix H: one-click migration ================================
@@ -7080,8 +7287,28 @@ async function liveClaimAll(){
   claimBusy=true;
   el('claimConfirmBtn').style.display='none';
   el('claimBusy').classList.add('show');
+  var ce0=el('claimError'); if(ce0){ce0.style.display='none';ce0.textContent=''}
   var summary=liveClaimRows.filter(function(r){return r.amount>0n}).map(function(r){return fmtUnitsSmart(r.amount,r.decimals)+' '+r.symbol}).join(' · ');
   try{
+    /* Gas pre-flight BEFORE the wallet prompt: claiming pays out,
+       but the signature still needs LOOP for gas. Hedged balance
+       read; a failed read is reported as a failed check, never
+       guessed as insufficient. */
+    var cBal=null;
+    try{cBal=await new ethers.BrowserProvider(walletProvider()).getBalance(liveAccount)}catch(e){}
+    if(cBal==null&&readProvider){try{cBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+    var cGas=await estimateGasCostWei(600000);
+    if(cBal==null||cBal<cGas){
+      claimBusy=false;
+      el('claimBusy').classList.remove('show');
+      el('claimConfirmBtn').style.display='block';
+      var ce=el('claimError');
+      if(ce){ce.style.display='block';ce.textContent=cBal==null
+        ?'Couldn\'t check your LOOP balance — the Loop read didn\'t respond, so nothing was sent. Try again.'
+        :'Claiming needs about '+fmtEth(cGas)+' LOOP for gas. You have '+fmtEth(cBal)+' LOOP — top up your wallet and try again.'}
+      toast(cBal==null?'Balance check couldn\'t be completed':'Insufficient LOOP for gas');
+      return;
+    }
     var bp=new ethers.BrowserProvider(walletProvider());
     var signer=await bp.getSigner();
     var vault=new ethers.Contract(W3C.contracts.feeVault,W3C.abi.feeVault,signer);
@@ -7191,7 +7418,18 @@ setInterval(function(){
 },1000);
 paintBannerSlot();
 
-/* ===== Promote: buy a banner for the open token ===== */
+/* ===== Promote page: buy a banner, watch the queue =====
+   A dedicated page (view-promote) replacing the old purchase modal.
+   Read robustness, per the modal's live failure: every banner read
+   goes through bannerRead (the same hedged dual-endpoint race as
+   the Lens state read), the independent groups — tiers, preview
+   start, queue — load IN PARALLEL, each via bannerCall with its
+   own retry + backoff, and each section renders (or offers its own
+   retry) independently, so one slow call can never dead-end the
+   form. Tiers are cached after the first successful read for the
+   rest of the session; the queue and preview start ride the site's
+   live refresh cycle via refreshPromoteData(). */
+var PROMOTE_PAGE={token:null,custom:{},tiers:null,tiersError:false,tiersBusy:false,selIndex:null,previewStart:0,startLoaded:false,startBusy:false,banners:null,queueError:false,queueBusy:false,queueSig:'',busy:false,done:false,imgTouched:false,imgAuto:'',loadedOnce:false,addrSeq:0,pendingSelect:null};
 function knownIpfsUri(addr){
   var b=loadTokenImageBinding(addr);
   if(b&&b.cid)return 'ipfs://'+b.cid;
@@ -7204,145 +7442,473 @@ function fmtTierDuration(sec){
   if(sec%3600===0){var h=sec/3600;return h+' hour'+(h===1?'':'s')}
   var m=Math.round(sec/60);return m+' minute'+(m===1?'':'s');
 }
+/* One hedged banner read with its own retry + backoff. fn receives
+   the attempt's banner contract (captured synchronously per attempt
+   by bannerRead). Call once per independent value group — never
+   chain several slow calls into a single read. */
+async function bannerCall(label,fn,attempts){
+  var lastErr=null,n=attempts||3;
+  for(var i=0;i<n;i++){
+    if(i===1)await sleep(1500);
+    else if(i>1)await sleep(4000);
+    try{return await bannerRead(label,fn)}catch(e){lastErr=e}
+  }
+  throw lastErr||new Error(label+' failed');
+}
+function promoTokenInfo(addr){
+  var key=String(addr||'').toLowerCase();
+  var lt=LIVE_BY_ADDR[key];
+  if(lt)return {address:lt.address,name:lt.name,symbol:lt.symbol,live:lt};
+  var ci=PROMOTE_PAGE.custom[key];
+  if(ci)return {address:addr,name:ci.name,symbol:ci.symbol,live:null};
+  return {address:addr,name:'Sakura token',symbol:'',live:null};
+}
+function promoQueueState(){
+  var now=Math.floor(Date.now()/1000);
+  var active=null,upcoming=[],ahead=0;
+  (PROMOTE_PAGE.banners||[]).forEach(function(b){
+    if(b.removed)return;
+    if(b.end>now)ahead++;
+    if(b.start<=now&&now<b.end){if(!active)active=b}
+    else if(b.start>now)upcoming.push(b);
+  });
+  return {active:active,upcoming:upcoming,ahead:ahead};
+}
 function promoteStartText(){
-  var ps=PROMOTE.previewStart||0, now=Math.floor(Date.now()/1000);
+  var ps=PROMOTE_PAGE.previewStart||0, now=Math.floor(Date.now()/1000);
   return (!ps||ps<=now)?'Starts now':'Starts '+fmtDateTime(ps);
 }
-function syncPromoteBuyBtn(){
-  var btn=el('promoteBuyBtn'); if(!btn)return;
-  var t=null;
-  (PROMOTE.tiers||[]).forEach(function(x){if(x.index===PROMOTE.selIndex)t=x});
-  btn.textContent=t?('Buy banner · '+fmtEth(t.price)+' LOOP'):'Buy banner';
-  btn.disabled=!t||PROMOTE.busy;
-}
-function setPromoteError(msg){
-  var n=el('promoteError'); if(!n)return;
+function setPromoError(msg){
+  var n=el('promoError'); if(!n)return;
   n.textContent=msg||'';
   n.style.display=msg?'block':'none';
 }
-function openPromote(){
-  var t=currentLive;
-  if(detailMode!=='live'||!t){toast('Still loading — try again in a moment');return}
-  PROMOTE.busy=false; PROMOTE.tiers=null; PROMOTE.selIndex=null; PROMOTE.previewStart=0;
-  el('promoteTitle').textContent='Promote $'+t.symbol;
-  el('promoteBody').style.display='block';
-  el('promoteDone').style.display='none';
-  el('promoteBusy').classList.remove('show');
-  var bb=el('promoteBuyBtn');
-  bb.style.display='block'; bb.setAttribute('data-act','promote-buy');
-  setPromoteError('');
-  var known=knownIpfsUri(t.address);
-  el('promoteImg').value=known;
-  el('promoteImgHint').textContent=known?'Prefilled with this token\u2019s IPFS image.':'An IPFS or HTTPS image link is required.';
-  el('promoteTag').value='';
-  el('promoteTagCount').textContent='0';
-  el('promoteTiers').innerHTML='<p class="hint">Loading prices…</p>';
-  el('promoteStart').textContent='…';
-  syncPromoteBuyBtn();
-  el('promoteModal').classList.add('open');
-  document.body.style.overflow='hidden';
-  loadPromoteData();
+function promoteConnect(){
+  if(hasInjected()||wcEnabled())connectWallet('MetaMask');
+  else openWallet();
 }
-async function loadPromoteData(){
-  try{
-    var data=await bannerRead('Banner tiers read',async function(c){
-      var n=Number(await c.tierCount());
-      var tiers=[];
-      for(var i=0;i<n;i++){
-        var tr=await c.tiers(i);
-        if(tr[2])tiers.push({index:i,duration:Number(tr[0]),price:tr[1]});
-      }
-      var ps=await c.previewStart();
-      return {tiers:tiers,previewStart:Number(ps)};
-    });
-    if(!el('promoteModal').classList.contains('open'))return;
-    PROMOTE.tiers=data.tiers; PROMOTE.previewStart=data.previewStart;
-    PROMOTE.selIndex=data.tiers.length?data.tiers[0].index:null;
-    el('promoteTiers').innerHTML=data.tiers.length?data.tiers.map(function(x){
-      return '<label class="tier-row"><input type="radio" name="promoteTier" value="'+x.index+'"'+(x.index===PROMOTE.selIndex?' checked':'')+'/><span>'+fmtTierDuration(x.duration)+'</span><span class="tier-price">'+fmtEth(x.price)+' LOOP</span></label>';
-    }).join(''):'<p class="hint">No banner durations are on sale right now.</p>';
-    el('promoteStart').textContent=promoteStartText();
-    syncPromoteBuyBtn();
-  }catch(e){
-    if(!el('promoteModal').classList.contains('open'))return;
-    el('promoteTiers').innerHTML='<p class="hint">Prices couldn\u2019t be loaded — close and try again.</p>';
+/* ---- (a) wallet state ---- */
+function renderPromoteWallet(){
+  var box=el('promoWallet'); if(!box)return;
+  if(liveConnected&&liveAccount){
+    box.innerHTML='<div class="promo-wallet"><span class="promo-wdot" aria-hidden="true"></span><div class="promo-wallet-txt"><strong>Wallet connected</strong><span>'+truncAddr(liveAccount)+(liveChainOk?' · Loop':' · wrong network — switch to Loop to pay')+'</span></div></div>';
+  }else{
+    box.innerHTML='<div class="promo-wallet off"><div class="promo-wallet-txt"><strong>Connect your wallet</strong><span>You pay in LOOP from your wallet — nothing is charged until you confirm.</span></div><button type="button" class="btn btn-primary" data-act="promote-connect" style="flex:none">Connect wallet</button></div>';
   }
 }
-function closePromote(){
-  if(PROMOTE.busy)return;
-  el('promoteModal').classList.remove('open');
-  document.body.style.overflow='';
+/* ---- (b) token picker ---- */
+function renderPromoSelected(){
+  var box=el('promoSelected'); if(!box)return;
+  var addr=PROMOTE_PAGE.token;
+  if(!addr){box.innerHTML='';return}
+  var info=promoTokenInfo(addr);
+  var av=info.live?liveAvatarHtml(info.live,40):'<span class="tavatar" style="width:40px;height:40px;border-radius:13px;font-size:16px;background:'+softGrad(addr)+'">'+escHtml((info.symbol||info.name||'?').charAt(0))+'</span>';
+  box.innerHTML='<div class="promo-selrow">'+av+'<div class="promo-selmain"><strong>'+escHtml(info.name)+(info.symbol?' <span class="promo-sym">$'+escHtml(info.symbol)+'</span>':'')+'</strong><span>'+truncAddr(addr)+'</span></div><button type="button" class="promo-clear" data-act="promote-clear" aria-label="Clear token selection">✕</button></div>';
 }
-async function buyPromote(){
-  if(PROMOTE.busy)return;
-  var t=currentLive;
-  if(detailMode!=='live'||!t)return;
-  if(!liveConnected){
-    el('promoteModal').classList.remove('open');
-    document.body.style.overflow='';
-    if(hasInjected()||wcEnabled())connectWallet('MetaMask');
-    else openWallet();
+function renderPromoOptions(){
+  var list=el('promoOptions'); if(!list)return;
+  var s=el('promoSearch');
+  var q=(s?s.value:'').trim().toLowerCase();
+  if(!liveRegistryLoaded){list.innerHTML='<p class="hint" style="padding:10px 12px">Loading the token registry…</p>';return}
+  var toks=LIVE_TOKENS.filter(function(t){
+    if(!q)return true;
+    return t.name.toLowerCase().indexOf(q)>-1||t.symbol.toLowerCase().indexOf(q)>-1||String(t.address).toLowerCase().indexOf(q)>-1;
+  }).slice(0,60);
+  if(!toks.length){list.innerHTML='<p class="hint" style="padding:10px 12px">No Sakura token matches.</p>';return}
+  list.innerHTML=toks.map(function(t){
+    var sel=PROMOTE_PAGE.token&&String(t.address).toLowerCase()===String(PROMOTE_PAGE.token).toLowerCase();
+    return '<button type="button" class="promo-opt'+(sel?' sel':'')+'" data-act="promote-token" data-addr="'+t.address+'">'+liveAvatarHtml(t,36)+'<span class="promo-optmain"><strong>'+escHtml(t.name)+'</strong><span>$'+escHtml(t.symbol)+' · '+truncAddr(t.address)+'</span></span></button>';
+  }).join('');
+}
+function openPromoOptions(){var l=el('promoOptions'); if(!l)return; renderPromoOptions(); l.style.display='block'}
+function closePromoOptions(){var l=el('promoOptions'); if(l)l.style.display='none'}
+function selectPromoteToken(addr){
+  if(!addr)return;
+  PROMOTE_PAGE.token=addr;
+  closePromoOptions();
+  var s=el('promoSearch'); if(s)s.value='';
+  renderPromoSelected();
+  if(!knownIpfsUri(addr)){
+    var h=el('promoImgHint');
+    if(h)h.textContent='Paste an ipfs:// or https:// link — direct upload isn\u2019t configured on this build.';
+  }
+  maybePrefillPromoImg(true);
+  renderPromoPreview();
+  syncPromoPay();
+}
+/* Prefill the banner image with the token's known bound IPFS image.
+   Runs at selection time and again on every refresh cycle (the
+   binding / Pinata discovery may resolve after the page opened);
+   never overrides anything the buyer typed themselves. */
+function maybePrefillPromoImg(fromSelect){
+  if(PROMOTE_PAGE.imgTouched)return;
+  var addr=PROMOTE_PAGE.token; if(!addr)return;
+  var known=knownIpfsUri(addr); if(!known)return;
+  var f=el('promoImg'); if(!f)return;
+  var cur=f.value.trim();
+  if(cur&&cur!==PROMOTE_PAGE.imgAuto&&!fromSelect)return;
+  if(cur===known)return;
+  f.value=known; PROMOTE_PAGE.imgAuto=known;
+  var h=el('promoImgHint');
+  if(h)h.textContent='Prefilled with this token\u2019s IPFS image — replace it to use a different banner.';
+  renderPromoPreview();
+}
+async function validatePromoAddr(){
+  var f=el('promoAddr'),h=el('promoAddrHint'); if(!f)return;
+  var v=f.value.trim();
+  var seq=++PROMOTE_PAGE.addrSeq;
+  f.classList.remove('invalid');
+  if(!v){if(h){h.textContent='';h.style.color=''}return}
+  if(!/^0x[0-9a-fA-F]{40}$/.test(v)){
+    if(h){h.textContent='Enter a full contract address (0x…).';h.style.color='var(--red)'}
+    f.classList.add('invalid');
     return;
   }
+  if(!window.ethers||!bannerRO){
+    if(h){h.textContent='Live connection needed to verify this address.';h.style.color=''}
+    return;
+  }
+  if(h){h.textContent='Checking on-chain…';h.style.color=''}
+  try{
+    var ok=await bannerCall('Sakura token check',function(c){return c.isSakuraToken(v)},2);
+    if(seq!==PROMOTE_PAGE.addrSeq)return;
+    if(!ok){
+      if(h){h.textContent='That address is not a Sakura token. Only tokens launched on Sakura can buy a banner.';h.style.color='var(--red)'}
+      f.classList.add('invalid');
+      return;
+    }
+    if(!LIVE_BY_ADDR[v.toLowerCase()]){
+      try{
+        var meta=await withReadFailover('Token name read',20000,function(){
+          var tc=new ethers.Contract(v,W3C.abi.token,readProvider);
+          return (async function(){var nm=await tc.name();var sm=await tc.symbol();return {name:nm,symbol:sm}})();
+        });
+        PROMOTE_PAGE.custom[v.toLowerCase()]={name:meta.name,symbol:meta.symbol};
+      }catch(e){}
+      if(seq!==PROMOTE_PAGE.addrSeq)return;
+    }
+    if(h){h.textContent='Sakura token confirmed — selected.';h.style.color='var(--green)'}
+    selectPromoteToken(v);
+  }catch(e){
+    if(seq!==PROMOTE_PAGE.addrSeq)return;
+    if(h){h.textContent='Couldn\u2019t verify that address — check it and try again.';h.style.color='var(--red)'}
+  }
+}
+/* ---- (c) live preview: the hero banner markup, verbatim ---- */
+function renderPromoPreview(){
+  var box=el('promoPreview'); if(!box)return;
+  var info=PROMOTE_PAGE.token?promoTokenInfo(PROMOTE_PAGE.token):null;
+  var name=info?info.name:'Your token', sym=info?info.symbol:'';
+  var f=el('promoImg'), uri=f?f.value.trim():'';
+  var tg=el('promoTag'), tag=tg?tg.value.trim():'';
+  var img=bannerImgUrl(uri);
+  var letter=(sym||name).charAt(0);
+  var bg=softGrad(PROMOTE_PAGE.token||'0x0000000000000000000000000000000000000000');
+  var art;
+  if(img&&uri.indexOf('ipfs://')===0){
+    art='<span class="banner-art" data-letter="'+escHtml(letter)+'" data-bg="'+bg+'" style="background:var(--surface2)"><img data-tokimg data-addr="'+String(PROMOTE_PAGE.token||'').toLowerCase()+'" src="'+escHtml(img)+'" alt=""/></span>';
+  }else if(img){
+    art='<span class="banner-art" data-letter="'+escHtml(letter)+'" data-bg="'+bg+'" style="background:'+bg+'"><img id="promoPreviewImg" src="'+escHtml(img)+'" alt=""/></span>';
+  }else{
+    art='<span class="banner-art" style="background:'+bg+'">'+escHtml(letter)+'</span>';
+  }
+  box.innerHTML='<div class="banner-panel banner-paid banner-static" role="img" aria-label="Banner preview">'+art
+    +'<span class="banner-scrim" aria-hidden="true"></span>'
+    +'<span class="banner-overlay"><span class="banner-namerow"><span class="banner-name">'+(sym?'<span class="banner-sym">$'+escHtml(sym)+'</span> ':'')+escHtml(name)+'</span><span class="banner-chip">Promoted</span></span>'
+    +(tag?'<span class="banner-tag">'+escHtml(tag)+'</span>':'')
+    +'</span></div>';
+  var pi=el('promoPreviewImg');
+  if(pi)pi.addEventListener('error',function(){pi.remove()});
+}
+/* ---- (e) tiers: live from the contract, cached for the session ---- */
+function renderPromoTiers(){
+  var box=el('promoTiers'); if(!box)return;
+  if(!PROMOTE_PAGE.tiers){
+    if(PROMOTE_PAGE.tiersError){
+      box.innerHTML='<p class="hint">Prices couldn\u2019t be loaded.</p><button type="button" class="btn btn-ghost" data-act="promote-retry-tiers" style="margin-top:8px">Retry</button>';
+    }else{
+      box.innerHTML='<div class="tier-cards"><div class="tier-card loading">Loading prices…</div></div>';
+    }
+    return;
+  }
+  if(!PROMOTE_PAGE.tiers.length){box.innerHTML='<p class="hint">No banner durations are on sale right now.</p>';return}
+  box.innerHTML='<div class="tier-cards" role="radiogroup" aria-label="Banner duration">'+PROMOTE_PAGE.tiers.map(function(x){
+    var sel=x.index===PROMOTE_PAGE.selIndex;
+    return '<button type="button" class="tier-card'+(sel?' sel':'')+'" role="radio" aria-checked="'+(sel?'true':'false')+'" data-act="promote-tier" data-idx="'+x.index+'"><span class="tier-dur">'+fmtTierDuration(x.duration)+'</span><span class="tier-price">'+fmtEth(x.price)+' LOOP</span></button>';
+  }).join('')+'</div>';
+}
+async function loadPromoteTiers(force){
+  if(PROMOTE_PAGE.tiersBusy)return;
+  if(PROMOTE_PAGE.tiers&&!force)return; /* session cache: tiers change rarely */
+  PROMOTE_PAGE.tiersBusy=true; PROMOTE_PAGE.tiersError=false; renderPromoTiers();
+  try{
+    var tiers=await bannerCall('Banner tiers read',async function(c){
+      var n=Number(await c.tierCount());
+      var ps=[]; for(var i=0;i<n;i++)ps.push(c.tiers(i));
+      var raw=await Promise.all(ps);
+      var out=[];
+      raw.forEach(function(tr,i){if(tr[2])out.push({index:i,duration:Number(tr[0]),price:tr[1]})});
+      return out;
+    },3);
+    PROMOTE_PAGE.tiers=tiers;
+    if(PROMOTE_PAGE.selIndex==null&&tiers.length)PROMOTE_PAGE.selIndex=tiers[0].index;
+  }catch(e){
+    if(!PROMOTE_PAGE.tiers)PROMOTE_PAGE.tiersError=true;
+  }
+  PROMOTE_PAGE.tiersBusy=false;
+  renderPromoTiers(); syncPromoPay();
+}
+/* ---- queue: bannerCount + banners(i), FIFO ---- */
+function promoQueueRow(b,label,cls){
+  var info=promoTokenInfo(b.token);
+  var av=info.live?liveAvatarHtml(info.live,42):'<span class="tavatar" style="width:42px;height:42px;border-radius:13px;font-size:16px;background:'+softGrad(b.token)+'">'+escHtml((info.symbol||info.name||'?').charAt(0))+'</span>';
+  var inner=av+'<div class="qmain"><div class="qname"><strong>'+escHtml(info.name)+'</strong>'+(info.symbol?'<span class="promo-sym">$'+escHtml(info.symbol)+'</span>':'')+'<span class="qchip '+cls+'">'+label+'</span></div>'
+    +(b.tagline?'<div class="qtag">'+escHtml(b.tagline)+'</div>':'')
+    +'<div class="qwin">'+fmtDateTime(b.start)+' → '+fmtDateTime(b.end)+'</div></div>';
+  if(info.live)return '<button type="button" class="qrow" data-act="live-token" data-addr="'+b.token+'">'+inner+'</button>';
+  return '<div class="qrow">'+inner+'</div>';
+}
+function renderPromoQueue(){
+  var box=el('promoQueue'); if(!box)return;
+  if(!PROMOTE_PAGE.banners){
+    box.innerHTML=PROMOTE_PAGE.queueError
+      ?'<p class="hint">Couldn\u2019t load the queue.</p><button type="button" class="btn btn-ghost" data-act="promote-retry-queue" style="margin-top:8px">Retry</button>'
+      :'<p class="hint">Loading the queue…</p>';
+    return;
+  }
+  var st=promoQueueState();
+  var sig=(st.active?st.active.id:'-')+'|'+st.upcoming.map(function(b){return b.id}).join(',');
+  if(sig===PROMOTE_PAGE.queueSig)return;
+  PROMOTE_PAGE.queueSig=sig;
+  if(!st.active&&!st.upcoming.length){
+    box.innerHTML='<div class="promo-empty">No banners queued — the next purchase starts immediately.</div>';
+    return;
+  }
+  var rows='';
+  if(st.active)rows+=promoQueueRow(st.active,'Now showing','now');
+  st.upcoming.forEach(function(b,i){rows+=promoQueueRow(b,'Up next #'+(i+1),'')});
+  box.innerHTML=rows;
+}
+async function loadPromoteQueue(force){
+  if(PROMOTE_PAGE.queueBusy)return;
+  PROMOTE_PAGE.queueBusy=true;
+  try{
+    var bs=await bannerCall('Banner queue read',async function(c){
+      var n=Number(await c.bannerCount());
+      if(n>100)n=100;
+      var ps=[]; for(var i=0;i<n;i++)ps.push(c.banners(i));
+      var raw=await Promise.all(ps);
+      return raw.map(function(b,i){return {id:i,payer:b[0],token:b[1],imageURI:b[2],tagline:b[3],start:Number(b[4]),end:Number(b[5]),removed:!!b[6]}});
+    },force?3:2);
+    PROMOTE_PAGE.banners=bs; PROMOTE_PAGE.queueError=false; PROMOTE_PAGE.loadedOnce=true;
+  }catch(e){
+    if(!PROMOTE_PAGE.banners)PROMOTE_PAGE.queueError=true;
+  }
+  PROMOTE_PAGE.queueBusy=false;
+  renderPromoQueue(); renderPromoSummary();
+}
+async function loadPromoteStart(){
+  if(PROMOTE_PAGE.startBusy)return;
+  PROMOTE_PAGE.startBusy=true;
+  try{
+    var ps=await bannerCall('Banner start preview',function(c){return c.previewStart()},2);
+    PROMOTE_PAGE.previewStart=Number(ps); PROMOTE_PAGE.startLoaded=true;
+  }catch(e){/* keep the last good value */}
+  PROMOTE_PAGE.startBusy=false;
+  renderPromoSummary();
+}
+/* ---- (f) start / position summary ---- */
+function renderPromoSummary(){
+  var sEl=el('promoStart'),pEl=el('promoPos');
+  if(sEl)setTextIf(sEl,PROMOTE_PAGE.startLoaded?promoteStartText():'…');
+  if(pEl){
+    if(!PROMOTE_PAGE.banners)setTextIf(pEl,'…');
+    else setTextIf(pEl,'#'+(promoQueueState().ahead+1)+' in line');
+  }
+}
+/* All three read groups fire in parallel; each lands (or retries)
+   on its own. Called on page entry and from the live refresh
+   cycle — off-page it only primes the first load. */
+function refreshPromoteData(){
+  var v=el('view-promote');
+  var active=v&&v.classList.contains('active');
+  if(!active&&PROMOTE_PAGE.loadedOnce)return;
+  if(!window.ethers||!bannerRO)return;
+  loadPromoteTiers(false);
+  loadPromoteStart();
+  loadPromoteQueue(false);
+  maybePrefillPromoImg(false);
+  var po=el('promoOptions');
+  if(po&&po.style.display!=='none')renderPromoOptions();
+}
+/* ---- (g) pay ---- */
+function syncPromoPay(){
+  var btn=el('promoPayBtn'); if(!btn)return;
+  var t=null;
+  (PROMOTE_PAGE.tiers||[]).forEach(function(x){if(x.index===PROMOTE_PAGE.selIndex)t=x});
+  if(PROMOTE_PAGE.busy){btn.disabled=true;return}
+  btn.disabled=false;
+  if(!liveConnected)btn.textContent='Connect wallet to pay';
+  else if(t)btn.textContent='Buy banner · '+fmtEth(t.price)+' LOOP';
+  else btn.textContent='Buy banner';
+}
+async function buyPromoteBanner(){
+  if(PROMOTE_PAGE.busy)return;
+  if(!liveConnected){promoteConnect();return}
   if(!walletProvider()){toast('Connect your wallet first');return}
   if(!liveChainOk){toast('Wrong network — switch to Loop');ensureLoop();return}
+  var token=PROMOTE_PAGE.token;
+  if(!token){setPromoError('Pick the token to promote first.');return}
   var tier=null;
-  (PROMOTE.tiers||[]).forEach(function(x){if(x.index===PROMOTE.selIndex)tier=x});
-  if(!tier){setPromoteError('Pick a duration first.');return}
-  var imageURI=el('promoteImg').value.trim();
-  if(!imageURI||(imageURI.indexOf('ipfs://')!==0&&imageURI.indexOf('https://')!==0)){setPromoteError('Add an IPFS or HTTPS image link.');return}
-  var tagline=el('promoteTag').value.trim();
-  if(tagline.length>80){setPromoteError('Tagline is over 80 characters.');return}
-  setPromoteError('');
-  PROMOTE.busy=true;
-  el('promoteBuyBtn').style.display='none';
-  el('promoteBusy').classList.add('show');
+  (PROMOTE_PAGE.tiers||[]).forEach(function(x){if(x.index===PROMOTE_PAGE.selIndex)tier=x});
+  if(!tier){setPromoError(PROMOTE_PAGE.tiers?'Pick a duration first.':'Prices are still loading — try again in a moment.');return}
+  var imageURI=el('promoImg').value.trim();
+  if(!imageURI||(imageURI.indexOf('ipfs://')!==0&&imageURI.indexOf('https://')!==0)){setPromoError('Add an IPFS or HTTPS image link.');return}
+  if(imageURI.length>256){setPromoError('Image link is too long (max 256 characters).');return}
+  var tagline=el('promoTag').value.trim();
+  if(tagline.length>80){setPromoError('Tagline is over 80 characters.');return}
+  setPromoError('');
+  PROMOTE_PAGE.busy=true; syncPromoPay();
+  el('promoPayBtn').style.display='none';
+  el('promoBusy').classList.add('show');
   try{
+    /* Balance pre-flight BEFORE any wallet prompt: the connected
+       account must cover the banner price + gas, read hedged. A
+       failed read is reported as a failed check, never guessed
+       as insufficient. */
+    var pBal=null;
+    try{pBal=await new ethers.BrowserProvider(walletProvider()).getBalance(liveAccount)}catch(e){}
+    if(pBal==null&&readProvider){try{pBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+    var pGas=await estimateGasCostWei(300000);
+    if(pBal==null||pBal<tier.price+pGas){
+      PROMOTE_PAGE.busy=false;
+      el('promoBusy').classList.remove('show');
+      el('promoPayBtn').style.display='block';
+      syncPromoPay();
+      if(pBal==null)setPromoError('Couldn\'t check your LOOP balance — the Loop read didn\'t respond, so nothing was sent. Try again.');
+      else setPromoError('You need ≈ '+fmtEth(tier.price+pGas)+' LOOP — banner '+fmtEth(tier.price)+' + gas ≈ '+fmtEth(pGas)+'. You have '+fmtEth(pBal)+' LOOP.');
+      return;
+    }
     /* Fresh queue read: the scheduled start is previewStart() at
        purchase time; the end is that start plus the tier duration. */
     var start=0;
-    try{start=Number(await bannerRead('Banner start preview',function(c){return c.previewStart()}))}catch(e){}
+    try{start=Number(await bannerCall('Banner start preview',function(c){return c.previewStart()},2))}catch(e){}
     var nowS=Math.floor(Date.now()/1000);
     if(!start||start<nowS)start=nowS;
     var bp=new ethers.BrowserProvider(walletProvider());
     var signer=await bp.getSigner();
     var ads=new ethers.Contract(W3C.contracts.bannerAds,W3C.abi.bannerAds,signer);
-    var tx=await ads.buyBanner(tier.index,t.address,imageURI,tagline,{value:tier.price});
+    var tx=await ads.buyBanner(tier.index,token,imageURI,tagline,{value:tier.price});
     toastTx('Banner purchase pending…',tx.hash);
-    await tx.wait();
-    PROMOTE.busy=false;
-    el('promoteBusy').classList.remove('show');
-    el('promoteBody').style.display='none';
-    var dn=el('promoteDone');
+    var receipt=await tx.wait();
+    /* The exact booked window + id come from the BannerPurchased event. */
+    var newId=null,newStart=start,newEnd=start+tier.duration;
+    try{
+      var iface=new ethers.Interface(W3C.abi.bannerAds);
+      for(var li=0;li<receipt.logs.length;li++){
+        var pl=null;
+        try{pl=iface.parseLog(receipt.logs[li])}catch(e){}
+        if(pl&&pl.name==='BannerPurchased'){newId=Number(pl.args.id);newStart=Number(pl.args.start);newEnd=Number(pl.args.end);break}
+      }
+    }catch(e){}
+    PROMOTE_PAGE.busy=false;
+    el('promoBusy').classList.remove('show');
+    /* Reload the queue so the success panel can name the position. */
+    PROMOTE_PAGE.banners=null; PROMOTE_PAGE.queueSig='';
+    await loadPromoteQueue(true);
+    var posTxt='In the queue';
+    if(PROMOTE_PAGE.banners&&newId!=null){
+      var st=promoQueueState();
+      if(st.active&&st.active.id===newId)posTxt='Now showing';
+      else for(var qi=0;qi<st.upcoming.length;qi++){if(st.upcoming[qi].id===newId){posTxt='Up next #'+(qi+1);break}}
+    }
+    var info=promoTokenInfo(token);
+    el('promoForm').style.display='none';
+    var dn=el('promoDone');
     dn.style.display='block';
-    dn.innerHTML='<div class="fee-row"><span style="color:var(--muted)">Token</span><strong>$'+escHtml(t.symbol)+'</strong></div>'
-      +'<div class="fee-row"><span style="color:var(--muted)">Starts</span><strong>'+(start<=nowS?'Now':fmtDateTime(start))+'</strong></div>'
-      +'<div class="fee-row"><span style="color:var(--muted)">Ends</span><strong>'+fmtDateTime(start+tier.duration)+'</strong></div>'
-      +'<div class="fee-row"><span style="color:var(--muted)">Paid</span><strong>'+fmtEth(tier.price)+' LOOP</strong></div>';
-    var bb=el('promoteBuyBtn');
-    bb.style.display='block'; bb.disabled=false; bb.textContent='Done'; bb.setAttribute('data-act','promote-close');
-    toastTx('Banner booked for $'+t.symbol,tx.hash);
+    dn.innerHTML='<div class="promo-done-head">Banner booked</div>'
+      +'<div class="fee-row"><span style="color:var(--muted)">Token</span><strong>'+(info.symbol?'$'+escHtml(info.symbol):escHtml(info.name))+'</strong></div>'
+      +'<div class="fee-row"><span style="color:var(--muted)">Starts</span><strong>'+(newStart<=nowS?'Now':fmtDateTime(newStart))+'</strong></div>'
+      +'<div class="fee-row"><span style="color:var(--muted)">Ends</span><strong>'+fmtDateTime(newEnd)+'</strong></div>'
+      +'<div class="fee-row"><span style="color:var(--muted)">Position</span><strong>'+posTxt+'</strong></div>'
+      +'<div class="fee-row"><span style="color:var(--muted)">Paid</span><strong>'+fmtEth(tier.price)+' LOOP</strong></div>'
+      +'<button type="button" class="btn btn-primary" data-act="promote-again" style="width:100%;margin-top:14px;padding:13px">Buy another banner</button>';
+    PROMOTE_PAGE.done=true;
+    toastTx('Banner booked for '+(info.symbol?'$'+info.symbol:info.name),tx.hash);
     refreshBanner();
     refreshLiveWalletUI();
   }catch(e){
-    PROMOTE.busy=false;
-    el('promoteBusy').classList.remove('show');
-    el('promoteBuyBtn').style.display='block';
-    syncPromoteBuyBtn();
+    PROMOTE_PAGE.busy=false;
+    el('promoBusy').classList.remove('show');
+    el('promoPayBtn').style.display='block';
+    syncPromoPay();
     txErrorToast(e);
   }
 }
-(function bindPromote(){
-  var tiers=el('promoteTiers');
-  if(tiers)tiers.addEventListener('change',function(e){
-    var v=parseInt(e.target&&e.target.value,10);
-    if(!isNaN(v)){PROMOTE.selIndex=v;syncPromoteBuyBtn()}
+function resetPromoteForm(){
+  PROMOTE_PAGE.done=false;
+  el('promoDone').style.display='none';
+  el('promoForm').style.display='block';
+  var pb=el('promoPayBtn'); if(pb)pb.style.display='block';
+  syncPromoPay();
+}
+/* ---- page entry ---- */
+function openPromotePage(preselect){
+  if(preselect)PROMOTE_PAGE.pendingSelect=preselect;
+  goToView('promote');
+  renderPromoteWallet();
+  renderPromoSelected();
+  renderPromoPreview();
+  renderPromoTiers();
+  renderPromoQueue();
+  renderPromoSummary();
+  syncPromoPay();
+  if(PROMOTE_PAGE.pendingSelect){
+    var a=PROMOTE_PAGE.pendingSelect; PROMOTE_PAGE.pendingSelect=null;
+    if(LIVE_BY_ADDR[String(a).toLowerCase()])selectPromoteToken(a);
+    else{var f=el('promoAddr'); if(f){f.value=a; validatePromoAddr()}}
+  }
+  if(window.ethers&&bannerRO){loadPromoteTiers(false); loadPromoteStart(); loadPromoteQueue(true)}
+}
+/* The detail page's Promote button now lands here, preselected. */
+function openPromote(){
+  var t=currentLive;
+  openPromotePage(detailMode==='live'&&t?t.address:null);
+}
+(function bindPromotePage(){
+  var search=el('promoSearch');
+  if(search){
+    search.addEventListener('focus',openPromoOptions);
+    search.addEventListener('input',openPromoOptions);
+    search.addEventListener('keydown',function(e){if(e.key==='Escape')closePromoOptions()});
+  }
+  document.addEventListener('click',function(e){
+    var pp=el('promoPick');
+    if(pp&&e.target&&e.target!==pp&&!pp.contains(e.target))closePromoOptions();
   });
-  var tag=el('promoteTag');
-  if(tag)tag.addEventListener('input',function(){el('promoteTagCount').textContent=String(tag.value.length)});
-  var ov=el('promoteModal');
-  if(ov)ov.addEventListener('click',function(e){if(e.target===ov)closePromote()});
+  var addr=el('promoAddr');
+  if(addr){
+    var deb=null;
+    addr.addEventListener('input',function(){clearTimeout(deb); deb=setTimeout(validatePromoAddr,600)});
+    addr.addEventListener('blur',validatePromoAddr);
+  }
+  var img=el('promoImg');
+  if(img)img.addEventListener('input',function(){PROMOTE_PAGE.imgTouched=true; renderPromoPreview()});
+  var tag=el('promoTag');
+  if(tag)tag.addEventListener('input',function(){
+    var c=el('promoTagCount'); if(c)c.textContent=String(tag.value.length);
+    renderPromoPreview();
+  });
 })();
+/* Wallet state changes repaint this page's wallet row + pay button
+   too (syncConnectionUI already runs on connect / disconnect /
+   account + chain changes and on every navigation). */
+var _syncConnectionUI=syncConnectionUI;
+syncConnectionUI=function(){
+  _syncConnectionUI();
+  renderPromoteWallet();
+  syncPromoPay();
+};
 
 /* ================= Overrides: route existing UI into the live layer =================
    The functions below were declared by the main script; reassigning them
@@ -7681,8 +8247,15 @@ async function bootLiveData(){
     else if(act==='live-token')openLiveDetail(b.getAttribute('data-addr'));
     else if(act==='trade-live')doLiveTrade();
     else if(act==='promote')openPromote();
-    else if(act==='promote-close')closePromote();
-    else if(act==='promote-buy')buyPromote();
+    else if(act==='promote-page')openPromotePage(null);
+    else if(act==='promote-connect')promoteConnect();
+    else if(act==='promote-token')selectPromoteToken(b.getAttribute('data-addr'));
+    else if(act==='promote-clear'){PROMOTE_PAGE.token=null;renderPromoSelected();renderPromoPreview();syncPromoPay()}
+    else if(act==='promote-tier'){var pti=parseInt(b.getAttribute('data-idx'),10);if(!isNaN(pti)){PROMOTE_PAGE.selIndex=pti;renderPromoTiers();syncPromoPay()}}
+    else if(act==='promote-pay')buyPromoteBanner();
+    else if(act==='promote-retry-tiers')loadPromoteTiers(true);
+    else if(act==='promote-retry-queue')loadPromoteQueue(true);
+    else if(act==='promote-again')resetPromoteForm();
     else if(act==='migrate')doMigrate();
     else if(act==='wallet-wc'){closeWallet();connectViaWalletConnect()}
     else if(act==='wallet-recheck'){
