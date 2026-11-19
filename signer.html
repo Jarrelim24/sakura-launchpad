@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sakura Safe — Owner Signer</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#000000; --card:#121013; --card2:#17131a; --line:#2b2129;
+    --text:#f6f1f4; --muted:#a79aa3; --pink:#ff6b9d; --pink2:#ff8fb5;
+    --ok:#3ddc84; --warn:#ffb84d; --bad:#ff5c5c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;padding:20px 16px 48px}
+  .wrap{max-width:560px;margin:0 auto}
+  header{margin:8px 0 20px}
+  .brand{font-size:13px;letter-spacing:.22em;color:var(--pink);font-weight:700;text-transform:uppercase}
+  h1{font-size:24px;margin:6px 0 4px;font-weight:800}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+  .card h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:700}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all;font-size:13px}
+  .big-action{font-size:17px;font-weight:600;line-height:1.45}
+  .row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--line);font-size:13px}
+  .row:first-of-type{border-top:none}
+  .row .k{color:var(--muted);flex:0 0 auto}
+  .row .v{text-align:right;word-break:break-all}
+  .owner{display:flex;gap:10px;align-items:baseline;padding:4px 0;font-size:13px}
+  .owner .n{color:var(--pink);font-weight:700;flex:0 0 auto}
+  button{appearance:none;border:none;cursor:pointer;border-radius:12px;
+    padding:14px 18px;font-size:16px;font-weight:700;width:100%;
+    transition:transform .15s ease,opacity .15s ease,background .15s ease}
+  button:active{transform:scale(.98)}
+  button:disabled{opacity:.38;cursor:not-allowed}
+  .btn-primary{background:linear-gradient(135deg,var(--pink),#e8437f);color:#fff}
+  .btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  .btn-small{width:auto;padding:9px 14px;font-size:13px;border-radius:9px}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;margin-top:6px}
+  .badge-ok{background:rgba(61,220,132,.14);color:var(--ok);border:1px solid rgba(61,220,132,.4)}
+  .badge-no{background:rgba(255,184,77,.12);color:var(--warn);border:1px solid rgba(255,184,77,.4)}
+  .alert{border-radius:12px;padding:13px 15px;font-size:14px;margin:14px 0;display:none}
+  .alert.show{display:block}
+  .alert-warn{background:rgba(255,184,77,.1);border:1px solid rgba(255,184,77,.45);color:#ffd9a0}
+  .alert-bad{background:rgba(255,92,92,.1);border:1px solid rgba(255,92,92,.45);color:#ffb3b3}
+  .alert-ok{background:rgba(61,220,132,.09);border:1px solid rgba(61,220,132,.4);color:#a9f0c9}
+  textarea{width:100%;min-height:96px;background:#0a090b;color:var(--text);
+    border:1px solid var(--line);border-radius:10px;padding:10px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;resize:vertical}
+  .hidden{display:none}
+  .foot{color:var(--muted);font-size:12.5px;margin-top:22px;line-height:1.6}
+  .status{font-size:13px;color:var(--muted)}
+  .status b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Sakura Safe</div>
+    <h1>Owner Signer</h1>
+    <p class="sub">Approve a governance action for the Sakura Launchpad multisig on Loop Network. This page only creates a signature — it never sends a transaction.</p>
+  </header>
+
+  <div id="alert" class="alert"></div>
+
+  <div class="card">
+    <h2>Governance Safe (3-of-3)</h2>
+    <div class="mono" id="safeAddr">—</div>
+    <div style="margin-top:10px">
+      <div class="owner"><span class="n">1</span><span class="mono">0x4F9dc1f6f45673def16873eE7B83fcd92Aecf171</span></div>
+      <div class="owner"><span class="n">2</span><span class="mono">0xd71380465035ECE79a5EE714A7457C0BAD06dB42</span></div>
+      <div class="owner"><span class="n">3</span><span class="mono">0x565F4016380d624a21ACEABD4741326475B07658</span></div>
+    </div>
+    <p class="status" style="margin:10px 0 0">Threshold: <b>3 of 3 — all three owners must sign</b> before anything can execute.</p>
+  </div>
+
+  <div class="card">
+    <h2>Action to approve</h2>
+    <p class="big-action" id="actionText">Loading…</p>
+    <div class="row"><span class="k">Target</span><span class="v mono" id="txTo">—</span></div>
+    <div class="row"><span class="k">Data</span><span class="v mono" id="txData">—</span></div>
+    <div class="row"><span class="k">Value</span><span class="v">0 LOOP</span></div>
+    <div class="row"><span class="k">Safe nonce</span><span class="v" id="txNonce">—</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Transaction hash — computed by the Safe contract</h2>
+    <div class="mono" id="txHash">Reading from Loop…</div>
+    <p class="status" style="margin:10px 0 0">This is the exact hash every owner signs. If the hash cannot be read from the contract, signing stays disabled.</p>
+  </div>
+
+  <div class="card">
+    <h2>Your wallet</h2>
+    <p class="status" id="walletStatus">Not connected. Open this page in TokenPocket or MetaMask's browser, then connect.</p>
+    <div id="walletBadge"></div>
+    <div style="height:12px"></div>
+    <button class="btn-ghost" id="connectBtn" type="button">Connect wallet</button>
+  </div>
+
+  <button class="btn-primary" id="signBtn" type="button" disabled>Sign this action</button>
+
+  <div class="card hidden" id="resultCard">
+    <h2>Your signature</h2>
+    <p class="status" style="margin-top:0">Signer: <b class="mono" id="resSigner">—</b><br>Method: <b id="resMethod">—</b></p>
+    <textarea id="resSig" readonly></textarea>
+    <div style="height:10px"></div>
+    <button class="btn-ghost btn-small" id="copyBtn" type="button">Copy signature</button>
+    <p class="status" style="margin-bottom:0">Paste this signature back into the chat. Then repeat this page with each of the other owner wallets — 3-of-3 needs all three signatures.</p>
+  </div>
+
+  <p class="foot">Safety: this page holds no private keys and submits no transactions. It reads the Safe from Loop's public RPC endpoints and asks your wallet to sign one specific hash. Always check that the action text above matches what you intend to approve before signing.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ─── Baked parameters (overridable via ?safe=&to=&data=&nonce=) ─────────
+  var CHAIN_ID = 15551;
+  var RPCS = ["https://api.mainnetloop.com", "https://explorer.mainnetloop.com/api/eth-rpc"];
+  var ZERO = "0x0000000000000000000000000000000000000000";
+  var BAKED = {
+    safe: "0xCa4A299fe5D2eE9e4ffEb7c28eDeF8Ef7E2c108e",
+    to: "0xFbbfc3a9b78881aF996Ca890826596513002487a", // SakuraBannerAds
+    data: "0x29ce1ec5000000000000000000000000044f6104908a7bd1f6cda3b4d9b89a6660b8c979", // addFactory(gen-3)
+    nonce: 0
+  };
+  var OWNERS = [
+    "0x4F9dc1f6f45673def16873eE7B83fcd92Aecf171",
+    "0xd71380465035ECE79a5EE714A7457C0BAD06dB42",
+    "0x565F4016380d624a21ACEABD4741326475B07658"
+  ];
+  var SAFE_ABI = [
+    "function nonce() view returns (uint256)",
+    "function getOwners() view returns (address[])",
+    "function getThreshold() view returns (uint256)",
+    "function getTransactionHash(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, uint256 nonce) view returns (bytes32)"
+  ];
+  var SAFE_TX_TYPES = [
+    { name: "to", type: "address" },
+    { name: "value", type: "uint256" },
+    { name: "data", type: "bytes" },
+    { name: "operation", type: "uint8" },
+    { name: "safeTxGas", type: "uint256" },
+    { name: "baseGas", type: "uint256" },
+    { name: "gasPrice", type: "uint256" },
+    { name: "gasToken", type: "address" },
+    { name: "refundReceiver", type: "address" },
+    { name: "nonce", type: "uint256" }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var alertBox = $("alert");
+
+  function showAlert(kind, msg) {
+    alertBox.className = "alert show alert-" + kind;
+    alertBox.textContent = msg;
+  }
+  function clearAlert() { alertBox.className = "alert"; alertBox.textContent = ""; }
+
+  // ─── URL parameter overrides, strictly validated ────────────────────────
+  function isAddress(s) { return typeof s === "string" && /^0x[0-9a-fA-F]{40}$/.test(s); }
+  function isData(s) { return typeof s === "string" && /^0x([0-9a-fA-F]{2})*$/.test(s); }
+  var params = { safe: BAKED.safe, to: BAKED.to, data: BAKED.data, nonce: BAKED.nonce };
+  var paramError = null;
+  try {
+    var qs = new URLSearchParams(window.location.search);
+    if (qs.get("safe")) { if (isAddress(qs.get("safe"))) params.safe = qs.get("safe"); else paramError = "The ?safe= parameter is not a valid address."; }
+    if (qs.get("to")) { if (isAddress(qs.get("to"))) params.to = qs.get("to"); else paramError = "The ?to= parameter is not a valid address."; }
+    if (qs.get("data")) { if (isData(qs.get("data"))) params.data = qs.get("data"); else paramError = "The ?data= parameter is not valid hex calldata."; }
+    if (qs.get("nonce")) { if (/^\d+$/.test(qs.get("nonce"))) params.nonce = parseInt(qs.get("nonce"), 10); else paramError = "The ?nonce= parameter is not a valid number."; }
+  } catch (e) { /* keep baked defaults */ }
+
+  // ─── Plain-language description of the action ───────────────────────────
+  function shortAddr(a) { return a.slice(0, 6) + "…" + a.slice(-4); }
+  function describeAction(to, data) {
+    var t = to.toLowerCase(), d = data.toLowerCase();
+    if (t === "0xfbbfc3a9b78881af996ca890826596513002487a" && d.indexOf("0x29ce1ec5") === 0 && data.length === 74) {
+      var arg = "0x" + data.slice(34);
+      var which = arg.toLowerCase() === "0x044f6104908a7bd1f6cda3b4d9b89a6660b8c979"
+        ? "the gen-3 factory" : "a factory";
+      return "The Safe will call SakuraBannerAds.addFactory(" + shortAddr(arg) + ") — adds " +
+        which + " to the banner gate list. No funds move.";
+    }
+    if (d.indexOf("0xf2fde38b") === 0 && data.length === 74) {
+      var newOwner = "0x" + data.slice(34);
+      return "The Safe will call transferOwnership(" + shortAddr(newOwner) + ") on " + shortAddr(to) +
+        " — this hands control of that contract to the new owner. No funds move, but control changes hands.";
+    }
+    return "The Safe will call " + shortAddr(to) + " with data " +
+      (data.length > 42 ? data.slice(0, 42) + "…" : data) +
+      ". Only sign if you recognize this exact action.";
+  }
+
+  // ─── EIP-712 SafeTx construction (v1.4.1) ───────────────────────────────
+  function buildMessage(nonce) {
+    return {
+      to: params.to,
+      value: "0",
+      data: params.data,
+      operation: 0,
+      safeTxGas: "0",
+      baseGas: "0",
+      gasPrice: "0",
+      gasToken: ZERO,
+      refundReceiver: ZERO,
+      nonce: nonce
+    };
+  }
+  function buildTypedDataPayload(nonce) {
+    return {
+      types: {
+        EIP712Domain: [
+          { name: "chainId", type: "uint256" },
+          { name: "verifyingContract", type: "address" }
+        ],
+        SafeTx: SAFE_TX_TYPES
+      },
+      primaryType: "SafeTx",
+      domain: { chainId: CHAIN_ID, verifyingContract: params.safe },
+      message: buildMessage(nonce)
+    };
+  }
+
+  // ─── State ──────────────────────────────────────────────────────────────
+  var state = { ready: false, account: null, chainHash: null, owners: OWNERS.slice() };
+
+  function renderWallet() {
+    var st = $("walletStatus"), badge = $("walletBadge");
+    if (!state.account) {
+      st.textContent = "Not connected. Open this page in TokenPocket or MetaMask's browser, then connect.";
+      badge.innerHTML = "";
+      return;
+    }
+    st.innerHTML = "Connected: <b class='mono'>" + state.account + "</b>";
+    var isOwner = state.owners.some(function (o) { return o.toLowerCase() === state.account.toLowerCase(); });
+    badge.innerHTML = isOwner
+      ? "<span class='badge badge-ok'>Safe owner — this signature counts</span>"
+      : "<span class='badge badge-no'>Not a Safe owner — you can sign, but this signature will NOT count</span>";
+    $("connectBtn").textContent = "Wallet connected";
+  }
+
+  function refreshSignEnabled() {
+    $("signBtn").disabled = !(state.ready && state.account);
+  }
+
+  // ─── On-load: read the Safe from both Loop endpoints (first success) ────
+  async function init() {
+    $("safeAddr").textContent = params.safe;
+    $("actionText").textContent = describeAction(params.to, params.data);
+    $("txTo").textContent = params.to;
+    $("txData").textContent = params.data;
+    $("txNonce").textContent = String(params.nonce);
+
+    if (paramError) { showAlert("bad", paramError + " Signing is disabled."); return; }
+    if (typeof window.ethers === "undefined") {
+      showAlert("bad", "The ethers library failed to load. Check your connection and reload the page.");
+      return;
+    }
+
+    var contracts = RPCS.map(function (u) {
+      return new window.ethers.Contract(params.safe, SAFE_ABI, new window.ethers.JsonRpcProvider(u, CHAIN_ID));
+    });
+    function race(fn) { return Promise.any(contracts.map(fn)); }
+
+    var chainNonce;
+    try {
+      chainNonce = Number(await race(function (c) { return c.nonce(); }));
+    } catch (e) {
+      $("txHash").textContent = "—";
+      showAlert("bad", "Could not read the Safe from Loop's RPC endpoints. Signing is disabled — check your connection and reload.");
+      return;
+    }
+    // Best-effort: confirm the owner list from chain (falls back to baked).
+    try {
+      var onChainOwners = await race(function (c) { return c.getOwners(); });
+      if (Array.isArray(onChainOwners) && onChainOwners.length) state.owners = onChainOwners.slice();
+    } catch (e) { /* keep baked owners */ }
+
+    if (chainNonce !== params.nonce) {
+      $("txHash").textContent = "—";
+      showAlert("warn", "Nonce mismatch: this page is set up for Safe nonce " + params.nonce +
+        ", but the Safe's current on-chain nonce is " + chainNonce +
+        ". This approval is stale — do NOT sign. Ask for an updated page/link.");
+      return;
+    }
+
+    var chainHash;
+    try {
+      chainHash = await race(function (c) {
+        return c.getTransactionHash(params.to, 0, params.data, 0, 0, 0, 0, ZERO, ZERO, params.nonce);
+      });
+    } catch (e) {
+      $("txHash").textContent = "—";
+      showAlert("bad", "Could not obtain the transaction hash from the Safe contract. Signing is disabled — reload to try again.");
+      return;
+    }
+    state.chainHash = chainHash;
+    $("txHash").textContent = chainHash;
+
+    // Cross-check: the EIP-712 hash built locally must equal the contract's.
+    var localHash = window.ethers.TypedDataEncoder.hash(
+      { chainId: CHAIN_ID, verifyingContract: params.safe },
+      { SafeTx: SAFE_TX_TYPES },
+      buildMessage(params.nonce)
+    );
+    if (localHash.toLowerCase() !== chainHash.toLowerCase()) {
+      showAlert("bad", "Local hash check failed: the hash built in this page does not match the Safe contract's hash. Signing is disabled.");
+      return;
+    }
+
+    state.ready = true;
+    showAlert("ok", "Verified against the Safe contract on Loop (nonce " + chainNonce + "). Connect an owner wallet to sign.");
+    refreshSignEnabled();
+  }
+
+  // ─── Wallet connect ─────────────────────────────────────────────────────
+  async function connect() {
+    if (!window.ethereum) {
+      showAlert("warn", "No wallet found in this browser. Open this page inside TokenPocket or MetaMask's in-app browser.");
+      return;
+    }
+    try {
+      var accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      if (accounts && accounts.length) state.account = accounts[0];
+    } catch (e) {
+      showAlert("warn", "Wallet connection was rejected.");
+      return;
+    }
+    // Best-effort: switch the wallet to Loop (signing works either way).
+    try {
+      await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x3cb7" }] });
+    } catch (e) {
+      if (e && e.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: "0x3cb7", chainName: "Loop Network",
+              nativeCurrency: { name: "Loop", symbol: "LOOP", decimals: 18 },
+              rpcUrls: ["https://api.mainnetloop.com"],
+              blockExplorerUrls: ["https://explorer.mainnetloop.com"]
+            }]
+          });
+        } catch (e2) { /* non-fatal */ }
+      }
+    }
+    renderWallet();
+    refreshSignEnabled();
+  }
+
+  // ─── Signing: typed data first, personal_sign fallback ──────────────────
+  async function sign() {
+    if (!state.ready) return;
+    if (!state.account) { await connect(); if (!state.account) return; }
+    var sig = null, method = null;
+    try {
+      sig = await window.ethereum.request({
+        method: "eth_signTypedData_v4",
+        params: [state.account, JSON.stringify(buildTypedDataPayload(params.nonce))]
+      });
+      method = "EIP-712 typed data (eth_signTypedData_v4)";
+    } catch (e1) {
+      try {
+        sig = await window.ethereum.request({
+          method: "personal_sign",
+          params: [state.chainHash, state.account]
+        });
+        method = "personal_sign over the Safe transaction hash (fallback)";
+      } catch (e2) {
+        showAlert("warn", "Signing was rejected or failed in the wallet. Nothing was signed.");
+        return;
+      }
+    }
+    if (typeof sig !== "string" || !/^0x[0-9a-fA-F]{130}$/.test(sig)) {
+      showAlert("warn", "The wallet returned an unexpected signature format. Nothing was recorded — try again.");
+      return;
+    }
+    $("resSigner").textContent = state.account;
+    $("resMethod").textContent = method;
+    $("resSig").value = sig;
+    $("resultCard").classList.remove("hidden");
+    showAlert("ok", "Signed. Copy the signature below and paste it back into the chat.");
+    $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  $("connectBtn").addEventListener("click", connect);
+  $("signBtn").addEventListener("click", sign);
+  $("copyBtn").addEventListener("click", function () {
+    var ta = $("resSig");
+    ta.select();
+    function done() { $("copyBtn").textContent = "Copied"; setTimeout(function () { $("copyBtn").textContent = "Copy signature"; }, 1600); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value).then(done, function () { document.execCommand("copy"); done(); });
+    } else { document.execCommand("copy"); done(); }
+  });
+  if (window.ethereum && window.ethereum.on) {
+    window.ethereum.on("accountsChanged", function (accs) {
+      state.account = accs && accs.length ? accs[0] : null;
+      renderWallet();
+      refreshSignEnabled();
+    });
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
