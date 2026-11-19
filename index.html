@@ -1202,12 +1202,12 @@ button.qrow{cursor:pointer}
     <div class="steps">
       <div class="step"><div class="step-num">1</div><h3>Create in 1 transaction</h3><p>Name it, add a logo, launch. The full fixed supply of <strong>1 billion tokens</strong> lands on the bonding curve and trading starts instantly. Launch fee: <strong>0.0005 LOOP</strong>.</p></div>
       <div class="step"><div class="step-num">2</div><h3>Trade on the curve</h3><p>Buy and sell on the curve — the price rises with every buy and falls with every sell. <strong>Anti-snipe:</strong> a 99% buy tax in the first second decays to 0% within ±5 seconds, so bots can't front-run you.</p></div>
-      <div class="step"><div class="step-num">3</div><h3>Graduate to Uniswap</h3><p>At <strong>4.2 LOOP</strong> the token graduates automatically. Liquidity moves to Uniswap and is <strong>locked forever</strong> — no one can pull it, not even the creator.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>Graduate to Uniswap</h3><p>At <strong id="howGradStep">75 LOOP</strong> the token graduates automatically. Liquidity moves to Uniswap and is <strong>locked forever</strong> — no one can pull it, not even the creator.</p></div>
     </div>
     <div class="two" style="margin-top:16px">
-      <div class="panel"><h3>The Bonding Curve, in Plain Words</h3><p>Think of a glass filling with water. Early buys are cheap because the curve is nearly empty. Every buy fills it a little more and pushes the price up. Hit the dashed line — 4.2 LOOP — and the token graduates to Uniswap.</p>
-      <svg viewBox="0 0 520 180" width="100%" role="img" aria-label="Bonding curve rising toward the graduation line"><path d="M20,160 C140,150 240,120 330,78 C390,50 450,30 500,22" fill="none" stroke="#E8437A" stroke-width="4" stroke-linecap="round"/><line x1="20" y1="34" x2="500" y2="34" stroke="#B07E1E" stroke-width="2" stroke-dasharray="7 6"/><text x="318" y="24" font-size="13" font-weight="700" fill="var(--gold)">GRADUATE · 4.2 LOOP</text><text x="24" y="178" font-size="12" fill="var(--muted)" font-weight="600">Price climbs as buys come in →</text></svg>
-      <div class="kv"><div><small>Fixed supply</small><strong>1 Billion / token</strong></div><div><small>Graduation target</small><strong>4.2 LOOP</strong></div><div><small>Trade fee</small><strong>1% · 70% to creator</strong></div><div><small>Anti-snipe</small><strong>99% → 0% in ±5 sec</strong></div></div></div>
+      <div class="panel"><h3>The Bonding Curve, in Plain Words</h3><p>Think of a glass filling with water. Early buys are cheap because the curve is nearly empty. Every buy fills it a little more and pushes the price up. Hit the dashed line — <span id="howGradLine">75 LOOP</span> — and the token graduates to Uniswap.</p>
+      <svg viewBox="0 0 520 180" width="100%" role="img" aria-label="Bonding curve rising toward the graduation line"><path d="M20,160 C140,150 240,120 330,78 C390,50 450,30 500,22" fill="none" stroke="#E8437A" stroke-width="4" stroke-linecap="round"/><line x1="20" y1="34" x2="500" y2="34" stroke="#B07E1E" stroke-width="2" stroke-dasharray="7 6"/><text id="howGradSvg" x="318" y="24" font-size="13" font-weight="700" fill="var(--gold)">GRADUATE · 75 LOOP</text><text x="24" y="178" font-size="12" fill="var(--muted)" font-weight="600">Price climbs as buys come in →</text></svg>
+      <div class="kv"><div><small>Fixed supply</small><strong>1 Billion / token</strong></div><div><small>Graduation target</small><strong id="howGradTarget">75 LOOP</strong></div><div><small>Trade fee</small><strong>1% · 70% to creator</strong></div><div><small>Anti-snipe</small><strong>99% → 0% in ±5 sec</strong></div></div></div>
       <div class="panel" id="biaya"><h3>Transparent Fees</h3>
         <div class="fee-row"><span>Token creation fee</span><strong>0.0005 LOOP</strong></div>
         <div class="fee-row"><span>Fee on every trade</span><strong>1%</strong></div>
@@ -1288,7 +1288,7 @@ button.qrow{cursor:pointer}
               <button type="button" class="dest-opt" data-act="dest" data-dest="holders" aria-pressed="false"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><strong>Holders</strong><p>All creator fees go to holders, split by balance and holding time. Permanent — fees can never come back to you.</p></span></button>
             </div>
           </div>
-          <p class="eco-summary" id="ecoSummary">Launch fee 0.0005 LOOP. Graduates at 4.20 LOOP. Curve fee 1.25%.</p>
+          <p class="eco-summary" id="ecoSummary">Launch fee 0.0005 LOOP. Graduates at 75 LOOP. Curve fee 1.25%.</p>
           <p class="hint" id="livePairNote" style="display:none;color:var(--red);font-weight:700"></p>
           <p class="hint" id="ipfsNote" style="display:none"></p>
           <div id="launchCheck" style="display:none;margin:0 0 14px"></div>
@@ -1303,12 +1303,12 @@ button.qrow{cursor:pointer}
           <p id="pDesc" style="color:var(--muted);font-size:14px;margin:10px 0 4px">Your token description will appear here.</p>
           <div class="pstats">
             <div><small>Supply</small><strong>1,000,000,000</strong></div>
-            <div><small>Graduates at</small><strong id="pGrad">4.20 LOOP</strong></div>
+            <div><small>Graduates at</small><strong id="pGrad">75 LOOP</strong></div>
             <div><small>Creator tax</small><strong id="pFeePct">1%</strong></div>
             <div><small>Launch fee</small><strong id="createLaunchFee">0.0005 LOOP</strong></div>
           </div>
           <p style="font-size:13px;color:var(--muted);font-weight:600;margin:12px 0 0">Creator fees → <strong style="color:var(--ink)" id="pFeeDest">Your fee wallet</strong></p>
-          <div class="progress-label" style="margin-top:12px"><span>Graduation progress</span><span id="pProgTarget">0% · 0 / 4.20 LOOP</span></div><div class="progress"><i style="width:2%"></i></div>
+          <div class="progress-label" style="margin-top:12px"><span>Graduation progress</span><span id="pProgTarget">0% · 0 / 75 LOOP</span></div><div class="progress"><i style="width:2%"></i></div>
           <div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;border-top:1px dashed var(--line);padding-top:10px;margin-top:8px"><span>Market Cap <strong>$0</strong></span><span style="color:var(--green)">Just bloomed</span></div>
         </div>
         <div style="display:flex;gap:12px;margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;align-items:center">
@@ -2500,7 +2500,7 @@ function clearLogo(){
 }
 /* ===== Create form step 2: Economics (pair, creator fee, fee destination) ===== */
 var PAIRS=[
- {group:'Native',items:[{sym:'LOOP',name:'Loop',color:'#D63A6E',grad:'4.20 LOOP'}]},
+ {group:'Native',items:[{sym:'LOOP',name:'Loop',color:'#D63A6E',grad:'75 LOOP'}]},
  {group:'Stablecoins',items:[{sym:'USDG',name:'Global Dollar',color:'#1FA37A',grad:'13,800 USDG'},{sym:'USDC',name:'USD Coin',color:'#2775CA',grad:'13,800 USDC'}]},
  {group:'Bitcoin',items:[{sym:'cbBTC',name:'Coinbase Wrapped BTC',color:'#F7931A',grad:'0.145 cbBTC'}]},
  {group:'Stocks',items:[
@@ -5853,7 +5853,23 @@ async function loadLiveTokensInner(){
   try{
     if(!readProvider||!lensRO)setReadProvider(W3C.rpcUrl);
     var st=await fetchLensState();
+    var prevGradThreshold=(LENS_CONFIG&&LENS_CONFIG.gradThreshold!=null)?LENS_CONFIG.gradThreshold:null;
     LENS_CONFIG={launchFee:st.config.launchFee,tradingFeeBps:Number(st.config.tradingFeeBps),creatorShareBps:Number(st.config.creatorShareBps)};
+    if(prevGradThreshold!=null)LENS_CONFIG.gradThreshold=prevGradThreshold;
+    /* The current graduation threshold for the native asset rides
+       the same live cycle, read from the Config the Lens reads:
+       launch-terms copy (wizard summary + preview, How It Works)
+       renders from this value, never from a figure baked into the
+       page. Best-effort — a failed read keeps the last known value
+       and never fails the registry cycle. Per-token thresholds stay
+       on the Lens per-token records, untouched by this read. */
+    try{
+      var cfgNow=configRO;
+      if(cfgNow){
+        var gt=await withTimeout(cfgNow.graduationThreshold(ZERO_ADDR),10000,'Graduation threshold read');
+        if(gt!=null&&gt>0n)LENS_CONFIG.gradThreshold=gt;
+      }
+    }catch(e){}
     var mapped=st.tokens.map(function(lt){return guardMergeToken(lensTokenToLive(lt,st.block))});
     LIVE_TOKENS=mapped;
     LIVE_BY_ADDR={};
@@ -5915,13 +5931,27 @@ async function loadLiveTokensInner(){
     renderLiveAnalytics();
   }
 }
-/* Config values (launch fee) shown in page chrome come from the
-   live Lens config read — never from copy baked into the page. */
+/* Config values (launch fee, graduation threshold) shown in page
+   chrome come from the live config read — never from copy baked
+   into the page. */
 function syncConfigChrome(){
   if(!LENS_CONFIG)return;
   var fee=fmtEth(LENS_CONFIG.launchFee)+' LOOP';
   var h=el('headLaunchFee'); if(h)h.textContent=fee;
   var c=el('createLaunchFee'); if(c)c.textContent=fee;
+  if(LENS_CONFIG.gradThreshold!=null){
+    var grad=fmtEth(LENS_CONFIG.gradThreshold)+' LOOP';
+    /* The native pair's graduation target + every launch-terms
+       mention of the threshold render from the live Config read:
+       the wizard summary + preview ride syncEco (via selPair.grad),
+       the How It Works mentions update in place. */
+    PAIRS[0].items[0].grad=grad;
+    syncEco();
+    var gs=el('howGradStep'); if(gs)gs.textContent=grad;
+    var gl=el('howGradLine'); if(gl)gl.textContent=grad;
+    var gtg=el('howGradTarget'); if(gtg)gtg.textContent=grad;
+    var gv=el('howGradSvg'); if(gv)gv.textContent='GRADUATE · '+grad;
+  }
 }
 function liveProgressPct(t){
   if(!t.threshold||t.threshold===0n)return 0;
