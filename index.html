@@ -8640,8 +8640,9 @@ async function liveClaimAll(){
 /* ================= Banner ads (SakuraBannerAds) =================
    The promoted-banner carousel below the hero banner is driven by
    the SakuraBannerAds contract and carries PAID banners only: the
-   active paid banner (when one is live) and the next queued banner
-   (when one is waiting). While neither exists, the whole promo
+   active paid banner (when one is live), the next queued banner
+   (when one is waiting), and the banner queued behind it. While
+   none exists, the whole promo
    section (#promoSec) stays hidden. Reads ride
    the same hedged dual-endpoint path as every other read and join
    the Lens refresh cycle (see the refreshBanner() call in
@@ -8651,7 +8652,7 @@ async function liveClaimAll(){
    countdowns as text only. Buys run through the same wallet
    plumbing and error language as trades and claims. Tier prices
    are always read from the contract, never hardcoded. */
-var BANNER={active:null,next:null,renderedKey:null};
+var BANNER={active:null,next:null,queued:null,renderedKey:null};
 /* Carousel mechanics state: current slide, auto-advance + resume
    timers, interaction hold, and the in-flight pointer drag. */
 var BCAR={index:0,autoTimer:null,resumeTimer:null,held:false,dragId:null,dragX:0,dragDx:0,suppressClick:false,reduced:!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)};
@@ -8700,20 +8701,23 @@ function bannerPaidArt(b,name,sym){
 function bannerPaidSlide(b,kind){
   var ns=bannerNameSym(b), name=ns.name, sym=ns.sym;
   var isNext=(kind==='next');
-  var chip=isNext?'Up next':'Promoted';
-  var to=isNext?b.start:b.end;
+  var isQueued=(kind==='queued');
+  var waits=isNext||isQueued;
+  var chip=isQueued?'Queued':(isNext?'Up next':'Promoted');
+  var to=waits?b.start:b.end;
   return '<button class="banner-panel banner-paid bcar-slide" data-act="live-token" data-addr="'+b.token+'" aria-roledescription="slide" aria-label="'+chip+': '+escHtml(name)+'">'
     +bannerPaidArt(b,name,sym)
     +'<span class="banner-scrim" aria-hidden="true"></span>'
     +'<span class="banner-overlay"><span class="banner-namerow"><span class="banner-name">'+(sym?'<span class="banner-sym">$'+escHtml(sym)+'</span> ':'')+escHtml(name)+'</span><span class="banner-chip">'+chip+'</span></span>'
     +(b.tagline?'<span class="banner-tag">'+escHtml(b.tagline)+'</span>':'')
     +'</span>'
-    +'<span class="banner-timer"><span class="banner-count" data-count-to="'+to+'">'+fmtBannerLeft(to-Math.floor(Date.now()/1000))+'</span><span class="banner-tlabel">'+(isNext?'until start':'remaining')+'</span></span></button>';
+    +'<span class="banner-timer"><span class="banner-count" data-count-to="'+to+'">'+fmtBannerLeft(to-Math.floor(Date.now()/1000))+'</span><span class="banner-tlabel">'+(waits?'until start':'remaining')+'</span></span></button>';
 }
 /* The single painter for the promoted-banner carousel. Rebuilds the
    slides ONLY when the slide-set key changes (active id/name/symbol
-   + next id/name/symbol); a rebuild keeps the current slide index
-   when it is still valid and clamps it to the last slide otherwise.
+   + next id/name/symbol + queued id/name/symbol); a rebuild keeps
+   the current slide index when it is still valid and clamps it to
+   the last slide otherwise.
    With no active and no queued banner the slide set is empty and
    the whole promo section is hidden — it appears automatically once
    a read finds a banner, and hides again when the queue empties. */
@@ -8723,6 +8727,7 @@ function paintBannerSlot(){
   var key='';
   if(BANNER.active){var na=bannerNameSym(BANNER.active);key+='a:'+BANNER.active.id+':'+na.name+'|'+na.sym}
   if(BANNER.next){var nn=bannerNameSym(BANNER.next);key+=(key?'|':'')+'n:'+BANNER.next.id+':'+nn.name+'|'+nn.sym}
+  if(BANNER.queued){var nq=bannerNameSym(BANNER.queued);key+=(key?'|':'')+'q:'+BANNER.queued.id+':'+nq.name+'|'+nq.sym}
   if(BANNER.renderedKey===key){
     if(sec)sec.style.display=key?'':'none';
     return;
@@ -8731,6 +8736,7 @@ function paintBannerSlot(){
   var html='';
   if(BANNER.active)html+=bannerPaidSlide(BANNER.active,'active');
   if(BANNER.next)html+=bannerPaidSlide(BANNER.next,'next');
+  if(BANNER.queued)html+=bannerPaidSlide(BANNER.queued,'queued');
   track.innerHTML=html;
   var count=track.children.length;
   if(sec)sec.style.display=count?'':'none';
@@ -8852,11 +8858,38 @@ async function refreshBanner(){
       BANNER.next=null;
     }
   }catch(e){/* keep the queued banner already on screen */}
+  /* Third in line: the banner queued behind next. Derived from
+     next's id (+1) and read via banners(id) only when that id is
+     inside bannerCount(). banners() returns (payer, token,
+     imageURI, tagline, start, end, removed) — a different field
+     order than activeBanner()/nextBanner(). It counts as a real
+     queued banner only when it is not removed and its start is
+     still ahead of the read time or begins at/after next's end.
+     Any failure here just drops the third slide — the active and
+     next reads above are never affected. */
+  try{
+    BANNER.queued=null;
+    if(BANNER.next){
+      var qid=Number(BANNER.next.id)+1;
+      var cnt=await bannerRead('Banner count read',function(c){return c.bannerCount()});
+      if(isFinite(qid)&&qid<Number(cnt)){
+        var qb=await bannerRead('Queued banner read',function(c){return c.banners(qid)});
+        if(qb){
+          var qStart=Number(qb[4]),qEnd=Number(qb[5]);
+          var readNow=Math.floor(Date.now()/1000);
+          if(!qb[6]&&qb[1]&&(qStart>readNow||qStart>=BANNER.next.end)){
+            BANNER.queued={id:String(qid),token:qb[1],imageURI:qb[2],tagline:qb[3],payer:qb[0],start:qStart,end:qEnd};
+          }
+        }
+      }
+    }
+  }catch(e){BANNER.queued=null}
   paintBannerSlot();
 }
 /* Countdown ticker: text-only, once a second — never a re-render.
    Every countdown in the carousel (the active banner's remaining
-   time and the next banner's time until start) updates in place
+   time, the next banner's time until start, and the queued
+   banner's time until start) updates in place
    from its data-count-to epoch. */
 setInterval(function(){
   var nodes=document.querySelectorAll('#bannerCarousel .banner-count[data-count-to]');
