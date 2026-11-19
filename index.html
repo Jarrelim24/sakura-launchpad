@@ -306,7 +306,7 @@ button:disabled{cursor:not-allowed}
 .next-card span.sub{color:var(--muted);font-size:13px;font-weight:600}
 /* ===== Footer ===== */
 footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;color:var(--muted);background:var(--bg2)}
-.foot-cols{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:30px}
+.foot-cols{display:grid;grid-template-columns:1.5fr .9fr .9fr .9fr .9fr;gap:30px}
 .foot-brand strong{font-size:18px;color:var(--ink);display:block;margin:10px 0 6px}
 .foot-brand p{margin:0 0 6px;font-size:13.5px;max-width:36ch}
 .foot-note{color:var(--faint);font-size:12.5px;font-weight:600}
@@ -1126,7 +1126,7 @@ button.qrow{cursor:pointer}
   <div class="top-actions">
     <button class="icon-btn" id="themeBtn" aria-label="Toggle dark / light theme" data-act="theme"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none"/></svg></button>
     <div class="wallet-wrap"><button class="wallet-pill" id="walletPill" data-act="wallet" aria-label="Connect wallet"><span class="wico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span><span class="waddr" id="pillAddr">Connect Wallet</span><span class="waddr" id="pillBal" style="color:var(--muted);font-weight:700"></span><span class="net-tag" id="pillNetTag" style="display:none">Loop</span><span class="wdot" id="pillDot" aria-hidden="true"></span></button><div class="wallet-menu" id="walletMenu" role="menu" aria-label="Wallet menu"><button data-act="wallet-profile" role="menuitem">View Profile</button><button data-act="disconnect" role="menuitem" style="color:var(--red)">Disconnect wallet</button></div></div>
-    <div class="menu-wrap"><button class="icon-btn" id="menuBtn" aria-label="More links" aria-haspopup="menu" aria-expanded="false" data-act="menu"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.9" fill="currentColor" stroke="none"/></svg></button><div class="menu-pop" id="menuPop" role="menu" aria-label="More links"><button type="button" role="menuitem" class="menu-cta" data-act="promote-page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>Promote your token</button><div class="menu-sep" aria-hidden="true"></div><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X (Twitter)</button><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on Telegram — coming soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Telegram</button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Resources</div><button type="button" role="menuitem" data-act="toast" data-msg="Docs coming soon">Docs<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="Support opens soon">Support</button><a role="menuitem" href="https://explorer.mainnetloop.com" target="_blank" rel="noopener">Explorer<span class="ext">↗</span></a><a role="menuitem" href="#jelajahi" data-act="sakura-token">Sakura Token</a><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon">Updates on X<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="GitHub opens after the contract audit">GitHub<span class="ext">↗</span></button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Contracts</div><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x17E313b8fd29c3fa3232DBc911C4AE29A781c228" target="_blank" rel="noopener">Factory<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury<span class="ext">↗</span></a><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Legal</div><button type="button" role="menuitem" data-act="toast" data-msg="Terms of Use coming soon">Terms of Use</button><button type="button" role="menuitem" data-act="toast" data-msg="Privacy Policy coming soon">Privacy Policy</button><button type="button" role="menuitem" data-act="toast" data-msg="Takedown requests open soon">Takedown Requests</button><button type="button" role="menuitem" data-act="toast" data-msg="This channel opens soon">Law Enforcement Requests</button></div></div>
+    <div class="menu-wrap"><button class="icon-btn" id="menuBtn" aria-label="More links" aria-haspopup="menu" aria-expanded="false" data-act="menu"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.9" fill="currentColor" stroke="none"/></svg></button><div class="menu-pop" id="menuPop" role="menu" aria-label="More links"><button type="button" role="menuitem" class="menu-cta" data-act="promote-page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>Promote your token</button><div class="menu-sep" aria-hidden="true"></div><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X (Twitter)</button><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on Telegram — coming soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Telegram</button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Resources</div><button type="button" role="menuitem" data-act="toast" data-msg="Docs coming soon">Docs<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="Support opens soon">Support</button><a role="menuitem" href="https://explorer.mainnetloop.com" target="_blank" rel="noopener">Explorer<span class="ext">↗</span></a><a role="menuitem" href="#jelajahi" data-act="sakura-token">Sakura Token</a><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon">Updates on X<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="GitHub opens after the contract audit">GitHub<span class="ext">↗</span></button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Contracts</div><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x8C16a448A66030524aB1FF55e6025F94F5451c29" target="_blank" rel="noopener">Factory<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury<span class="ext">↗</span></a><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Legal</div><button type="button" role="menuitem" data-act="toast" data-msg="Terms of Use coming soon">Terms of Use</button><button type="button" role="menuitem" data-act="toast" data-msg="Privacy Policy coming soon">Privacy Policy</button><button type="button" role="menuitem" data-act="toast" data-msg="Takedown requests open soon">Takedown Requests</button><button type="button" role="menuitem" data-act="toast" data-msg="This channel opens soon">Law Enforcement Requests</button></div></div>
   </div>
 </div></header>
 
@@ -1289,6 +1289,7 @@ button.qrow{cursor:pointer}
             </div>
           </div>
           <p class="eco-summary" id="ecoSummary">Launch fee 0.0005 LOOP. Graduates at 75 LOOP. Curve fee 1.25%.</p>
+          <p class="hint" style="margin-top:8px">New tokens can't be transferred wallet-to-wallet until they graduate. This keeps the launch fair — no side pools before graduation.</p>
           <p class="hint" id="livePairNote" style="display:none;color:var(--red);font-weight:700"></p>
           <p class="hint" id="ipfsNote" style="display:none"></p>
           <div id="launchCheck" style="display:none;margin:0 0 14px"></div>
@@ -1567,6 +1568,7 @@ button.qrow{cursor:pointer}
       <div class="stat-row"><span class="s-label">Created</span><span class="s-val" id="dLaunched">—</span></div>
       <div class="progress-label" style="margin-top:16px"><span id="dProgLabel">Bonding curve progress</span><span id="dProgPct">—</span></div>
       <div class="progress"><i id="dProgBar" style="width:50%"></i></div>
+      <p id="dTransferLock" style="display:none;color:var(--muted);font-size:13px;font-weight:700;margin:8px 0 0">Transfers unlock at graduation.</p>
       <h3 style="font-size:16px;margin:18px 0 6px">About</h3>
       <p id="dAbout" style="color:var(--muted);margin:0;max-width:68ch">—</p>
     </section>
@@ -1606,12 +1608,13 @@ button.qrow{cursor:pointer}
       <div style="margin-top:11px"><button class="btn btn-primary" data-act="goto-claim" style="min-height:44px;padding:10px 18px">Claim in Profile →</button></div>
     </div>
 
-    <!-- Gen-4 fee panels (live tokens launched by the gen-4 factory
-         only): the LIVE fee recipient read from the curve, the
-         token's own fee facts, and — by fee destination — the
-         Holder Rewards or Buyback & Burn panel, read live from
-         SakuraFeeDestinations. Legacy tokens keep the plain
-         detail layout; this whole block stays hidden for them. -->
+    <!-- Gen-4/Gen-5 fee panels (live tokens launched by the gen-4
+         or gen-5 factory only): the LIVE fee recipient read from
+         the curve, the token's own fee facts, and — by fee
+         destination — the Holder Rewards or Buyback & Burn panel,
+         read live from SakuraFeeDestinations. Legacy tokens keep
+         the plain detail layout; this whole block stays hidden
+         for them. -->
     <div id="dGen4Panels" style="display:none">
       <div style="margin-top:14px;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:14px;padding:14px 16px">
         <strong style="font-size:14.5px">Fees</strong><br/>
@@ -1770,6 +1773,12 @@ button.qrow{cursor:pointer}
       <a href="#jelajahi" data-act="sakura-token">Sakura Token</a>
       <a href="#" data-act="toast" data-msg="Sakura on X — coming soon">Updates on X <span class="ext">↗</span></a>
       <a href="#" data-act="toast" data-msg="GitHub opens after the contract audit">GitHub <span class="ext">↗</span></a>
+    </nav>
+    <nav class="foot-col" aria-label="Contracts">
+      <h4>Contracts</h4>
+      <a href="https://explorer.mainnetloop.com/address/0x8C16a448A66030524aB1FF55e6025F94F5451c29" target="_blank" rel="noopener">Factory <span class="ext">↗</span></a>
+      <a href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault <span class="ext">↗</span></a>
+      <a href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury <span class="ext">↗</span></a>
     </nav>
     <nav class="foot-col" aria-label="Legal">
       <h4>Legal</h4>
@@ -3249,39 +3258,42 @@ var SAKURA_WEB3_CONFIG={
   contracts:{
     /* The Sakura stack on Loop. Curve trades and claims target the
        per-token addresses; Create Token launches target
-       launchFactory (gen-4) only. The token feed is the merged
+       launchFactory (gen-5) only. The token feed is the merged
        registry of ALL factories in the factories list below. */
     factory:'0x2cE51c433b05892D1fB4777B0c948cCc926fFcA4',
     /* Multi-factory registry: gen-1 (original launches) + gen-2
        (Pump.fun-style atomic graduation) + gen-3 (superseded
        before its first launch — zero tokens, kept in the read
-       list) + gen-4 (the current launch stack: flat 1.25% curve
-       fee with the creator tax pool-only, 5-second anti-snipe
-       with the creator exempt). The live refresh enumerates ALL
-       FOUR factories and merges their tokens; new launches go to
-       gen-4 only (launchFactory) because the FeeVault / Treasury
-       / FeeDestinations factory pointers now name gen-4 — a
+       list) + gen-4 (flat 1.25% curve fee with the creator tax
+       pool-only, 5-second anti-snipe with the creator exempt)
+       + gen-5 (the current launch stack: same fee/routing model
+       as gen-4, plus token transfers locked until graduation).
+       The live refresh enumerates ALL FIVE factories and merges
+       their tokens; new launches go to gen-5 only
+       (launchFactory) because the FeeVault / Treasury /
+       FeeDestinations factory pointers now name gen-5 — a
        createToken on an older factory would revert at its
        launch-fee credit. */
     factories:[
       {address:'0x2cE51c433b05892D1fB4777B0c948cCc926fFcA4',generation:1},
       {address:'0x17E313b8fd29c3fa3232DBc911C4AE29A781c228',generation:2},
       {address:'0x044f6104908A7bd1f6cdA3B4D9b89a6660b8c979',generation:3},
-      {address:'0x5bf3c0cDEBecA2EFCE4000dA218A74A4D8b681b7',generation:4}
+      {address:'0x5bf3c0cDEBecA2EFCE4000dA218A74A4D8b681b7',generation:4},
+      {address:'0x8C16a448A66030524aB1FF55e6025F94F5451c29',generation:5}
     ],
-    launchFactory:'0x5bf3c0cDEBecA2EFCE4000dA218A74A4D8b681b7',
+    launchFactory:'0x8C16a448A66030524aB1FF55e6025F94F5451c29',
     feeVault:'0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8',
-    /* SakuraFeeDestinations on Loop — where gen-4 creator fees
-       routed away from the fee wallet land: a holder-rewards pot
-       and a buyback pot per token, distribution rounds, and the
-       lifetime paid-to-holders / buyback-spent / burned totals.
+    /* SakuraFeeDestinations on Loop — where gen-4/gen-5 creator
+       fees routed away from the fee wallet land: a holder-rewards
+       pot and a buyback pot per token, distribution rounds, and
+       the lifetime paid-to-holders / buyback-spent / burned totals.
        Read-only here; the token detail page reads it for gen-4
-       tokens (Holder Rewards and Buyback & Burn panels). */
+       and gen-5 tokens (Holder Rewards and Buyback & Burn panels). */
     feeDestinations:'0xA9835Aeb023F883CE20a3b307765Bb2ACd22C621',
     /* SakuraLens aggregator on Loop (deployments/loop-lens.json) —
        the site's ONLY registry read path. One getState() call
        returns the config state plus every token's full curve /
-       pair state from ALL FOUR factories, so the whole page renders
+       pair state from ALL FIVE factories, so the whole page renders
        from a single live eth_call. There is no embedded chain
        data anywhere in this page. */
     lens:'0x2cB804b3a9cefb8Ca9611630231cE18c8F9dBd6b',
@@ -3297,7 +3309,7 @@ var SAKURA_WEB3_CONFIG={
     treasury:'0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5',
     /* Sakura's Uniswap V2 forks on Loop — THREE vintages coexist.
        v2FactoryCorrected / v2RouterCorrected are the CORRECTED
-       fork (the gen-4 graduation target): its pairs skim the
+       fork (the gen-4 and gen-5 graduation target): its pairs skim the
        0.3% pool fee 0.10 pool / 0.05 creator / 0.15 platform,
        plus the token's locked creator tax, with EVERY fee settled
        in LOOP in both directions — on sells the fees come out of
@@ -3372,7 +3384,7 @@ var SAKURA_WEB3_CONFIG={
       'function claimAll() returns (uint256)',
       'event FeesAccrued(address indexed creator, address indexed asset, uint256 amount)'
     ],
-    /* SakuraFeeDestinations reads (gen-4 fee destinations): the
+    /* SakuraFeeDestinations reads (gen-4/gen-5 fee destinations): the
        per-(token, asset) pots for the native pair asset, lifetime
        holder payouts and buyback spend, lifetime burns, and the
        distribution-round state (last round time + the contract's
@@ -3435,7 +3447,7 @@ var W3C=SAKURA_WEB3_CONFIG;
 /* ===== Multi-vintage V2 routing =====================================
    Three Uniswap V2 vintages coexist on Loop: the CORRECTED fork
    (W3C.contracts.v2FactoryCorrected / v2RouterCorrected — the
-   gen-4 graduation target, every fee settled in LOOP), the
+   gen-4 and gen-5 graduation target, every fee settled in LOOP), the
    fee-split fork (v2Factory / v2Router) and the LEGACY plain fork
    (v2FactoryLegacy / v2RouterLegacy). A graduated token's router is
    resolved PER TOKEN from its pair's factory(): corrected factory
@@ -3452,7 +3464,7 @@ function generationForFactoryAddr(addr){
   var a=String(addr).toLowerCase();
   var list=(W3C.contracts.factories||[]);
   for(var i=0;i<list.length;i++){var f=list[i];var fa=(typeof f==='string'?f:(f.address||f.addr));if(fa&&String(fa).toLowerCase()===a)return (f&&typeof f==='object'&&f.generation!=null)?f.generation:null}
-  if(W3C.contracts.launchFactory&&a===String(W3C.contracts.launchFactory).toLowerCase())return 4;
+  if(W3C.contracts.launchFactory&&a===String(W3C.contracts.launchFactory).toLowerCase())return 5;
   if(a===String(W3C.contracts.factory).toLowerCase())return 1;
   return null;
 }
@@ -3469,14 +3481,21 @@ function v2VintageForFactory(f){
   if(a===String(W3C.contracts.v2Factory).toLowerCase())return 'feesplit';
   return null;
 }
-/* Launch-generation helpers. Gen-4 is the current launch stack:
-   its curves charge the flat trading fee ONLY (the creator tax is
-   pool-phase-only there), while legacy curves charge their tax on
-   the curve as they always have. Fee facts are always computed
-   from the token's OWN snapshotted Lens values (tradingFeeBps /
-   creatorShareBps / taxBps) plus its generation — never from one
-   global fee text. */
-function isGen4Token(t){return !!t&&t.factoryGeneration===4}
+/* Launch-generation helpers. Gen-4 and gen-5 share the current
+   launch-stack fee model: their curves charge the flat trading
+   fee ONLY (the creator tax is pool-phase-only there), while
+   legacy curves charge their tax on the curve as they always
+   have. Gen-5 graduations use the SAME corrected pool stack as
+   gen-4, and gen-5 tokens get the same fee panels — the only
+   gen-5 extra is the transfer lock below. Fee facts are always
+   computed from the token's OWN snapshotted Lens values
+   (tradingFeeBps / creatorShareBps / taxBps) plus its
+   generation — never from one global fee text. */
+function isGen4Token(t){return !!t&&(t.factoryGeneration===4||t.factoryGeneration===5)}
+function isGen5Token(t){return !!t&&t.factoryGeneration===5}
+/* Gen-5 tokens cannot move wallet-to-wallet until their curve
+   has migrated (graduation unlocks transfers on-chain). */
+function isTransferLocked(t){return isGen5Token(t)&&!t.graduated&&!t.migrated}
 function taxOnCurveBps(t){return isGen4Token(t)?0:((t&&t.taxBps)||0)}
 /* Display symbol for a FeeVault asset: native LOOP, WLOOP by its
    wrapped name, a Sakura token by its own symbol — never dropped. */
@@ -5650,8 +5669,8 @@ function handleWcDisconnect(){
 
 /* ================= Live registry (read-only, no wallet needed) ================= */
 /* factoryROs holds one read handle {addr, generation, c} per
-   registry in W3C.contracts.factories (on Loop: ALL FOUR Sakura
-   factories — gen-1 through gen-4). Each live token remembers
+   registry in W3C.contracts.factories (on Loop: ALL FIVE Sakura
+   factories — gen-1 through gen-5). Each live token remembers
    which factory launched it (factoryAddr + factoryGeneration) so
    its curve is always resolved through that factory; tokens from
    any of them carry gradDex 'Uniswap V2' — Sakura's V2 fork
@@ -6591,6 +6610,7 @@ function resetDetailChrome(){
   var cb=el('dChangeBig'); if(cb)cb.style.color='';
   var ds=el('dSocials'); if(ds){ds.innerHTML='';ds.style.display='none'}
   var g4=el('dGen4Panels'); if(g4)g4.style.display='none';
+  var tl0=el('dTransferLock'); if(tl0)tl0.style.display='none';
 }
 function addExplorerLink(anchorEl,address){
   if(!anchorEl||!anchorEl.parentNode)return;
@@ -6681,6 +6701,10 @@ function paintLiveDetail(t){
   el('dProgBar').style.width=(t.graduated?100:pct)+'%';
   el('dProgPct').textContent=t.pendingMigration?'100% · graduated — migration pending':(t.graduated?'100% · graduated':(pct.toFixed(2)+'% · '+fmtEth(t.realReserves)+' / '+fmtEth(t.threshold)+' LOOP'));
   el('dProgLabel').textContent=t.pendingMigration?'Graduated — waiting for migration':(t.graduated?(t.gradDex?'Graduated — now trading on '+t.gradDex:'Graduated'):'Bonding curve progress to graduation');
+  /* Transfer lock (gen-5 only): shown only while a gen-5 token
+     is still on its curve — never for graduated/migrated tokens
+     and never for generations 1–4. */
+  var tl=el('dTransferLock'); if(tl)tl.style.display=isTransferLocked(t)?'block':'none';
   el('dStatMcap').textContent=LOOP_USD?fmtUsdMcap(Number(unitsToDecimalStr(mcapWei,18))*LOOP_USD):fmtEth(mcapWei)+' LOOP';
   var mSub=el('dStatMcapSub'); if(mSub)mSub.textContent=LOOP_USD?fmtEth(mcapWei)+' LOOP':'';
   /* Until the chart has candles of its own, the big number
@@ -6748,8 +6772,8 @@ function paintLiveDetail(t){
   loadGen4Panels(t);
   paintLiveTradePanel();
 }
-/* ================= Gen-4 fee panels (detail) ======================
-   Gen-4 tokens get three extra panels under the chart, FLOAT-style:
+/* ================= Gen-4/Gen-5 fee panels (detail) ======================
+   Gen-4 and gen-5 tokens get three extra panels under the chart, FLOAT-style:
    a Fees panel (the LIVE fee recipient read from the curve's
    feeRecipient() — preferred over the pair's graduation-time
    feeCreator() — plus the token's own fee facts), a Holder Rewards
@@ -8164,11 +8188,11 @@ async function liveCreate(){
     var metadataURI=JSON.stringify({name:name,symbol:ticker,description:desc});
     var destIdx=feeDest==='buyback'?1:(feeDest==='holders'?2:0);
     var signer=await bp.getSigner();
-    /* Writes target the gen-4 launch factory ONLY
+    /* Writes target the gen-5 launch factory ONLY
        (W3C.contracts.launchFactory). The FeeVault / Treasury /
-       FeeDestinations factory pointers now name gen-4, so a
+       FeeDestinations factory pointers now name gen-5, so a
        createToken on an older factory reverts at its launch-fee
-       credit. All three fee destinations are live for gen-4
+       credit. All three fee destinations are live for gen-5
        launches: 0 = fee wallet, 1 = Buyback & burn, 2 = Holders. */
     var factory=new ethers.Contract(W3C.contracts.launchFactory,W3C.abi.factory,signer);
     if(btn){btn.disabled=true;btn.textContent='Confirm in your wallet…'}
