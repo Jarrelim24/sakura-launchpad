@@ -709,6 +709,11 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .chart-readout b{color:var(--ink);font-weight:700}
 .chart-readout .ro-up{color:var(--green);font-weight:800}
 .chart-readout .ro-down{color:var(--red);font-weight:800}
+.chart-readout .ro-sub{color:var(--faint);font-weight:600}
+.chart-hero{margin:14px 2px 0}
+.chart-hero-val{font-size:36px;line-height:1.05;font-weight:800;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+.chart-hero-label{color:var(--muted);font-size:13px;font-weight:600;margin-top:3px}
+.tc-vol-sub{display:block;color:var(--faint);font-size:11.5px;font-weight:600;margin-top:1px}
 .chart-stage{position:relative;margin-top:2px}
 #cvChart{display:block;width:100%;height:300px;touch-action:none;cursor:crosshair}
 .chart-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-weight:700;padding:24px;font-size:14px;line-height:1.55}
@@ -728,7 +733,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .h-ext{width:32px;height:32px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;flex:none;transition:border-color .15s,color .15s}
 .h-ext:hover{border-color:var(--pink);color:var(--pink-dark)}
 .h-ext svg{width:14px;height:14px}
-@media(max-width:560px){#cvChart{height:260px}.d-panel{padding:15px}.chart-panel{padding:12px}}
+@media(max-width:560px){#cvChart{height:260px}.d-panel{padding:15px}.chart-panel{padding:12px}.chart-hero-val{font-size:31px}}
 /* ===== Loop pair mark (the real logo replaces every letter tile) ===== */
 .loop-ic{height:15px;width:auto;display:inline-block;vertical-align:-3px}
 .pair-tag{display:inline-flex;align-items:center;gap:5px}
@@ -1555,6 +1560,7 @@ button.qrow{cursor:pointer}
       <div class="stat-row" id="dStatLiqRow"><span class="s-label" id="dStatLiqLabel">Curve reserves</span><span class="s-val" id="dStatLiq">…</span></div>
       <div class="stat-row" id="dStatHoldersTile"><span class="s-label">Holders</span><span class="s-val" id="dStatHolders">…</span></div>
       <div class="stat-row"><span class="s-label">Trades</span><span class="s-val" id="dStatTrades">…</span></div>
+      <div class="stat-row"><span class="s-label">Volume</span><span class="s-val s-val-stack"><span id="dStatVol">…</span><small class="s-sub" id="dStatVolSub"></small></span></div>
       <div class="stat-row"><span class="s-label">Supply</span><span class="s-val" id="dStatSupply">1B</span></div>
       <div class="stat-row"><span class="s-label" id="dPoolLabel">Curve</span><span class="s-val"><span id="dAddrPool">—</span><button class="copy-mini" id="dPoolCopy" data-act="copy-pool" aria-label="Copy pool address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span></div>
       <div class="stat-row" id="dTaxRow" style="display:none"><span class="s-label">Creator tax</span><span class="s-val" id="dStatTax">—</span></div>
@@ -1577,17 +1583,21 @@ button.qrow{cursor:pointer}
           <button data-act="chart-tf" data-tf="1D">1D</button>
         </div>
         <div class="seg2" role="group" aria-label="Chart value mode" id="modeSeg">
-          <button data-act="chart-mode" data-mode="price" class="active">Price</button>
-          <button data-act="chart-mode" data-mode="mcap">Market cap</button>
+          <button data-act="chart-mode" data-mode="price">Price</button>
+          <button data-act="chart-mode" data-mode="mcap" class="active">Market cap</button>
         </div>
         <button type="button" class="chart-latest" id="chartLatestBtn" data-act="chart-latest" style="display:none">Back to latest</button>
       </div>
+      <div class="chart-hero">
+        <div class="chart-hero-val" id="chartHeroVal">…</div>
+        <div class="chart-hero-label" id="chartHeroLabel">Market cap</div>
+      </div>
       <div class="chart-readout" id="chartReadout"></div>
       <div class="chart-stage" id="chartBox">
-        <canvas id="cvChart" role="img" aria-label="Candlestick chart built from on-chain trades"></canvas>
+        <canvas id="cvChart" role="img" aria-label="Token chart built from on-chain trades"></canvas>
         <div class="chart-msg" id="chartMsg" style="display:none"></div>
       </div>
-      <p id="chartNote" style="color:var(--faint);font-size:12px;font-weight:600;margin:8px 2px 0">Price history — from on-chain trades.</p>
+      <p id="chartNote" style="color:var(--faint);font-size:12px;font-weight:600;margin:8px 2px 0">Market cap history — from on-chain trades.</p>
     </section>
 
     <div id="dFees" style="display:none;margin-top:14px;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:14px;padding:14px 16px">
@@ -3092,6 +3102,10 @@ function goToView(name,anchor){
   /* Opening Analytics starts its background trade-history engine
      (defined in the web3 layer; absent only during first parse). */
   if(name==='analytics'&&typeof anaOnView==='function')anaOnView();
+  /* Leaving Analytics pauses its scan engine: any pending kick is
+     cancelled here, and in-flight workers stop at their next
+     yield point (see anaYieldPoint in the web3 layer). */
+  if(name!=='analytics'&&typeof anaOnLeave==='function')anaOnLeave();
   document.body.classList.toggle('in-detail',name==='detail');
   var navs=document.querySelectorAll('[data-nav]');
   for(var i=0;i<navs.length;i++) navs[i].classList.toggle('active',navs[i].getAttribute('data-nav')===name);
@@ -4548,6 +4562,19 @@ function updateTradeCounts(t){
   var st=el('dStatTrades'); if(st&&currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())st.textContent=String(t.tradeCount!=null?t.tradeCount:n);
   if(dTab==='trades'){var tt=el('dTradesTotal'); if(tt)tt.textContent=(t.tradeCount!=null?t.tradeCount:n)+' total'}
 }
+/* The detail stats panel's Volume row: USD is the primary
+   figure whenever the live LOOP/USD rate is known, with the
+   LOOP amount as the muted sub-line; without a rate the LOOP
+   figure stands alone — a rate is never invented. */
+function paintDetailVolume(t){
+  var dv=el('dStatVol'); if(!dv||!t)return;
+  if(!currentLive||String(currentLive.address).toLowerCase()!==String(t.address).toLowerCase())return;
+  var dSub=el('dStatVolSub');
+  if(t.volumeWei==null){dv.textContent='\u2026';if(dSub)dSub.textContent='';return}
+  var vLoop=0; try{vLoop=Number(unitsToDecimalStr(t.volumeWei,18))}catch(e){}
+  dv.textContent=LOOP_USD?fmtUsdMcap(vLoop*LOOP_USD):fmtEth(t.volumeWei)+' LOOP';
+  if(dSub)dSub.textContent=LOOP_USD?fmtEth(t.volumeWei)+' LOOP':'';
+}
 /* Insert the connected user's own confirmed trade straight from its
    receipt, keyed exactly as the chain scan will key it, so it shows
    at once and later reconciles by key — never duplicated, never
@@ -5635,19 +5662,36 @@ function lensTokenToLive(lt,block){
    preferred endpoint the Live badge names. Throws only when both
    endpoints failed in this cycle — the caller's backoff loop then
    schedules the next cycle. */
+/* Registry-read priority gate: LENS_INFLIGHT counts Lens reads
+   currently in flight, and LENS_FAIL_UNTIL marks a short cooldown
+   after a Lens read has FAILED. The Analytics scan engine awaits
+   anaYieldPoint() before every unit of explorer work and yields
+   while either is active — the Lens read is the one read the
+   whole site depends on, so the background scan must never
+   compete with it for the explorer / RPC endpoints. */
+var LENS_INFLIGHT=0, LENS_FAIL_UNTIL=0;
 async function fetchLensState(){
-  var out=await withReadFailover('Lens registry read',20000,function(){
-    /* Capture THIS attempt's provider + Lens contract synchronously:
-       the hedged read rebinds the globals for the rival attempt
-       immediately after this invocation returns its promise. */
-    var prov=readProvider,lens=lensRO;
-    return (async function(){
-      var res=await lens.getState(LENS_FACTORY_ADDRS,W3C.contracts.config);
-      var blk=null;
-      try{blk=await withTimeout(prov.getBlockNumber(),10000,'Block number read')}catch(e){}
-      return {config:res[0],tokens:res[1],block:blk};
-    })();
-  });
+  LENS_INFLIGHT++;
+  var out;
+  try{
+    out=await withReadFailover('Lens registry read',20000,function(){
+      /* Capture THIS attempt's provider + Lens contract synchronously:
+         the hedged read rebinds the globals for the rival attempt
+         immediately after this invocation returns its promise. */
+      var prov=readProvider,lens=lensRO;
+      return (async function(){
+        var res=await lens.getState(LENS_FACTORY_ADDRS,W3C.contracts.config);
+        var blk=null;
+        try{blk=await withTimeout(prov.getBlockNumber(),10000,'Block number read')}catch(e){}
+        return {config:res[0],tokens:res[1],block:blk};
+      })();
+    });
+  }catch(e){
+    LENS_FAIL_UNTIL=Date.now()+5000;
+    throw e;
+  }finally{
+    LENS_INFLIGHT--;
+  }
   if(out.block==null)out.block=LIVE_BLOCK;
   return out;
 }
@@ -5678,6 +5722,7 @@ async function enrichLiveTokens(tokens){
         var vol=0n,first=null,tset={};
         evs.forEach(function(e){vol+=e.args.pairAmount;if(first===null)first=e.args.spotPriceAfter;tset[String(e.args.trader).toLowerCase()]=1});
         tt.tradeCount=evs.length; tt.volumeWei=vol; tt.firstSpot=first; tt.traderSet=tset;
+        paintDetailVolume(tt);
         ENRICHED_AT[String(tt.address).toLowerCase()]=Date.now();
       }catch(e){/* leave the statistics unknown — never invent them */}
       if(seq===liveEnrichSeq)renderLiveTokens();
@@ -5695,8 +5740,7 @@ async function enrichLiveTokens(tokens){
       if(!feeByA2[a]){feeByA2[a]={asset:e.args.asset,amount:0n,symbol:feeAssetSymbol(e.args.asset),decimals:18};feeOrd2.push(a)}
       feeByA2[a].amount+=e.args.amount;
     });
-    ANALYTICS.feesAccruedWei=acc;
-    ANALYTICS.feesByAsset=feeOrd2.map(function(a){return feeByA2[a]});
+    anaPublishFees(acc,feeOrd2.map(function(a){return feeByA2[a]}),true);
     renderLiveTokens();
   }catch(e){}
 }
@@ -5894,7 +5938,13 @@ function renderLiveTokens(){
    placeholder dash over a loaded figure. */
 var tcSortLive='vol';
 var anaTab='24h';
-var anaActivated=false;
+/* The scan engine runs ONLY while the Analytics view is open.
+   There is deliberately no "activated" latch: every entry point
+   asks anaViewOpen() afresh, so navigating away pauses the engine
+   (workers stop at their next yield point, a pending kick is
+   cancelled by anaOnLeave) and the Launches page and token detail
+   never wait on — or compete with — scan traffic. */
+function anaViewOpen(){var v=el('view-analytics');return !!(v&&v.classList.contains('active'))}
 var ANA_HIST={}, ANA_HIST_AT={}, ANA_HIST_INFLIGHT={}, anaHistTimer=null;
 /* ANA_DONE[key] stamps when a token's scan pass has FINISHED —
    successfully or not. Settled-ness is tracked separately from
@@ -5907,10 +5957,114 @@ var anaVaultAt=0, anaVaultBusy=false;
 var ANA_WIN={'24h':86400,'7d':604800,'all':Infinity};
 function liveTcSort(key){tcSortLive=key;renderLiveAnalytics()}
 function liveAnaTab(w){if(Object.prototype.hasOwnProperty.call(ANA_WIN,w)){anaTab=w;renderLiveAnalytics()}}
-function anaOnView(){anaActivated=true;anaKick();renderLiveAnalytics()}
+function anaOnView(){anaKick();renderLiveAnalytics()}
+function anaOnLeave(){if(anaHistTimer){clearTimeout(anaHistTimer);anaHistTimer=null}}
 /* The page can boot straight into #analytics (the hash router in
-   the UI layer runs before this layer exists): adopt the visit. */
-if(el('view-analytics')&&el('view-analytics').classList.contains('active'))anaActivated=true;
+   the UI layer runs before this layer exists): adopt the visit.
+   The registry-load render cycle re-kicks once the Lens payload
+   lands, so the engine starts then — and only because the view
+   is open. */
+if(anaViewOpen())anaKick();
+/* ---------- Registry priority: the scan's yield point --------------
+   Awaited before every unit of explorer work (each history page,
+   each batch of LOOP-leg lookups, each vault log page, the
+   Treasury read). It WAITS while a Lens registry read is in
+   flight or inside the short cooldown after one failed, so the
+   scan never competes with the read the whole site depends on.
+   It returns false when the Analytics view has closed: the
+   caller abandons the pass there — pages already published stay
+   published, and the pass resumes incrementally on the next
+   visit instead of being counted as scanned. */
+var ANA_ABORT={anaAbort:true};
+async function anaYieldPoint(){
+  while(true){
+    if(!anaViewOpen())return false;
+    if(!(LENS_INFLIGHT>0||Date.now()<LENS_FAIL_UNTIL))return true;
+    await sleep(300);
+  }
+}
+/* ---------- Creator fees: monotonic publish ------------------------
+   The Creator Fees tile NEVER moves backwards. FeesAccrued is an
+   append-only event stream, so a recount that lands below the
+   settled figure is by definition a partial or lagging one: a
+   partial publish raises the displayed total only when it exceeds
+   it, and a completed pass swaps in its by-asset breakdown (and
+   persists the settled totals) only when it is at least as fresh
+   as what is already shown. */
+function anaPublishFees(wei,byAsset,completePass){
+  var fresh=wei!=null&&(ANALYTICS.feesAccruedWei==null||wei>=ANALYTICS.feesAccruedWei);
+  if(fresh)ANALYTICS.feesAccruedWei=wei;
+  if(byAsset&&(fresh||!ANALYTICS.feesByAsset||!ANALYTICS.feesByAsset.length))ANALYTICS.feesByAsset=byAsset;
+  if(completePass)anaCacheSaveSoon();
+}
+/* ---------- Persistent scan cache (localStorage) -------------------
+   Completed per-token scan results and the settled fee totals
+   persist across visits. On a later visit the cached histories
+   seed ANA_HIST as SETTLED (ANA_DONE stamped, aggregates and the
+   chart paint immediately from real numbers — no zero/skeleton
+   start), and the next pass is the usual incremental one: it
+   stops paging as soon as it reaches trades the cache already
+   holds, so only what is new since the cached pass is fetched.
+   The cache is an accelerator, never a source of truth: every
+   figure in it came from a completed live scan, and any storage
+   failure (quota, private mode) simply falls back to a full
+   first-visit scan. */
+var ANA_CACHE_KEY='sakura.anaScan.v1';
+var anaCacheSaveTimer=null;
+function anaCacheSaveSoon(){
+  if(anaCacheSaveTimer)return;
+  anaCacheSaveTimer=setTimeout(function(){anaCacheSaveTimer=null;anaCacheSaveNow()},1500);
+}
+function anaCacheSaveNow(){
+  try{
+    var stored={};
+    try{var raw0=localStorage.getItem(ANA_CACHE_KEY);if(raw0){var pd=JSON.parse(raw0);if(pd&&pd.v===1&&pd.tokens)stored=pd.tokens}}catch(e){}
+    var entries=[];
+    Object.keys(ANA_HIST).forEach(function(k){
+      var h=ANA_HIST[k];
+      if(liveRegistryLoaded&&!LIVE_BY_ADDR[k])return;
+      if(h&&h.complete&&h.list){entries.push([k,{list:h.list,keys:h.keys||{},at:h.at||Date.now()}]);return}
+      /* A token whose refresh pass is still walking (or was
+         abandoned mid-pass) keeps its previously stored entry —
+         a save triggered by another token must not evict it. */
+      if(stored[k])entries.push([k,stored[k]]);
+    });
+    /* Smallest histories first: if the store ever outgrows the
+       quota, the largest histories are dropped first and simply
+       rescan next visit. */
+    entries.sort(function(a,b){return a[1].list.length-b[1].list.length});
+    var data={v:1,savedAt:Date.now(),tokens:{},
+      feesWei:ANALYTICS.feesAccruedWei!=null?ANALYTICS.feesAccruedWei.toString():null,
+      feesByAsset:(ANALYTICS.feesByAsset||[]).map(function(r){return {asset:r.asset,amount:String(r.amount),symbol:r.symbol,decimals:r.decimals}})};
+    while(true){
+      data.tokens={};
+      entries.forEach(function(en){data.tokens[en[0]]=en[1]});
+      try{localStorage.setItem(ANA_CACHE_KEY,JSON.stringify(data));break}
+      catch(e){if(!entries.length)break;entries=entries.slice(0,Math.floor(entries.length/2))}
+    }
+  }catch(e){/* storage unavailable — the cache is optional */}
+}
+function anaCacheLoad(){
+  try{
+    var raw=localStorage.getItem(ANA_CACHE_KEY);
+    if(!raw)return;
+    var d=JSON.parse(raw);
+    if(!d||d.v!==1)return;
+    Object.keys(d.tokens||{}).forEach(function(k){
+      var t=d.tokens[k];
+      if(!t||!Array.isArray(t.list))return;
+      var at=t.at||d.savedAt||Date.now();
+      ANA_HIST[k]={list:t.list,keys:t.keys||{},complete:true,at:at,cached:true};
+      ANA_DONE[k]=at;
+      ANA_HIST_AT[k]=at;
+    });
+    if(d.feesWei!=null){try{ANALYTICS.feesAccruedWei=BigInt(d.feesWei)}catch(e){}}
+    if(Array.isArray(d.feesByAsset)&&d.feesByAsset.length){
+      ANALYTICS.feesByAsset=d.feesByAsset.map(function(r){return {asset:r.asset,amount:BigInt(r.amount),symbol:r.symbol,decimals:r.decimals||18}});
+    }
+  }catch(e){/* a corrupt or unavailable cache scans from scratch */}
+}
+anaCacheLoad();
 /* LOOP amounts on this page: "36.19 LOOP" — a space before the
    unit, 2–4 decimals by magnitude, and a real nonzero figure is
    never rounded away to a bare 0. */
@@ -5925,6 +6079,16 @@ function fmtLoopAmt(v){
   return s+' LOOP';
 }
 function fmtLoopWei(wei){if(wei==null)return '\u2026';try{return fmtLoopAmt(Number(unitsToDecimalStr(wei,18)))}catch(e){return '\u2026'}}
+/* Trading volume is USD-first across the site: the USD figure
+   leads whenever the live LOOP/USD rate is known, with the LOOP
+   amount riding as the smaller muted line; without a rate the
+   LOOP figure stands alone — a rate is never invented. (Fees
+   and revenue stay LOOP-first: they are protocol accounting.) */
+function anaVolDisp(v){return LOOP_USD?fmtUsdMcap(v*LOOP_USD):fmtLoopAmt(v)}
+function anaVolCell(v){
+  if(LOOP_USD)return fmtUsdMcap(v*LOOP_USD)+'<small class="tc-vol-sub">'+fmtLoopAmt(v)+'</small>';
+  return fmtLoopAmt(v);
+}
 function fmtInt(n){return Number(n).toLocaleString('en-US')}
 /* ---------- Per-token trade history (Blockscout-derived) ----------
    One background pass per token paginates its indexed transfers
@@ -5945,10 +6109,11 @@ function fmtInt(n){return Number(n).toLocaleString('en-US')}
    rescanning from zero. A failed pass keeps the token's last
    good history; passes re-run at most once every two minutes. */
 function anaKick(){
-  if(!anaActivated||!liveRegistryLoaded)return;
+  if(!anaViewOpen()||!liveRegistryLoaded)return;
   if(anaHistTimer)return;
   anaHistTimer=setTimeout(function(){
     anaHistTimer=null;
+    if(!anaViewOpen())return;
     var now=Date.now();
     var todo=LIVE_TOKENS.filter(function(t){var k=String(t.address).toLowerCase();return !ANA_HIST_INFLIGHT[k]&&!(ANA_HIST_AT[k]&&now-ANA_HIST_AT[k]<120000)});
     if(!todo.length)return;
@@ -5959,6 +6124,7 @@ function anaKick(){
     var idx=0;
     async function worker(){
       while(idx<todo.length){
+        if(!anaViewOpen())break;
         var t=todo[idx++];
         await anaFetchHistory(t);
         try{renderLiveAnalytics()}catch(e){}
@@ -5973,7 +6139,11 @@ function anaFetchHistory(t){
   var key=String(t.address).toLowerCase();
   if(ANA_HIST_INFLIGHT[key])return ANA_HIST_INFLIGHT[key];
   ANA_HIST_AT[key]=Date.now();
-  delete ANA_DONE[key];
+  /* ANA_DONE is NOT cleared here: a refresh pass over a token
+     whose totals are already settled (above all a cache-seeded
+     token) must not unsettle the page while it walks — the pass
+     only ever adds newer trades on top of the settled history,
+     and the stamp is renewed when the pass finishes. */
   var p=anaFetchHistoryRun(t,key);
   ANA_HIST_INFLIGHT[key]=p;
   return p;
@@ -5992,6 +6162,10 @@ async function anaFetchHistoryRun(t,key){
     if(prev&&prev.keys)Object.keys(prev.keys).forEach(function(k){seen[k]=1});
     var next=null, pages=0, complete=false;
     while(pages<24){
+      /* Yield point: pause for any in-flight Lens read (and its
+         post-failure cooldown); abandon the pass if the view
+         closed. Pages already published stay published. */
+      if(!await anaYieldPoint())throw ANA_ABORT;
       var q=next?('?'+bsQuery(next)):'';
       var d=await bsFetchJson('/tokens/'+t.address+'/transfers'+q);
       var items=(d&&d.items)||[];
@@ -6003,7 +6177,15 @@ async function anaFetchHistoryRun(t,key){
         seen[k]=1;
         fresh.push(e);
       });
-      var legs=await Promise.all(fresh.map(function(e){return bsLoopAmount(e.transactionHash,cps)}));
+      /* Leg lookups resolve in small batches with a yield point
+         between them, so a Lens read starting mid-page is never
+         stuck behind a whole page of transaction lookups. */
+      var legs=[];
+      for(var li=0;li<fresh.length;li+=8){
+        if(!await anaYieldPoint())throw ANA_ABORT;
+        var part=await Promise.all(fresh.slice(li,li+8).map(function(e){return bsLoopAmount(e.transactionHash,cps)}));
+        for(var lj=0;lj<part.length;lj++)legs.push(part[lj]);
+      }
       fresh.forEach(function(e,i){
         var loop=0, leg=legs[i];
         if(leg!=null){try{loop=Number(unitsToDecimalStr(leg,18))}catch(err){loop=0}}
@@ -6029,6 +6211,16 @@ async function anaFetchHistoryRun(t,key){
     }
     ANA_HIST[key]={list:trades,keys:Object.assign({},seen),complete:complete,at:Date.now()};
   }catch(e){
+    if(e===ANA_ABORT){
+      /* The view closed mid-pass: keep every page already
+         published, do NOT stamp the pass as finished, and clear
+         the retry clock so the next visit resumes this pass
+         incrementally right away instead of waiting out the
+         two-minute throttle. */
+      ANA_HIST_AT[key]=0;
+      delete ANA_HIST_INFLIGHT[key];
+      return;
+    }
     /* A failed pass keeps the last good history (the partial
        publishes above included). A token with no history at all
        still gets an entry, so it counts as scanned — empty for
@@ -6038,6 +6230,10 @@ async function anaFetchHistoryRun(t,key){
   ANA_DONE[key]=Date.now();
   ANA_HIST_AT[key]=Date.now();
   delete ANA_HIST_INFLIGHT[key];
+  /* A completed pass is exactly what the persistent cache keeps:
+     the next visit paints these totals as settled and only scans
+     for what is new. */
+  if(ANA_HIST[key]&&ANA_HIST[key].complete)anaCacheSaveSoon();
 }
 function anaAgg(key,secs){
   var h=ANA_HIST[key];
@@ -6050,14 +6246,25 @@ function anaAgg(key,secs){
   return {vol:vol,trades:n,traders:traders};
 }
 function anaAllSettled(){
-  return LIVE_TOKENS.length>0&&LIVE_TOKENS.every(function(t){var k=String(t.address).toLowerCase();return !!ANA_DONE[k]&&!ANA_HIST_INFLIGHT[k]});
+  /* Settled = every token has at least one FINISHED pass behind
+     it (a completed live scan, or the persisted cache of one).
+     An incremental refresh pass running over settled data does
+     not unsettle it: the figures on screen are real, and the pass
+     only adds newer trades on top. On a first-ever visit nothing
+     is stamped until passes finish, so the counting state shows
+     exactly while the engine is still discovering history. */
+  return LIVE_TOKENS.length>0&&LIVE_TOKENS.every(function(t){var k=String(t.address).toLowerCase();return !!ANA_DONE[k]});
 }
 /* ---------- Protocol revenue: the Treasury's accrued balance ------ */
 async function anaLoadTreasury(){
-  if(!anaActivated||anaTreasuryBusy)return;
+  if(!anaViewOpen()||anaTreasuryBusy)return;
   if(ANA_TREASURY_WEI!=null&&Date.now()-anaTreasuryAt<60000)return;
   if(typeof window.ethers==='undefined'||!W3C.contracts.treasury||!W3C.abi.treasury)return;
   anaTreasuryBusy=true;
+  /* Same yield discipline as the scan: never start this read
+     against an in-flight Lens read, and abandon it if the view
+     closed while waiting. */
+  if(!await anaYieldPoint()){anaTreasuryBusy=false;return}
   try{
     var bal=await withReadFailover('Treasury revenue read',15000,function(){
       var prov=readProvider;
@@ -6071,14 +6278,20 @@ async function anaLoadTreasury(){
 }
 /* ---------- Creator fees: FeeVault FeesAccrued from indexed logs -- */
 async function anaLoadVaultFees(){
-  if(!anaActivated||anaVaultBusy)return;
+  if(!anaViewOpen()||anaVaultBusy)return;
   if(anaVaultAt&&Date.now()-anaVaultAt<300000)return;
   if(typeof window.ethers==='undefined')return;
   anaVaultBusy=true; anaVaultAt=Date.now();
+  var aborted=false;
   try{
     var topic=String(ethers.id('FeesAccrued(address,address,uint256)')).toLowerCase();
-    var acc=0n, byAsset={}, order=[], next=null, pages=0, got=false;
+    var acc=0n, byAsset={}, order=[], next=null, pages=0, got=false, completedPass=false;
     while(pages<80){
+      /* Yield point, same discipline as the history scan: pause
+         for an in-flight Lens read; abandon the pass if the
+         view closed. The settled totals stay untouched either
+         way — only a completed pass publishes as final. */
+      if(!await anaYieldPoint()){aborted=true;break}
       var q=next?('?'+bsQuery(next)):'';
       var d=await bsFetchJson('/addresses/'+W3C.contracts.feeVault+'/logs'+q);
       ((d&&d.items)||[]).forEach(function(it){
@@ -6093,21 +6306,24 @@ async function anaLoadVaultFees(){
       });
       /* Publish the running total after every page: the tile
          fills in progressively instead of staying blank until
-         the vault's whole log history has paginated. */
+         the vault's whole log history has paginated. The
+         publish is monotonic — a fresh pass recounting from
+         zero can never drag the settled figure down. */
       if(got){
-        ANALYTICS.feesAccruedWei=acc;
-        ANALYTICS.feesByAsset=order.map(function(a){return byAsset[a]});
+        anaPublishFees(acc,order.map(function(a){return byAsset[a]}),false);
         try{renderLiveAnalytics()}catch(e){}
       }
       pages++;
       next=(d&&d.next_page_params)?d.next_page_params:null;
-      if(!next)break;
+      if(!next){completedPass=true;break}
     }
-    if(got){
-      ANALYTICS.feesAccruedWei=acc;
-      ANALYTICS.feesByAsset=order.map(function(a){return byAsset[a]});
+    if(got&&completedPass){
+      anaPublishFees(acc,order.map(function(a){return byAsset[a]}),true);
     }
   }catch(e){/* keep the last good totals */}
+  /* An abandoned pass retries on the next visit instead of
+     waiting out the five-minute throttle. */
+  if(aborted)anaVaultAt=0;
   anaVaultBusy=false;
   try{renderLiveAnalytics()}catch(e){}
 }
@@ -6139,7 +6355,13 @@ function anaRenderChart(){
      empty state is a conclusion that may only be drawn once the
      scan has actually completed. */
   var complete=liveRegistryLoaded&&anaAllSettled();
-  if(note)note.textContent='Last 30 days'+(liveRegistryLoaded&&LIVE_TOKENS.length>0&&!complete?' · loading\u2026':'');
+  /* Once bars have actually painted, the header reads simply
+     "Last 30 days" — the counting state belongs on the tiles,
+     not on a chart that is already showing real bars. The
+     loading marker only survives while nothing has painted yet
+     (skeleton) and the scan is still incomplete. */
+  var barsPainted=settled>0&&total>0;
+  if(note)note.textContent='Last 30 days'+(!barsPainted&&liveRegistryLoaded&&LIVE_TOKENS.length>0&&!complete?' · loading\u2026':'');
   if(!settled){
     var hs=[34,52,44,66,58,80,62,92,70,84,56,74,48,88,64];
     box.innerHTML='<div class="ana-chart-skel" aria-hidden="true">'+hs.map(function(h){return '<i style="height:'+h+'%"></i>'}).join('')+'</div>';
@@ -6159,11 +6381,11 @@ function anaRenderChart(){
   var BASE=150;
   var rects=days.map(function(d,i){
     var hgt=d.vol>0?Math.max(3,Math.round(d.vol/max*BASE)):0;
-    return '<rect x="'+(i*20+3)+'" y="'+(BASE-hgt)+'" width="14" height="'+hgt+'" rx="3" fill="var(--pink)" opacity="'+(i===29?'1':'0.72')+'"><title>'+d.label+' \u00b7 '+fmtLoopAmt(d.vol)+'</title></rect>';
+    return '<rect x="'+(i*20+3)+'" y="'+(BASE-hgt)+'" width="14" height="'+hgt+'" rx="3" fill="var(--pink)" opacity="'+(i===29?'1':'0.72')+'"><title>'+d.label+' \u00b7 '+anaVolDisp(d.vol)+'</title></rect>';
   }).join('');
-  box.innerHTML='<svg viewBox="0 0 600 170" role="img" aria-label="Daily trading volume, last 30 days. Peak day '+peakLabel+' at '+fmtLoopAmt(max)+'.">'
+  box.innerHTML='<svg viewBox="0 0 600 170" role="img" aria-label="Daily trading volume, last 30 days. Peak day '+peakLabel+' at '+anaVolDisp(max)+'.">'
     +'<line x1="0" y1="150.5" x2="600" y2="150.5" stroke="var(--line)" stroke-width="1"/>'+rects+'</svg>'
-    +'<div class="ana-chart-axis"><span>'+days[0].label+'</span><span>Peak '+fmtLoopAmt(max)+'</span><span>'+days[29].label+'</span></div>';
+    +'<div class="ana-chart-axis"><span>'+days[0].label+'</span><span>Peak '+anaVolDisp(max)+'</span><span>'+days[29].label+'</span></div>';
 }
 /* ---------- Top Coins (real registry only) ------------------------ */
 function anaRenderTopCoins(){
@@ -6209,7 +6431,7 @@ function anaRenderTopCoins(){
       +'<td data-label="Coin"><span class="coin-cell">'+feedAvatar(f)+'<span>'+escHtml(f.name)+' <small>$'+escHtml(f.ticker)+'</small></span></span></td>'
       +'<td class="num" data-label="Price">'+f.priceText+'</td>'
       +'<td class="num" data-label="Market Cap">'+f.mcapText+'</td>'
-      +'<td class="num" data-label="Volume">'+(a?fmtLoopAmt(a.vol):'\u2026')+'</td>'
+      +'<td class="num" data-label="Volume">'+(a?anaVolCell(a.vol):'\u2026')+'</td>'
       +'<td class="num" data-label="Trades">'+(a?fmtInt(a.trades):'\u2026')+'</td>'
       +'<td data-label="Status">'+status+'</td></tr>';
   }).join('');
@@ -6230,7 +6452,7 @@ function renderLiveAnalytics(){
     set('anaLaunches',fmtInt(LIVE_TOKENS.length));
     set('anaGraduations',fmtInt(grads));
     set('anaGradRate',LIVE_TOKENS.length?('\u00b7 '+(grads/LIVE_TOKENS.length*100).toFixed(1)+'% of launches'):'All time');
-    if(!LIVE_TOKENS.length){set('anaVolume','0 LOOP');set('anaVolumeSub','All time');set('anaTraders','0')}
+    if(!LIVE_TOKENS.length){set('anaVolume',LOOP_USD?fmtUsdMcap(0):'0 LOOP');set('anaVolumeSub','All time');set('anaTraders','0')}
   }
   if(LENS_CONFIG){
     set('anaCfgLaunchFee',fmtLoopWei(LENS_CONFIG.launchFee));
@@ -6251,8 +6473,8 @@ function renderLiveAnalytics(){
   });
   if(anyHist){
     var doneAll=anaAllSettled();
-    set('anaVolume',fmtLoopAmt(totVol));
-    set('anaVolumeSub',doneAll?(LOOP_USD?('\u2248 '+fmtUsdMcap(totVol*LOOP_USD)+' \u00b7 all time'):'All time'):('Counting\u2026 \u00b7 '+scannedN+' of '+LIVE_TOKENS.length+' tokens scanned'));
+    set('anaVolume',LOOP_USD?fmtUsdMcap(totVol*LOOP_USD):fmtLoopAmt(totVol));
+    set('anaVolumeSub',doneAll?((LOOP_USD?fmtLoopAmt(totVol)+' \u00b7 ':'')+'All time'):('Counting\u2026 \u00b7 '+scannedN+' of '+LIVE_TOKENS.length+' tokens scanned'));
     set('anaTraders',fmtInt(Object.keys(union).length));
     set('anaTradersSub',doneAll?'All time':('Counting\u2026 \u00b7 '+scannedN+' of '+LIVE_TOKENS.length+' tokens scanned'));
   }
@@ -6266,7 +6488,10 @@ function renderLiveAnalytics(){
   if(ANALYTICS.feesAccruedWei!=null||(ANALYTICS.feesByAsset&&ANALYTICS.feesByAsset.length)){
     set('anaFeesCreators',fmtLoopWei(ANALYTICS.feesAccruedWei||0n));
     var others=(ANALYTICS.feesByAsset||[]).filter(function(r){return String(r.asset).toLowerCase()!==ZERO_ADDR&&r.amount>0n});
-    set('anaFeesCreatorsSub',others.length?('Plus '+others.map(function(r){return fmtUnitsSmart(r.amount,r.decimals)+' '+r.symbol}).join(' \u00b7 ')):'Across all tokens');
+    /* One short line: the LOOP total is the tile value, and the
+       sub-line only COUNTS the token-denominated assets — no raw
+       per-asset amounts, no token lists wrapping down the tile. */
+    set('anaFeesCreatorsSub',others.length?('Plus token-denominated fees in '+others.length+' asset'+(others.length===1?'':'s')):'Across all tokens');
   }
   anaRenderChart();
   anaRenderTopCoins();
@@ -6282,7 +6507,7 @@ function renderLiveAnalytics(){
 function resetDetailChrome(){
   document.querySelectorAll('.live-explorer-link').forEach(function(n){n.remove()});
   var fc=document.querySelector('#view-detail .chart-controls'); if(fc)fc.style.display='';
-  var cn=el('chartNote'); if(cn)cn.textContent='Price history — from on-chain trades.';
+  var cn=el('chartNote'); if(cn)cn.textContent=chartNoteStr();
   var fav=el('dFav'); if(fav)fav.style.display='';
   var pl=el('dPoolLabel'); if(pl)pl.textContent='Pool';
   var tb=el('tradeBtn'); if(tb){tb.setAttribute('data-act','toast');tb.setAttribute('data-msg','Connect your wallet to trade');tb.textContent='Trade Now';tb.disabled=false}
@@ -6386,6 +6611,10 @@ function paintLiveDetail(t){
   el('dProgLabel').textContent=t.pendingMigration?'Graduated — waiting for migration':(t.graduated?(t.gradDex?'Graduated — now trading on '+t.gradDex:'Graduated'):'Bonding curve progress to graduation');
   el('dStatMcap').textContent=LOOP_USD?fmtUsdMcap(Number(unitsToDecimalStr(mcapWei,18))*LOOP_USD):fmtEth(mcapWei)+' LOOP';
   var mSub=el('dStatMcapSub'); if(mSub)mSub.textContent=LOOP_USD?fmtEth(mcapWei)+' LOOP':'';
+  /* Until the chart has candles of its own, the big number
+     above it carries the live market cap; once candles exist,
+     paintReadout owns it (and follows the crosshair). */
+  if(!chartCandles.length)paintChartHero(t,Number(unitsToDecimalStr(mcapWei,18)),null);
   var liqRow=el('dStatLiqRow'), liqEl=el('dStatLiq'), liqLab=el('dStatLiqLabel');
   if(liqEl){
     if(t.graduated){
@@ -6400,6 +6629,7 @@ function paintLiveDetail(t){
   }
   paintHoldersStat(t);
   el('dStatTrades').textContent=t.tradeCount!=null?String(t.tradeCount):'…';
+  paintDetailVolume(t);
   el('dStatSupply').textContent=fmtSupply(t);
   el('dAddrToken').textContent=shortA(t.address);
   addExplorerLink(el('dCaChip'),t.address);
@@ -6416,7 +6646,7 @@ function paintLiveDetail(t){
   el('stPrice').textContent=fmtSpotDisp(t.spotPrice);
   var df=el('dFees'); if(df)df.style.display='none';
   var fc=document.querySelector('#view-detail .chart-controls'); if(fc)fc.style.display='';
-  var cn=el('chartNote'); if(cn)cn.textContent='Price history — from on-chain trades.';
+  var cn=el('chartNote'); if(cn)cn.textContent=chartNoteStr();
   /* First paint for this opening resets the chart/trades/holders
      scaffolding. Repaints (post-trade refresh, balance updates)
      must NOT touch them: the trades store renders incrementally
@@ -7037,7 +7267,7 @@ async function refreshLiveAfterTx(){
    timeframe, mode and crosshair survive the live refresh cycle:
    repaints only redraw the canvas, they never reset state. */
 var CHART_TFS={'1s':1,'1m':60,'5m':300,'15m':900,'1h':3600,'4h':14400,'1D':86400};
-var chartTf=(typeof sakuraSettings!=='undefined'&&sakuraSettings.chartTf)?sakuraSettings.chartTf:'5m', chartMode='price', chartHover=-1, chartKey=null, chartCandles=[], chartBound=false;
+var chartTf=(typeof sakuraSettings!=='undefined'&&sakuraSettings.chartTf)?sakuraSettings.chartTf:'5m', chartMode='mcap', chartHover=-1, chartKey=null, chartCandles=[], chartBound=false;
 /* The chart window: chartAllCandles holds the full built series;
    chartCandles is the visible slice of it. The window follows the
    newest activity by default (~120 buckets, tight auto-scale);
@@ -7057,12 +7287,16 @@ function chartResetForToken(t){
   if(typeof sakuraSettings!=='undefined'&&sakuraSettings.chartTf&&CHART_TFS[sakuraSettings.chartTf])chartTf=sakuraSettings.chartTf;
   chartHover=-1; chartCandles=[]; chartAllCandles=[]; chartWin={n:120,endT:null,follow:true};
   var ro=el('chartReadout'); if(ro)ro.innerHTML='';
+  var hv=el('chartHeroVal'); if(hv)hv.textContent='\u2026';
+  var hl=el('chartHeroLabel'); if(hl)hl.textContent='Market cap';
   syncChartControls();
   chartSetMessage('Loading on-chain price history…');
 }
+function chartNoteStr(){return chartMode==='mcap'?'Market cap history \u2014 from on-chain trades.':'Price history \u2014 from on-chain trades.'}
 function syncChartControls(){
   document.querySelectorAll('#tfSeg button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tf')===chartTf)});
   document.querySelectorAll('#modeSeg button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-mode')===chartMode)});
+  var cn=el('chartNote'); if(cn)cn.textContent=chartNoteStr();
 }
 function setChartTf(tf){
   if(!CHART_TFS[tf])return;
@@ -7141,16 +7375,43 @@ function chartEnsureHistory(t,force){
   CHART_HIST_PAGES[key]=used+1;
   bsFetchTradesPage(t,true);
 }
+function chartSupplyMult(t){
+  try{var s=Number(unitsToDecimalStr(t.totalSupply,t.decimals));return s>0?s:1e9}catch(e){return 1e9}
+}
 function chartMult(t){
   var m=1;
-  if(chartMode==='mcap'){
-    try{var s=Number(unitsToDecimalStr(t.totalSupply,t.decimals));m=s>0?s:1e9}catch(e){m=1e9}
-  }
+  if(chartMode==='mcap')m=chartSupplyMult(t);
   /* With the live LOOP/USD rate known, both modes are drawn in
      USD (a constant multiplier — candle shapes are unchanged).
      Without a rate the chart stays in LOOP, exactly as before. */
   if(LOOP_USD)m*=LOOP_USD;
   return m;
+}
+/* A market cap held in LOOP, in its display form: compact USD
+   when the live rate is known, compact LOOP otherwise — a rate
+   is never invented. */
+function fmtMcapFromLoop(loopAmt){
+  if(LOOP_USD)return fmtUsdMcap(loopAmt*LOOP_USD);
+  if(loopAmt>=1000000)return trimNumStr((loopAmt/1000000).toFixed(2))+'M LOOP';
+  if(loopAmt>=1000)return trimNumStr((loopAmt/1000).toFixed(1))+'K LOOP';
+  return trimNumStr(loopAmt.toFixed(2))+' LOOP';
+}
+/* The one dominant number above the chart: the market cap at
+   the crosshair point while the reader scrubs, the live market
+   cap otherwise (ts is null then, and the label stays plain). */
+function paintChartHero(t,loopMcap,ts){
+  var v=el('chartHeroVal'); if(!v)return;
+  v.textContent=fmtMcapFromLoop(loopMcap);
+  var l=el('chartHeroLabel');
+  if(l){
+    var s='Market cap';
+    if(ts!=null){
+      var d=new Date(ts*1000);
+      s+=' \u00b7 '+MONTHS3[d.getMonth()]+' '+d.getDate();
+      if(CHART_TFS[chartTf]<86400)s+=' \u00b7 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    }
+    l.textContent=s;
+  }
 }
 /* Compact tiny-price format (DEXScreener style): when a price
    carries four or more zeros after the decimal point, they
@@ -7208,6 +7469,7 @@ function paintReadout(t){
   if(!n){ro.innerHTML='';return}
   var idx=(chartHover>=0&&chartHover<n)?chartHover:n-1;
   var c=chartCandles[idx], mult=chartMult(t);
+  paintChartHero(t,c.c*chartSupplyMult(t),chartHover>=0?c.t:null);
   var chg=c.o>0?((c.c-c.o)/c.o*100):0;
   ro.innerHTML='<strong>$'+escHtml(t.symbol)+' · '+chartTf+'</strong>'
     +'<span>O <b>'+chartFmtVal(c.o*mult)+'</b></span>'
@@ -7215,7 +7477,7 @@ function paintReadout(t){
     +'<span>L <b>'+chartFmtVal(c.l*mult)+'</b></span>'
     +'<span>C <b>'+chartFmtVal(c.c*mult)+'</b></span>'
     +'<span class="'+(chg>=0?'ro-up':'ro-down')+'">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</span>'
-    +'<span>Vol <b>'+chartFmtVol(c.v)+' LOOP</b></span>';
+    +'<span>Vol <b>'+(LOOP_USD?fmtUsdMcap(c.v*LOOP_USD):chartFmtVol(c.v)+' LOOP')+'</b>'+(LOOP_USD?' <span class="ro-sub">'+chartFmtVol(c.v)+' LOOP</span>':'')+'</span>';
 }
 /* Slice the visible window out of the full series. Following
    mode pins the right edge to the newest bucket, so a live
@@ -7295,14 +7557,47 @@ function drawCandles(t){
     ctx.fillStyle=c.c>=c.o?'rgba(52,169,123,.45)':'rgba(217,95,95,.45)';
     ctx.fillRect(cx-bw/2,volBase-vh,bw,vh);
   });
-  chartCandles.forEach(function(c,i){
-    var cx=i*slot+slot/2, col=c.c>=c.o?CHART_UP:CHART_DOWN;
-    ctx.strokeStyle=col;
-    ctx.beginPath(); ctx.moveTo(cx,Y(c.h*mult)); ctx.lineTo(cx,Y(c.l*mult)); ctx.stroke();
-    var yO=Y(c.o*mult), yC=Y(c.c*mult);
-    ctx.fillStyle=col;
-    ctx.fillRect(cx-bw/2,Math.min(yO,yC),bw,Math.max(1,Math.abs(yC-yO)));
-  });
+  if(chartMode==='mcap'){
+    /* Market cap mode is a LINE chart: bucket closes (price ×
+       fixed total supply) joined in order over a soft area
+       fill, in the window's trend colour. */
+    var lineUp=chartCandles[n-1].c>=chartCandles[0].o;
+    var lineCol=lineUp?CHART_UP:CHART_DOWN;
+    ctx.beginPath();
+    chartCandles.forEach(function(c,i){
+      var cx=i*slot+slot/2, cy=Y(c.c*mult);
+      if(i===0)ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
+    });
+    ctx.save();
+    ctx.lineTo((n-1)*slot+slot/2,topPad+priceH);
+    ctx.lineTo(slot/2,topPad+priceH);
+    ctx.closePath();
+    var grad=ctx.createLinearGradient(0,topPad,0,topPad+priceH);
+    grad.addColorStop(0,lineUp?'rgba(52,169,123,.20)':'rgba(217,95,95,.20)');
+    grad.addColorStop(1,lineUp?'rgba(52,169,123,0)':'rgba(217,95,95,0)');
+    ctx.fillStyle=grad; ctx.fill();
+    ctx.restore();
+    ctx.beginPath();
+    chartCandles.forEach(function(c,i){
+      var cx=i*slot+slot/2, cy=Y(c.c*mult);
+      if(i===0)ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
+    });
+    ctx.strokeStyle=lineCol; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke();
+    ctx.lineWidth=1;
+    var ex=(n-1)*slot+slot/2, ey=Y(chartCandles[n-1].c*mult);
+    ctx.beginPath(); ctx.arc(ex,ey,3.5,0,Math.PI*2);
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.strokeStyle=lineCol; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
+  }else{
+    chartCandles.forEach(function(c,i){
+      var cx=i*slot+slot/2, col=c.c>=c.o?CHART_UP:CHART_DOWN;
+      ctx.strokeStyle=col;
+      ctx.beginPath(); ctx.moveTo(cx,Y(c.h*mult)); ctx.lineTo(cx,Y(c.l*mult)); ctx.stroke();
+      var yO=Y(c.o*mult), yC=Y(c.c*mult);
+      ctx.fillStyle=col;
+      ctx.fillRect(cx-bw/2,Math.min(yO,yC),bw,Math.max(1,Math.abs(yC-yO)));
+    });
+  }
   var lastC=chartCandles[n-1], lv=lastC.c*mult, ly=Y(lv), lastCol=lastC.c>=lastC.o?CHART_UP:CHART_DOWN;
   ctx.strokeStyle=lastCol;
   ctx.setLineDash([4,4]);
@@ -7333,6 +7628,11 @@ function drawCandles(t){
     ctx.beginPath(); ctx.moveTo(hx,0); ctx.lineTo(hx,plotH); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0,Y(hc.c*mult)); ctx.lineTo(plotW,Y(hc.c*mult)); ctx.stroke();
     ctx.setLineDash([]);
+    if(chartMode==='mcap'){
+      ctx.beginPath(); ctx.arc(hx,Y(hc.c*mult),4,0,Math.PI*2);
+      ctx.fillStyle='#fff'; ctx.fill();
+      ctx.strokeStyle=hc.c>=hc.o?CHART_UP:CHART_DOWN; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
+    }
   }
   var lb=el('chartLatestBtn'); if(lb)lb.style.display=chartWin.follow?'none':'inline-flex';
   paintReadout(t);
@@ -7912,7 +8212,17 @@ async function scanLiveStats(acct,myTokens){
       var tev=await queryChunked(cv,cv.filters.Trade(),function(){var c=curveContract(ca6);return [c,c.filters.Trade()]});
       tev.forEach(function(e){vol+=e.args.pairAmount});
     }
-    var sv=el('statVolume'); if(sv)sv.textContent=fmtEth(vol)+' LOOP';
+    var sv=el('statVolume');
+    if(sv){
+      var svUsd=null;
+      if(LOOP_USD){try{svUsd=fmtUsdMcap(Number(unitsToDecimalStr(vol,18))*LOOP_USD)}catch(e){}}
+      sv.textContent=svUsd||(fmtEth(vol)+' LOOP');
+      if(svUsd){
+        var svCard=sv.closest?sv.closest('.stat-card'):null;
+        var svSpan=svCard?svCard.querySelector('span'):null;
+        if(svSpan)svSpan.textContent=fmtEth(vol)+' LOOP \u00b7 across your tokens \u00b7 all time on-chain';
+      }
+    }
   }catch(e){
     /* Fall back to the current claimable sum — never invent a number */
     if(sfe){
