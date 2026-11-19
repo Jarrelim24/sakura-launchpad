@@ -134,8 +134,8 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .trend-card{flex:0 0 252px;scroll-snap-align:start;background:none;border:0;padding:0;cursor:pointer;text-align:left;color:var(--ink)}
 .trend-art{height:252px;border-radius:16px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:transform .25s ease,box-shadow .25s ease;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
 .trend-card:hover .trend-art{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
-.trend-art .big-glyph{font-size:88px;font-weight:700;color:rgba(255,255,255,.92);letter-spacing:-.04em;text-shadow:0 4px 18px rgba(0,0,0,.18);position:relative;z-index:2}
-.trend-art .ring{position:absolute;border:2px solid rgba(255,255,255,.28);border-radius:50%}
+.trend-art .big-glyph{font-size:54px;font-weight:600;color:rgba(255,255,255,.85);letter-spacing:-.02em;text-shadow:0 2px 10px rgba(0,0,0,.15);position:relative;z-index:2}
+.trend-art .ring{position:absolute;border:2px solid rgba(255,255,255,.12);border-radius:50%}
 .trend-art .pair-tag{position:absolute;top:12px;left:12px;z-index:3;background:rgba(10,6,10,.42);color:#fff;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px;backdrop-filter:blur(4px)}
 .trend-art .grad-tag{position:absolute;top:12px;right:12px;z-index:3;background:#fff;color:#0E6B43;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px}
 .trend-meta{padding:12px 2px 0}
@@ -183,7 +183,7 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .gcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:0;cursor:pointer;text-align:left;color:var(--ink);overflow:hidden;transition:transform .18s,box-shadow .18s;width:100%}
 .gcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
 .gcard-art{height:138px;display:flex;align-items:center;justify-content:center;position:relative}
-.gcard-art .big-glyph{font-size:48px;font-weight:700;color:rgba(255,255,255,.92);text-shadow:0 3px 12px rgba(0,0,0,.16)}
+.gcard-art .big-glyph{font-size:34px;font-weight:600;color:rgba(255,255,255,.85);text-shadow:0 2px 8px rgba(0,0,0,.14)}
 .gcard-body{padding:14px 16px 16px}
 .show-more-wrap{text-align:center;margin:26px 0 4px}
 .btn-more{border-radius:14px;padding:13px 38px;font-size:15px}
@@ -1212,12 +1212,11 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
     <div class="d-grid">
       <div>
         <div class="d-stats" style="margin-top:2px">
-          <div class="d-stat"><small>Market cap</small><strong id="dStatMcap">—</strong></div>
-          <div class="d-stat"><small>Holders</small><strong id="dStatHolders">—</strong></div>
-          <div class="d-stat"><small>Trades</small><strong id="dStatTrades">—</strong></div>
+          <div class="d-stat"><small>Market cap</small><strong id="dStatMcap">…</strong></div>
+          <div class="d-stat" id="dStatHoldersTile"><small>Holders</small><strong id="dStatHolders">…</strong></div>
+          <div class="d-stat"><small>Trades</small><strong id="dStatTrades">…</strong></div>
           <div class="d-stat"><small>Supply</small><strong id="dStatSupply">1B</strong></div>
-          <div class="d-stat"><small>Creator earned</small><strong id="dStatEarned">—</strong></div>
-          <div class="d-stat"><small>Pair</small><strong id="dStatPair">—</strong></div>
+          <div class="d-stat"><small>Pair</small><strong id="dStatPair">…</strong></div>
         </div>
 
         <div id="dFees" style="display:none;margin-top:14px;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:14px;padding:14px 16px">
@@ -1403,14 +1402,29 @@ function artBg(t){return 'background:linear-gradient(140deg,'+t.c2+' 0%,'+t.colo
    warm rose), so rows stay distinguishable without any single
    saturated block shouting. Saturation and lightness stay low;
    the letter sits on it in a calm semibold. */
-function petalColors(addr){
+function petalHue(addr){
   var a=String(addr||'').toLowerCase(),h=0,i;
   for(i=0;i<a.length;i++)h=(h*31+a.charCodeAt(i))>>>0;
   var hue=306+(h%68); if(hue>360)hue-=360;
+  return hue;
+}
+function petalColors(addr){
+  var hue=petalHue(addr);
   var hue2=hue+14; if(hue2>360)hue2-=360;
   return {c2:'hsl('+hue+',34%,37%)',color:'hsl('+hue2+',38%,26%)'};
 }
 function softGrad(addr){var p=petalColors(addr);return 'linear-gradient(140deg,'+p.c2+' 0%,'+p.color+' 100%)'}
+/* Large rail / grid tiles use the SAME per-address petal hue as
+   the 44px row avatars, but mixed right down — low saturation and
+   deep, quiet lightness — so a photo-less tile reads as a calm
+   dark plum panel tinted with its hue, never a saturated block.
+   Tiles for tokens WITH photos stay full-bleed photos; this
+   gradient only sits behind the letter (or under a photo). */
+function tileGrad(addr){
+  var hue=petalHue(addr);
+  var hue2=hue+14; if(hue2>360)hue2-=360;
+  return 'linear-gradient(150deg,hsl('+hue+',16%,21%) 0%,hsl('+hue2+',18%,12%) 100%)';
+}
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function avatarInner(t){return t.img?'<img src="'+t.img+'" alt=""/>':escHtml(t.name.charAt(0))}
 function avatarStyle(t){return t.img?'background:var(--surface2)':artBg(t)}
@@ -1643,7 +1657,7 @@ function updateListRow(node,t){
   syncChange(node,t,'trow-change');
 }
 function gridCardHtml(t){
-  return '<button class="gcard" data-act="live-token" data-addr="'+t.addr+'"><span class="gcard-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+(t.pendMig?'<span class="pending-tag" style="position:absolute;top:10px;right:10px">Graduated · pending migration</span>':(t.grad?'<span class="graduated-tag" style="position:absolute;top:10px;right:10px;background:#fff">Graduated</span>':''))+'</span>'
+  return '<button class="gcard" data-act="live-token" data-addr="'+t.addr+'"><span class="gcard-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:'+tileGrad(t.addr)+'">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+(t.pendMig?'<span class="pending-tag" style="position:absolute;top:10px;right:10px">Graduated · pending migration</span>':(t.grad?'<span class="graduated-tag" style="position:absolute;top:10px;right:10px;background:#fff">Graduated</span>':''))+'</span>'
     +'<span class="gcard-body" style="display:block"><span class="trow-name" style="font-size:16px">'+escHtml(t.name)+'</span>'
     +'<span class="trow-sub">by '+escHtml(t.creator)+' · '+t.dateStr+' · '+t.pair+' pair</span>'
     +'<span style="display:flex;justify-content:space-between;align-items:baseline;margin-top:9px"><span class="trow-mcap">'+t.mcapText+'</span><span class="js-chg">'+changeHtml(t,'')+'</span></span>'
@@ -1705,7 +1719,7 @@ function setFilter(btn){document.querySelectorAll('.ftab').forEach(function(b){b
 function setViewMode(m){viewMode=m;document.getElementById('segList').classList.toggle('active',m==='list');document.getElementById('segGrid').classList.toggle('active',m==='grid');renderTokens()}
 /* ===== Trending carousel + category rails (live feed only) ===== */
 function trendCard(t,r,sub){
-  return '<button class="trend-card" data-act="live-token" data-addr="'+t.addr+'" aria-label="'+escHtml(t.name)+' — open token details"><span class="trend-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="ring" style="width:300px;height:300px;right:-110px;top:-110px"></span><span class="ring" style="width:190px;height:190px;left:-70px;bottom:-80px"></span>')+'<span class="pair-tag">'+t.pair+' pair</span>'+(t.grad?'<span class="grad-tag">Graduated</span>':'')+(t.img?'':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+'</span>'
+  return '<button class="trend-card" data-act="live-token" data-addr="'+t.addr+'" aria-label="'+escHtml(t.name)+' — open token details"><span class="trend-art" data-letter="'+escHtml(t.name.charAt(0))+'" style="background:'+tileGrad(t.addr)+'">'+(t.img?'<img class="cover" data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/>':'<span class="ring" style="width:300px;height:300px;right:-110px;top:-110px"></span><span class="ring" style="width:190px;height:190px;left:-70px;bottom:-80px"></span>')+'<span class="pair-tag">'+t.pair+' pair</span>'+(t.grad?'<span class="grad-tag">Graduated</span>':'')+(t.img?'':'<span class="big-glyph">'+escHtml(t.name.charAt(0))+'</span>')+'</span>'
     +'<span class="trend-meta" style="display:block"><span class="rank">'+(r+1)+'</span><span class="tname">'+escHtml(t.name)+'</span><span class="trend-vals" style="display:flex"><span class="mcap">'+t.mcapText+'</span><span class="js-chg">'+changeHtml(t,'')+'</span></span>'+(sub?'<span class="trend-sub" style="display:block;color:var(--faint);font-size:12.5px;font-weight:700;margin-top:2px">'+sub+'</span>':'')+'</span></button>';
 }
 function updateTrendCard(node,t,r,sub){
@@ -4214,10 +4228,11 @@ function maybeRefreshDetailTabs(){
   var t=currentLive, key=String(t.address).toLowerCase();
   var st=BS_TRADES[key];
   if(!st||Date.now()-(st.attemptAt||0)>20000)bsFetchTradesPage(t,false);
-  if(dTab==='holders'){
-    var hc=HOLDERS_CACHE[key];
-    if(!hc||hc.status==='error')ensureHoldersLoaded(t);
-  }
+  /* A missing or failed holders read retries here too (not only
+     while the Holders tab is active) so the Holders stat tile
+     can fill in — or stay hidden — on its own. */
+  var hc=HOLDERS_CACHE[key];
+  if(!hc||hc.status==='error')ensureHoldersLoaded(t);
 }
 /* ---------- Holders derived from Transfer history (Fix C) ---------- */
 var HOLDERS_CACHE={};
@@ -4241,6 +4256,25 @@ function holderRowsFromBalances(t,bal){
   });
   rows.sort(function(x,y){return y.balance>x.balance?1:(y.balance<x.balance?-1:0)});
   return {rows:rows,burn:burn,count:rows.length};
+}
+/* The Holders stat tile mirrors the holders cache, which is fed
+   by the same explorer-index holders read as the Holders tab:
+   the real count once that read has answered, "…" while it is
+   still in flight, and NO tile at all when the count could not
+   be loaded — a figure Sakura cannot compute is hidden, never
+   shown as a dangling dash. */
+function paintHoldersStat(t){
+  var tile=el('dStatHoldersTile'), hs=el('dStatHolders'); if(!tile||!hs||!t)return;
+  var cache=HOLDERS_CACHE[String(t.address).toLowerCase()];
+  if(cache&&cache.status==='done'){
+    tile.style.display='';
+    hs.textContent=String(cache.holderTotal!=null?cache.holderTotal:holderRowsFromBalances(t,cache.balances).count);
+  }else if(cache&&cache.status==='error'){
+    tile.style.display='none';
+  }else{
+    tile.style.display='';
+    if(hs.textContent!=='…')hs.textContent='…';
+  }
 }
 function renderHoldersError(t){
   var ul=el('dHoldersList'); if(!ul)return;
@@ -4268,7 +4302,7 @@ function renderHolders(t){
   }
   if(!derived.rows.length&&!derived.burn)html='<li><span style="color:var(--muted)">No holders yet</span></li>';
   ul.innerHTML=html;
-  var hs=el('dStatHolders'); if(hs&&currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())hs.textContent=String(totalCount);
+  if(currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())paintHoldersStat(t);
   if(dTab==='holders'){var tt=el('dTradesTotal'); if(tt)tt.textContent=totalCount+' holders'}
 }
 /* Holders come from the explorer's indexed holders endpoint —
@@ -4309,12 +4343,14 @@ async function ensureHoldersLoaded(t){
     HOLDERS_CACHE[key]={status:'done',balances:bal,scannedTo:0,holderTotal:total};
     if(currentLive&&String(currentLive.address).toLowerCase()===key){
       if(dTab==='holders')renderHolders(t);
-      var derived=holderRowsFromBalances(t,bal);
-      var hs=el('dStatHolders'); if(hs)hs.textContent=String(total!=null?total:derived.count);
+      paintHoldersStat(t);
     }
   }catch(e){
     HOLDERS_CACHE[key]={status:'error',balances:null,scannedTo:0,at:Date.now()};
-    if(currentLive&&String(currentLive.address).toLowerCase()===key&&dTab==='holders')renderHoldersError(t);
+    if(currentLive&&String(currentLive.address).toLowerCase()===key){
+      paintHoldersStat(t);
+      if(dTab==='holders')renderHoldersError(t);
+    }
   }
 }
 /* ---------- Sell % chips + custom slippage (Fixes D & E) ---------- */
@@ -5147,6 +5183,10 @@ function openLiveDetail(addr){
   paintLiveDetail(t);
   goToView('detail');
   loadLiveChartAndTrades(t);
+  /* The Holders stat reads from the same explorer-index holders
+     source as the Holders tab — start that read on open so the
+     stat fills in without waiting for the tab to be visited. */
+  ensureHoldersLoaded(t);
   refreshLiveBalance();
   /* Quotes must come from the LATEST Lens reserves: re-run a Lens
      refresh for this opening (the repaint lands when it returns). */
@@ -5206,11 +5246,9 @@ function paintLiveDetail(t){
   el('dProgPct').textContent=t.pendingMigration?'100% · graduated — migration pending':(t.graduated?'100% · graduated':(pct.toFixed(2)+'% · '+fmtEth(t.realReserves)+' / '+fmtEth(t.threshold)+' LOOP'));
   el('dProgLabel').textContent=t.pendingMigration?'Graduated — waiting for migration':(t.graduated?(t.gradDex?'Graduated — now trading on '+t.gradDex:'Graduated'):'Bonding curve progress to graduation');
   el('dStatMcap').textContent=fmtEth(mcapWei)+' LOOP';
-  var hCache=HOLDERS_CACHE[dKey];
-  el('dStatHolders').textContent=(hCache&&hCache.status==='done')?String(hCache.holderTotal!=null?hCache.holderTotal:holderRowsFromBalances(t,hCache.balances).count):'—';
+  paintHoldersStat(t);
   el('dStatTrades').textContent=t.tradeCount!=null?String(t.tradeCount):'…';
   el('dStatSupply').textContent=fmtSupply(t);
-  el('dStatEarned').textContent='—';
   el('dStatPair').textContent='LOOP';
   el('dAddrToken').textContent=shortA(t.address);
   addExplorerLink(el('dAddrToken'),t.address);
