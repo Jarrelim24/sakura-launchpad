@@ -124,6 +124,20 @@ button,a,[data-act],select,input,textarea,label{touch-action:manipulation}
 #launchBtn:disabled{transform:none;box-shadow:var(--cta-shadow)}
 #launchBtn::before{content:'';width:0;height:17px;flex:none;border-radius:50%;opacity:0;transition:width .2s ease,opacity .2s ease}
 #launchBtn:disabled::before{width:17px;opacity:1;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+/* ===== Instant press feedback + working state (primary CTAs) =====
+   Wallet WebViews paint :active late or not at all, so the press
+   state is driven from pointerdown instead: .cta-press lands in
+   the same frame as the finger, and .cta-working adds a moving
+   sheen (plus a spinner on CTAs that had none) from that same
+   frame until the flow that owns the button finishes. */
+.cta-press{transform:scale(.95)!important;transition:transform .08s ease!important}
+.btn.cta-working::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.30) 50%,transparent 75%);transform:translateX(-130%);animation:ctaSheen 1.15s ease-in-out infinite;pointer-events:none}
+@keyframes ctaSheen{to{transform:translateX(130%)}}
+#claimConfirmBtn.cta-working::before,#promoPayBtn.cta-working::before,[data-act="migrate"].cta-working::before{content:'';width:17px;height:17px;flex:none;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+/* Persistent hint shown when a sent transaction's wallet prompt
+   has not appeared after a few seconds — never a silent wait. */
+.wallet-hint{display:none;font-size:12.5px;font-weight:700;color:var(--gold);line-height:1.5;margin:10px 0 0}
+@media(prefers-reduced-motion:reduce){.btn.cta-working::after{animation:none}.cta-press{transition:none}}
 /* Press feedback for tappables that had none of their own. */
 .nav a:active{background:var(--surface2);color:var(--ink)}
 .seg button:active{transform:scale(.92)}
@@ -1274,6 +1288,7 @@ button.qrow{cursor:pointer}
           <p class="hint" id="ipfsNote" style="display:none"></p>
           <div id="launchCheck" style="display:none;margin:0 0 14px"></div>
           <div class="form-nav"><button class="btn btn-ghost" type="button" data-act="step" data-step="1">‹ Back to Identity</button><span class="spacer"></span><button class="btn btn-primary" id="launchBtn" style="padding:14px 28px;font-size:15px" type="submit">Launch My Token</button></div>
+          <p class="wallet-hint" id="launchWalletHint" style="text-align:right">If the confirmation doesn’t appear, tap your wallet icon.</p>
         </div>
       </form>
       <div>
@@ -1459,7 +1474,7 @@ button.qrow{cursor:pointer}
       <div class="stat-card"><small>Total Volume</small><strong id="anaVolume"><span class="ana-skel"></span></strong><span id="anaVolumeSub">All time</span></div>
       <div class="stat-card"><small>Tokens Launched</small><strong id="anaLaunches"><span class="ana-skel"></span></strong><span>All time</span></div>
       <div class="stat-card"><small>Graduations</small><strong id="anaGraduations"><span class="ana-skel"></span></strong><span id="anaGradRate">All time</span></div>
-      <div class="stat-card"><small>Unique Traders</small><strong id="anaTraders"><span class="ana-skel"></span></strong><span>All time</span></div>
+      <div class="stat-card"><small>Unique Traders</small><strong id="anaTraders"><span class="ana-skel"></span></strong><span id="anaTradersSub">All time</span></div>
     </div>
 
     <div class="panel" style="margin-bottom:16px">
@@ -1612,6 +1627,7 @@ button.qrow{cursor:pointer}
           <p style="color:var(--muted);font-size:13.5px;font-weight:600;margin:0 0 14px">Curve trading has stopped. Migrate to Uniswap V2 to open pool trading — anyone can do it.</p>
           <button class="btn btn-primary" data-act="migrate" style="width:100%;min-height:50px;padding:14px">Migrate to Uniswap V2</button>
           <p class="trade-error" id="migError" role="alert"></p>
+          <p class="wallet-hint" id="migWalletHint">If the confirmation doesn’t appear, tap your wallet icon.</p>
         </div>
         <div id="tradeFormBody">
         <div class="trade-toggle"><span class="tt-thumb" id="ttThumb" aria-hidden="true"></span><button id="btnBuy" class="active-buy" data-act="side" data-side="buy" aria-pressed="true">BUY</button><button id="btnSell" data-act="side" data-side="sell" aria-pressed="false">SELL</button></div>
@@ -1627,6 +1643,7 @@ button.qrow{cursor:pointer}
         <p id="quoteNote" style="display:none;font-size:12px;color:var(--gold);font-weight:700;margin:10px 0 0"></p>
         <p class="trade-error" id="tradeError" role="alert"></p>
         <button class="btn btn-primary" id="tradeBtn" style="width:100%;margin-top:14px;padding:14px" data-act="toast" data-msg="Connect your wallet to trade">Trade Now</button>
+        <p class="wallet-hint" id="tradeWalletHint">If the confirmation doesn’t appear, tap your wallet icon.</p>
         <p id="tradeNote" style="font-size:12.5px;color:var(--muted)">The price climbs as people buy. Sell back into the curve any time before graduation.</p>
         </div><!-- /tradeFormBody -->
         <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13px"><strong>Safety checks</strong><br><span style="color:var(--muted)">Fixed 1B supply · No hidden mint · No wallet freeze · LP locked forever after graduation</span></div>
@@ -1675,6 +1692,7 @@ button.qrow{cursor:pointer}
           <div class="fee-row"><span style="color:var(--muted)">Your position</span><strong id="promoPos">…</strong></div>
           <p class="trade-error" id="promoError" role="alert"></p>
           <div class="wm-connecting" id="promoBusy"><div class="spinner"></div><p style="font-weight:800;margin:0">Sending to your wallet…</p><p style="color:var(--muted);font-size:13px;margin:4px 0 0">Confirm the transaction in your wallet app.</p></div>
+          <p class="wallet-hint" id="promoWalletHint">If the confirmation doesn’t appear, tap your wallet icon.</p>
           <button class="btn btn-primary" id="promoPayBtn" data-act="promote-pay" style="width:100%;margin-top:14px;padding:14px">Buy banner</button>
           <p class="wm-foot">Paid in LOOP. Banners run in purchase order.</p>
         </div>
@@ -1779,6 +1797,7 @@ button.qrow{cursor:pointer}
     <div id="claimBody"></div>
     <p id="claimError" style="display:none;color:var(--red);font-weight:700;font-size:14px;line-height:1.5;margin:12px 0 0"></p>
     <div class="wm-connecting" id="claimBusy"><div class="spinner"></div><p style="font-weight:800;margin:0">Sending to your wallet…</p><p style="color:var(--muted);font-size:13px;margin:4px 0 0">Confirm the transaction in your wallet app.</p></div>
+    <p class="wallet-hint" id="claimWalletHint" style="text-align:center">If the confirmation doesn’t appear, tap your wallet icon.</p>
     <button class="btn btn-primary" id="claimConfirmBtn" data-act="claim-confirm" style="width:100%;margin-top:14px;padding:14px">Confirm Claim</button>
     <p class="wm-foot" id="claimFoot">One transaction on Loop.<br/>Fees never expire, and claiming never touches curve liquidity.</p>
   </div>
@@ -2910,7 +2929,7 @@ function openClaim(indices){
     +'<div class="fee-row"><span style="color:var(--muted)">To fee wallet</span><strong>'+shortAddr(feeWalletAddress)+'</strong></div>'
     +'<div class="fee-row"><span style="color:var(--muted)">Signature</span><strong>1 transaction</strong></div>';
   document.getElementById('claimBusy').classList.remove('show');
-  document.getElementById('claimConfirmBtn').style.display='block';
+  var ocb=document.getElementById('claimConfirmBtn'); ocb.style.display='block'; ocb.classList.remove('cta-working');
   document.getElementById('claimModal').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -3493,6 +3512,18 @@ function refreshDetection(){
 var LEGAL_LINKS='By connecting, you agree to the <a href="#" data-act="wallet-legal" data-msg="Terms of Use coming soon">Terms of Use</a> and <a href="#" data-act="wallet-legal" data-msg="Privacy Policy coming soon">Privacy Policy</a>.';
 var readProvider=null,factoryRO=null,factoryROs=[],vaultRO=null,configRO=null,v2FactoryRO=null,v2RouterRO=null,v2FactoryLegacyRO=null,lensRO=null,bannerRO=null;
 var liveAccount=null,liveConnected=false,liveChainOk=false,liveBalanceWei=null;
+/* Short-TTL cache of the reads the continuous live loop already
+   performs — native LOOP balance, the open token's balance, the
+   gas price — so a tap on Buy / Sell / Launch / Claim / Promote /
+   Migrate can run its pre-flight from values seconds old instead
+   of re-reading the slow Loop RPC before the wallet prompt ever
+   appears. Anything older than CACHE_TTL (or never read) is
+   fetched fresh, exactly as before; amounts, fee logic and the
+   contract calls themselves are untouched. */
+var CACHE_TTL=30000;
+var liveCache={balAt:0,tokBalAt:0,tokBalAddr:'',gasWei:null,gasAt:0};
+function cacheFresh(ts){return !!ts&&Date.now()-ts<=CACHE_TTL}
+function liveReadAgeMs(){return LIVE_READ_AT?Date.now()-(LIVE_READ_AT.getTime?LIVE_READ_AT.getTime():LIVE_READ_AT):Infinity}
 var LIVE_TOKENS=[],LIVE_BY_ADDR={},liveRegistryLoaded=false;
 var detailMode='demo',currentLive=null;
 /* ===== Local per-address token metadata ==============================
@@ -4731,7 +4762,7 @@ async function bsFetchTradesPage(t,useNext){
    transaction, preferring the leg that touches the curve/pool
    (a swap routes WLOOP through the router too — the counterparty
    leg is the trade's own amount). Cached per tx hash; lookups run
-   at most 4 at a time. Null means "no WLOOP leg exists" — the
+   at most 8 at a time. Null means "no WLOOP leg exists" — the
    LOOP cell then stays blank by design. */
 function bsPickLoopLeg(items,cps){
   var legs=[];
@@ -4757,7 +4788,7 @@ function bsLoopAmount(txHash,cps){
   return p;
 }
 function bsLoopPump(){
-  while(BS_LOOP_INFLIGHT<4&&BS_LOOP_QUEUE.length){
+  while(BS_LOOP_INFLIGHT<8&&BS_LOOP_QUEUE.length){
     var job=BS_LOOP_QUEUE.shift();
     BS_LOOP_INFLIGHT++;
     (async function(){
@@ -5137,7 +5168,7 @@ async function applySellPct(pct){
   if(!liveConnected){toast('Connect your wallet first');return}
   var bal=liveTokBalWei;
   if(bal==null){
-    try{bal=await tokenContract(t.address).balanceOf(liveAccount);liveTokBalWei=bal}catch(e){}
+    try{bal=await tokenContract(t.address).balanceOf(liveAccount);liveTokBalWei=bal;liveCache.tokBalAt=Date.now();liveCache.tokBalAddr=String(t.address).toLowerCase()}catch(e){}
   }
   if(bal==null){toast('Balance couldn’t be loaded.');return}
   if(bal<=0n){showTradeError('You hold no $'+t.symbol+' to sell.');toast('You hold no $'+t.symbol+' to sell');return}
@@ -5263,7 +5294,7 @@ function syncLiveChrome(){
   gateLiveLaunch();
 }
 async function refreshLiveWalletUI(){
-  if(liveAccount&&readProvider){try{liveBalanceWei=await readProvider.getBalance(liveAccount)}catch(e){}}
+  if(liveAccount&&readProvider){try{liveBalanceWei=await readProvider.getBalance(liveAccount);liveCache.balAt=Date.now()}catch(e){}}
   syncPill(); syncLiveIdentity(); syncLiveChrome();
 }
 async function ensureLoop(){
@@ -5692,6 +5723,12 @@ function scheduleNextLiveRefresh(){
   if(liveRefreshTimer)clearTimeout(liveRefreshTimer);
   liveRefreshTimer=setTimeout(function(){
     liveRefreshTimer=null;
+    /* A trade / launch / claim / promote / migrate flow owns the
+       RPC while it runs: defer this cycle instead of competing
+       with the flow's own reads for the slow Loop endpoints. The
+       timer re-arms here, and the flow's completion triggers its
+       own re-read, so nothing goes stale. */
+    if(anyFlowBusy()){scheduleNextLiveRefresh();return}
     /* If the Web3 library itself never loaded, the tick re-runs
        the boot path (which retries the library load) instead of
        the Lens read. */
@@ -5705,6 +5742,9 @@ function scheduleNextLiveRefresh(){
    otherwise cancel the pending wait and read right now. */
 function kickLiveRefresh(){
   if(liveLoadPromise)return;
+  /* Never steal RPC bandwidth from an in-flight wallet flow; the
+     deferred timer cycle picks the refresh up once it ends. */
+  if(anyFlowBusy())return;
   if(liveRefreshTimer){clearTimeout(liveRefreshTimer);liveRefreshTimer=null}
   loadLiveTokens();
 }
@@ -5743,7 +5783,15 @@ async function loadLiveTokensInner(){
          live read too (the trade panel repaints inside). */
       if(detailMode==='live'){
         var dv=el('view-detail');
-        if(dv&&dv.classList.contains('active'))paintLiveDetail(currentLive);
+        /* Protected regions: while a wallet flow runs from the
+           Buy/Sell panel, or the user is interacting with the
+           trade form / create form, this cycle does NOT repaint
+           the detail page at all — the form's DOM nodes, the
+           button's press/busy state and whatever the user has
+           typed survive the refresh untouched, so a tap can never
+           land on a node that was just swapped under the finger.
+           The next cycle after the interaction repaints as usual. */
+        if(dv&&dv.classList.contains('active')&&!regionProtected())paintLiveDetail(currentLive);
         /* The Trades/Holders tabs ride this cycle too: throttled
            explorer-index refresh (new trades prepend, failed tab
            loads retry) — no manual refresh control anywhere. */
@@ -5766,7 +5814,7 @@ async function loadLiveTokensInner(){
     enrichLiveTokens(mapped.slice());
     /* A connected wallet sitting on Profile gets its live claimable
        and holdings refreshed with the same cycle. */
-    if(liveConnected){var pv=el('view-profil');if(pv&&pv.classList.contains('active'))renderLiveProfile()}
+    if(liveConnected&&!claimBusy){var pv=el('view-profil');if(pv&&pv.classList.contains('active'))renderLiveProfile()}
   }catch(e){
     liveLoadError=liveErrText(e);
     console.warn('[Sakura] Live Lens read failed:',e);
@@ -5848,6 +5896,12 @@ var tcSortLive='vol';
 var anaTab='24h';
 var anaActivated=false;
 var ANA_HIST={}, ANA_HIST_AT={}, ANA_HIST_INFLIGHT={}, anaHistTimer=null;
+/* ANA_DONE[key] stamps when a token's scan pass has FINISHED —
+   successfully or not. Settled-ness is tracked separately from
+   ANA_HIST so a failed pass (which may hold no history at all)
+   still counts as scanned: one bad read can no longer hold the
+   page's totals and chart header hostage forever. */
+var ANA_DONE={};
 var ANA_TREASURY_WEI=null, anaTreasuryAt=0, anaTreasuryBusy=false;
 var anaVaultAt=0, anaVaultBusy=false;
 var ANA_WIN={'24h':86400,'7d':604800,'all':Infinity};
@@ -5878,7 +5932,17 @@ function fmtInt(n){return Number(n).toLocaleString('en-US')}
    covered, classifies the trades, and resolves each trade's LOOP
    leg through the shared bsLoopAmount cache — the same machinery
    behind the Launches page's 24h volume and trending figures, so
-   both pages always agree. A failed pass keeps the token's last
+   both pages always agree. Results publish PROGRESSIVELY: every
+   completed page lands in ANA_HIST and repaints, so a token's
+   Top Coins row, the headline totals and the chart fill in as
+   the scan walks instead of all at once at the end. Graduated
+   tokens scan FIRST — their trades settle in the pool, and in
+   plain registry order they sat at the back of the queue behind
+   every curve token's leg lookups and starved. A refresh pass is
+   INCREMENTAL: it keeps the cached history and stops paging as
+   soon as it reaches trades the cache already holds, so the
+   site's live refresh cycle reuses finished work instead of
+   rescanning from zero. A failed pass keeps the token's last
    good history; passes re-run at most once every two minutes. */
 function anaKick(){
   if(!anaActivated||!liveRegistryLoaded)return;
@@ -5888,6 +5952,10 @@ function anaKick(){
     var now=Date.now();
     var todo=LIVE_TOKENS.filter(function(t){var k=String(t.address).toLowerCase();return !ANA_HIST_INFLIGHT[k]&&!(ANA_HIST_AT[k]&&now-ANA_HIST_AT[k]<120000)});
     if(!todo.length)return;
+    /* Graduated first, registry order preserved within each
+       group — pool tokens resolve in the same pass as curve
+       tokens instead of after all of them. */
+    todo.sort(function(a,b){return (b.graduated?1:0)-(a.graduated?1:0)});
     var idx=0;
     async function worker(){
       while(idx<todo.length){
@@ -5897,7 +5965,7 @@ function anaKick(){
       }
     }
     var ws=[];
-    for(var w=0;w<Math.min(3,todo.length);w++)ws.push(worker());
+    for(var w=0;w<Math.min(5,todo.length);w++)ws.push(worker());
     Promise.all(ws).then(function(){try{renderLiveAnalytics()}catch(e){}});
   },400);
 }
@@ -5905,45 +5973,69 @@ function anaFetchHistory(t){
   var key=String(t.address).toLowerCase();
   if(ANA_HIST_INFLIGHT[key])return ANA_HIST_INFLIGHT[key];
   ANA_HIST_AT[key]=Date.now();
+  delete ANA_DONE[key];
   var p=anaFetchHistoryRun(t,key);
   ANA_HIST_INFLIGHT[key]=p;
   return p;
 }
 async function anaFetchHistoryRun(t,key){
+  var prev=ANA_HIST[key];
   try{
     var cps=[];
     if(t.curve)cps.push(String(t.curve).toLowerCase());
     if(t.pairAddr)cps.push(String(t.pairAddr).toLowerCase());
     var cutoff=Math.floor(Date.now()/1000)-30*86400;
-    var trades=[], seen={}, next=null, pages=0, complete=false;
+    /* Incremental seed: the cached history and its dedupe keys
+       carry over, so this pass only fetches and prices trades
+       the cache has never seen. */
+    var trades=prev?prev.list.slice():[], seen={};
+    if(prev&&prev.keys)Object.keys(prev.keys).forEach(function(k){seen[k]=1});
+    var next=null, pages=0, complete=false;
     while(pages<24){
       var q=next?('?'+bsQuery(next)):'';
       var d=await bsFetchJson('/tokens/'+t.address+'/transfers'+q);
       var items=(d&&d.items)||[];
-      var evs=bsTradeEvents(t,items).filter(function(e){
-        if(e.ts==null||!e.transactionHash)return false;
+      var fresh=[];
+      bsTradeEvents(t,items).forEach(function(e){
+        if(e.ts==null||!e.transactionHash)return;
         var k=String(e.transactionHash).toLowerCase()+'|'+String(e.index)+'|'+String(e.args.trader)+'|'+String(e.args.tokenAmount);
-        if(seen[k])return false;
+        if(seen[k])return;
         seen[k]=1;
-        return true;
+        fresh.push(e);
       });
-      var legs=await Promise.all(evs.map(function(e){return bsLoopAmount(e.transactionHash,cps)}));
-      evs.forEach(function(e,i){
+      var legs=await Promise.all(fresh.map(function(e){return bsLoopAmount(e.transactionHash,cps)}));
+      fresh.forEach(function(e,i){
         var loop=0, leg=legs[i];
         if(leg!=null){try{loop=Number(unitsToDecimalStr(leg,18))}catch(err){loop=0}}
         trades.push({ts:e.ts,loop:loop,trader:String(e.args.trader).toLowerCase()});
       });
       pages++;
+      /* Publish this page NOW: the token's row, the running
+         totals and the chart repaint from what has landed so
+         far instead of waiting for the whole history. */
+      ANA_HIST[key]={list:trades,keys:Object.assign({},seen),complete:false,at:Date.now()};
+      try{renderLiveAnalytics()}catch(e){}
       next=(d&&d.next_page_params)?d.next_page_params:null;
       if(!next){complete=true;break}
+      /* Transfers arrive newest-first: a page with no new trades
+         means the walk has reached history the cache already
+         covers completely — everything older is counted. */
+      if(prev&&prev.complete&&!fresh.length){complete=true;break}
       var oldest=null;
       items.forEach(function(it){
         if(it&&it.timestamp){var ms=Date.parse(it.timestamp);if(!isNaN(ms)){var s=Math.floor(ms/1000);if(oldest===null||s<oldest)oldest=s}}
       });
-      if(oldest!==null&&oldest<cutoff)break;
+      if(oldest!==null&&oldest<cutoff){complete=true;break}
     }
-    ANA_HIST[key]={list:trades,complete:complete,at:Date.now()};
-  }catch(e){/* a failed pass keeps the last good history for this token */}
+    ANA_HIST[key]={list:trades,keys:Object.assign({},seen),complete:complete,at:Date.now()};
+  }catch(e){
+    /* A failed pass keeps the last good history (the partial
+       publishes above included). A token with no history at all
+       still gets an entry, so it counts as scanned — empty for
+       now — and the next cycle's retry fills it in. */
+    if(!ANA_HIST[key])ANA_HIST[key]={list:[],keys:{},complete:false,failed:true,at:Date.now()};
+  }
+  ANA_DONE[key]=Date.now();
   ANA_HIST_AT[key]=Date.now();
   delete ANA_HIST_INFLIGHT[key];
 }
@@ -5958,7 +6050,7 @@ function anaAgg(key,secs){
   return {vol:vol,trades:n,traders:traders};
 }
 function anaAllSettled(){
-  return LIVE_TOKENS.length>0&&LIVE_TOKENS.every(function(t){return !!ANA_HIST[String(t.address).toLowerCase()]});
+  return LIVE_TOKENS.length>0&&LIVE_TOKENS.every(function(t){var k=String(t.address).toLowerCase();return !!ANA_DONE[k]&&!ANA_HIST_INFLIGHT[k]});
 }
 /* ---------- Protocol revenue: the Treasury's accrued balance ------ */
 async function anaLoadTreasury(){
@@ -5999,6 +6091,14 @@ async function anaLoadVaultFees(){
         if(!byAsset[a]){byAsset[a]={asset:asset,amount:0n,symbol:feeAssetSymbol(asset),decimals:18};order.push(a)}
         byAsset[a].amount+=amt;
       });
+      /* Publish the running total after every page: the tile
+         fills in progressively instead of staying blank until
+         the vault's whole log history has paginated. */
+      if(got){
+        ANALYTICS.feesAccruedWei=acc;
+        ANALYTICS.feesByAsset=order.map(function(a){return byAsset[a]});
+        try{renderLiveAnalytics()}catch(e){}
+      }
       pages++;
       next=(d&&d.next_page_params)?d.next_page_params:null;
       if(!next)break;
@@ -6033,14 +6133,24 @@ function anaRenderChart(){
     });
   });
   days.forEach(function(d){total+=d.vol});
-  var complete=liveRegistryLoaded&&LIVE_TOKENS.length>0&&settled===LIVE_TOKENS.length;
-  if(note)note.textContent='Last 30 days'+(settled&&!complete?' · loading\u2026':'');
+  /* "Complete" means every token's scan pass has finished (see
+     ANA_DONE) — not merely that some history object exists. The
+     header says "loading…" exactly while that is untrue, and the
+     empty state is a conclusion that may only be drawn once the
+     scan has actually completed. */
+  var complete=liveRegistryLoaded&&anaAllSettled();
+  if(note)note.textContent='Last 30 days'+(liveRegistryLoaded&&LIVE_TOKENS.length>0&&!complete?' · loading\u2026':'');
   if(!settled){
     var hs=[34,52,44,66,58,80,62,92,70,84,56,74,48,88,64];
     box.innerHTML='<div class="ana-chart-skel" aria-hidden="true">'+hs.map(function(h){return '<i style="height:'+h+'%"></i>'}).join('')+'</div>';
     return;
   }
   if(!(total>0)){
+    if(!complete){
+      var hs2=[34,52,44,66,58,80,62,92,70,84,56,74,48,88,64];
+      box.innerHTML='<div class="ana-chart-skel" aria-hidden="true">'+hs2.map(function(h){return '<i style="height:'+h+'%"></i>'}).join('')+'</div>';
+      return;
+    }
     box.innerHTML='<div class="ana-chart-empty">No trading activity in this period yet</div>';
     return;
   }
@@ -6126,17 +6236,25 @@ function renderLiveAnalytics(){
     set('anaCfgLaunchFee',fmtLoopWei(LENS_CONFIG.launchFee));
     set('anaCfgTradingFee',(LENS_CONFIG.tradingFeeBps/100)+'%');
   }
-  /* Trade totals — shown once every token's history has landed;
-     until then the last computed totals stay on screen. */
-  if(anaAllSettled()){
-    var totVol=0, union={};
-    LIVE_TOKENS.forEach(function(t){
-      var a=anaAgg(String(t.address).toLowerCase(),Infinity);
-      if(a){totVol+=a.vol;Object.keys(a.traders).forEach(function(x){union[x]=1})}
-    });
+  /* Trade totals — PROGRESSIVE: recomputed from every history
+     that has landed so far and repainted as each token's scan
+     completes, instead of waiting for the full set. While the
+     engine is still counting, the sub-labels say so (with the
+     scan count); once every pass has finished they settle back
+     to the plain all-time labels and the figures are final. */
+  var anyHist=false, totVol=0, union={}, scannedN=0;
+  LIVE_TOKENS.forEach(function(t){
+    var k=String(t.address).toLowerCase();
+    if(ANA_HIST[k])scannedN++;
+    var a=anaAgg(k,Infinity);
+    if(a){anyHist=true;totVol+=a.vol;Object.keys(a.traders).forEach(function(x){union[x]=1})}
+  });
+  if(anyHist){
+    var doneAll=anaAllSettled();
     set('anaVolume',fmtLoopAmt(totVol));
-    set('anaVolumeSub',LOOP_USD?('\u2248 '+fmtUsdMcap(totVol*LOOP_USD)+' \u00b7 all time'):'All time');
+    set('anaVolumeSub',doneAll?(LOOP_USD?('\u2248 '+fmtUsdMcap(totVol*LOOP_USD)+' \u00b7 all time'):'All time'):('Counting\u2026 \u00b7 '+scannedN+' of '+LIVE_TOKENS.length+' tokens scanned'));
     set('anaTraders',fmtInt(Object.keys(union).length));
+    set('anaTradersSub',doneAll?'All time':('Counting\u2026 \u00b7 '+scannedN+' of '+LIVE_TOKENS.length+' tokens scanned'));
   }
   /* Fees & revenue. */
   if(ANA_TREASURY_WEI!=null){
@@ -6376,8 +6494,15 @@ var GAS_RESERVE_FALLBACK=10000000000000000n; /* 0.01 LOOP */
 async function estimateGasCostWei(fallbackGas){
   var gasLimit=BigInt(fallbackGas||300000);
   var price=0n;
-  try{var fd=await readProvider.getFeeData();price=fd.gasPrice||0n}catch(e){}
-  if(!price&&walletProvider()){try{var bp2=new ethers.BrowserProvider(walletProvider());var fd2=await bp2.getFeeData();price=fd2.gasPrice||0n}catch(e){}}
+  /* Gas price from the short-TTL cache when it is fresh — the
+     pre-flight on a tap must not wait on two fee-data round trips
+     to the slow RPC for a value the loop read seconds ago. */
+  if(liveCache.gasWei!=null&&cacheFresh(liveCache.gasAt))price=liveCache.gasWei;
+  else{
+    try{var fd=await readProvider.getFeeData();price=fd.gasPrice||0n}catch(e){}
+    if(!price&&walletProvider()){try{var bp2=new ethers.BrowserProvider(walletProvider());var fd2=await bp2.getFeeData();price=fd2.gasPrice||0n}catch(e){}}
+    if(price){liveCache.gasWei=price;liveCache.gasAt=Date.now()}
+  }
   if(!price)price=1000000000n;
   return gasLimit*price;
 }
@@ -6472,7 +6597,8 @@ async function refreshLiveBalance(){
     if(readProvider){try{loopBal=await readProvider.getBalance(liveAccount)}catch(e){}}
     if(blk!=null){if(blk<BAL_BLOCK)return;BAL_BLOCK=blk}
     liveTokBalWei=bal;
-    if(loopBal!=null)liveBalanceWei=loopBal;
+    liveCache.tokBalAt=Date.now(); liveCache.tokBalAddr=String(currentLive.address).toLowerCase();
+    if(loopBal!=null){liveBalanceWei=loopBal;liveCache.balAt=Date.now()}
     lb.textContent=side==='buy'
       ? 'Your balance: '+(liveBalanceWei!=null?fmtEth(liveBalanceWei):'…')+' LOOP'
       : 'Your balance: '+fmtTokUnits(bal,currentLive.decimals)+' $'+currentLive.symbol;
@@ -6553,6 +6679,84 @@ function tradeBtnFlash(ok){
   if(tradeBtnFlashTimer)clearTimeout(tradeBtnFlashTimer);
   tradeBtnFlashTimer=setTimeout(function(){var b=el('tradeBtn');if(b)b.classList.remove('flash-ok','flash-err')},1800);
 }
+/* ================= CTA feedback + flow coordination =================
+   Shared by every primary action (Buy/Sell, Launch, Claim,
+   Promote pay, Migrate):
+   - anyFlowBusy() lets the background refresh loop defer its RPC
+     reads while a wallet flow is running, and lets repaint guards
+     know a form region is owned by a flow.
+   - regionProtected() extends that to plain interaction: focus
+     inside, or a touch/typing in the last few seconds on, the
+     trade panel or the create form — the refresh cycle skips
+     repainting those regions entirely (see loadLiveTokensInner).
+   - armWalletHint()/clearWalletHint() implement the no-silent-
+     dead-end rule: a sent transaction whose wallet prompt has
+     not appeared within a few seconds gets a persistent hint
+     next to its button.
+   - The pointerdown handler below is the instant press feedback:
+     it fires a full press cycle before the click event exists,
+     so the first tap is visibly registered within one frame. */
+function anyFlowBusy(){
+  return !!(tradeBusy||launchBusy||claimBusy||migrateBusy||(typeof PROMOTE_PAGE!=='undefined'&&PROMOTE_PAGE&&PROMOTE_PAGE.busy));
+}
+var tradeTouchedAt=0,createTouchedAt=0;
+function markRegionTouch(e){
+  var t=e.target;
+  if(!t||!t.closest)return;
+  if(t.closest('#tradePanel'))tradeTouchedAt=Date.now();
+  if(t.closest('#createForm'))createTouchedAt=Date.now();
+}
+document.addEventListener('pointerdown',markRegionTouch,true);
+document.addEventListener('input',markRegionTouch,true);
+document.addEventListener('focusin',markRegionTouch,true);
+function regionProtected(){
+  if(anyFlowBusy())return true;
+  var ae=document.activeElement;
+  if(ae&&ae.closest&&(ae.closest('#tradePanel')||ae.closest('#createForm')))return true;
+  var now=Date.now();
+  return (now-tradeTouchedAt<4000)||(now-createTouchedAt<4000);
+}
+var walletHintTimers={};
+function armWalletHint(key,id){
+  clearWalletHint(key,id);
+  walletHintTimers[key]=setTimeout(function(){var h=el(id);if(h)h.style.display='block'},4000);
+}
+function clearWalletHint(key,id){
+  if(walletHintTimers[key]){clearTimeout(walletHintTimers[key]);delete walletHintTimers[key]}
+  var h=el(id); if(h)h.style.display='none';
+}
+/* If a tap did NOT start a flow (wallet not connected, invalid
+   amount, a gate rejected it), the working sheen and any step
+   label set on pointerdown are handed back within a moment; if a
+   flow DID start, the button is disabled / owned and its own
+   completion path clears the state. */
+function ctaSweep(b){
+  setTimeout(function(){
+    if(b.id==='tradeBtn'){
+      if(!tradeBusy){b.classList.remove('cta-working');if(detailMode==='live')paintLiveTradePanel()}
+    }else if(b.id==='launchBtn'){
+      if(!launchBusy){b.classList.remove('cta-working');if(!b.disabled)b.textContent='Launch My Token'}
+    }else if(!anyFlowBusy()){
+      b.classList.remove('cta-working');
+    }
+  },800);
+}
+var CTA_PRESS_SEL='#tradeBtn,#launchBtn,#claimConfirmBtn,#promoPayBtn,#claimAllBtn,[data-act="migrate"]';
+document.addEventListener('pointerdown',function(e){
+  if(e.button!=null&&e.button>0)return;
+  var b=e.target&&e.target.closest?e.target.closest(CTA_PRESS_SEL):null;
+  if(!b||b.disabled)return;
+  b.classList.add('cta-press');
+  setTimeout(function(){b.classList.remove('cta-press')},190);
+  if(b.id==='claimAllBtn')return; /* opens the claim modal — press feedback only */
+  b.classList.add('cta-working');
+  /* The first step label lands on this same frame for the two
+     flows whose pre-flight used to leave a dead-looking button:
+     the tap is seen to register before the click handler runs. */
+  if(b.id==='tradeBtn'&&detailMode==='live'&&liveConnected&&liveChainOk&&!tradeBusy)b.textContent='Checking balance…';
+  if(b.id==='launchBtn'&&liveConnected&&liveChainOk&&!launchBusy)b.textContent='Checking launch costs…';
+  ctaSweep(b);
+},true);
 async function doLiveTrade(){
   var t=currentLive;
   if(!t||detailMode!=='live'||tradeBusy)return;
@@ -6575,17 +6779,21 @@ async function doLiveTrade(){
      queued duplicate trades. The CSS spinner on #tradeBtn:disabled
      shows from this same tap. */
   tradeBusy=true;
-  if(btn){btn.disabled=true;btn.textContent='Preparing…'}
+  if(btn){btn.disabled=true;btn.classList.add('cta-working');btn.textContent='Checking balance…'}
   try{
-    /* Fresh pre-trade re-read: a full Lens refresh runs before any
-       quote is computed, so the trade always prices off the latest
-       live reserves. Monotonic: only a read from a block at least
-       as new as the displayed data may re-quote the trade, and a
-       graduated token never loses its pool reserves to a read that
-       failed to resolve its pair. If the refresh itself fails, the
-       trade proceeds on the latest live reserves already on screen
-       — a failed read path never hard-blocks a write. */
-    await loadLiveTokens();
+    /* Pre-trade re-read, freshness-gated: the continuous loop
+       re-reads the registry every few seconds, so the record on
+       screen is normally seconds old and the trade prices straight
+       off it — no full Lens cycle stands between the tap and the
+       wallet prompt. A full refresh is only forced when the last
+       successful read is stale (>15s). Monotonic: only a read from
+       a block at least as new as the displayed data may re-quote
+       the trade, and a graduated token never loses its pool
+       reserves to a read that failed to resolve its pair. If the
+       refresh itself fails, the trade proceeds on the latest live
+       reserves already on screen — a failed read path never
+       hard-blocks a write. */
+    if(liveReadAgeMs()>15000)await loadLiveTokens();
     var fresh=LIVE_BY_ADDR[t.address.toLowerCase()];
     if(fresh&&fresh!==t&&(t._block==null||fresh._block==null||fresh._block>=t._block)){
       t.virtualPair=fresh.virtualPair;t.virtualToken=fresh.virtualToken;t.tradingFeeBps=fresh.tradingFeeBps;t.taxBps=fresh.taxBps;
@@ -6594,8 +6802,12 @@ async function doLiveTrade(){
       if(fresh._block!=null)t._block=fresh._block;
     }
     /* The anti-snipe fee is the one quote input the Lens payload
-       does not carry — read it fresh from the curve (buys only). */
-    if(side==='buy'&&!t.graduated&&readProvider){
+       does not carry. It decays monotonically to zero after
+       launch and never rises again, so the direct curve read only
+       runs while it can still be nonzero — a young token, or a
+       last-known value above zero. Older tokens skip the round
+       trip entirely. */
+    if(side==='buy'&&!t.graduated&&readProvider&&(t.snipeBps>0||(t.launchTs&&Date.now()/1000-t.launchTs<3600))){
       try{var sb2=await withTimeout(curveContract(t.curve).currentSnipeFeeBps(),15000,'Anti-snipe fee read');t.snipeBps=Number(sb2)}catch(e){}
     }
     var bp=new ethers.BrowserProvider(walletProvider());
@@ -6603,9 +6815,16 @@ async function doLiveTrade(){
     /* Pre-flight (never send what the wallet cannot pay for): a buy
        needs amount + estimated gas <= LOOP balance; a sell needs
        the token amount <= token balance and LOOP to cover gas.
-       Failing here shows a clear in-UI message and sends nothing. */
+       Failing here shows a clear in-UI message and sends nothing.
+       The balances come from the short-TTL cache when the live
+       loop read them moments ago; only a stale or missing value
+       costs a fresh round trip. */
     var loopBal=null;
-    try{loopBal=await bp.getBalance(liveAccount)}catch(e){try{loopBal=await readProvider.getBalance(liveAccount)}catch(e2){}}
+    if(liveBalanceWei!=null&&cacheFresh(liveCache.balAt))loopBal=liveBalanceWei;
+    else{
+      try{loopBal=await bp.getBalance(liveAccount)}catch(e){try{loopBal=await readProvider.getBalance(liveAccount)}catch(e2){}}
+      if(loopBal!=null){liveBalanceWei=loopBal;liveCache.balAt=Date.now()}
+    }
     if(side==='buy'){
       var amtWeiIn=ethers.parseUnits(amtStr,18);
       if(loopBal!=null){
@@ -6620,7 +6839,11 @@ async function doLiveTrade(){
     }else{
       var amtWeiSell=ethers.parseUnits(amtStr,t.decimals);
       var tokBalNow=null;
-      try{tokBalNow=await tokenContract(t.address).balanceOf(liveAccount)}catch(e){}
+      if(liveTokBalWei!=null&&cacheFresh(liveCache.tokBalAt)&&liveCache.tokBalAddr===String(t.address).toLowerCase())tokBalNow=liveTokBalWei;
+      else{
+        try{tokBalNow=await tokenContract(t.address).balanceOf(liveAccount)}catch(e){}
+        if(tokBalNow!=null){liveTokBalWei=tokBalNow;liveCache.tokBalAt=Date.now();liveCache.tokBalAddr=String(t.address).toLowerCase()}
+      }
       if(tokBalNow!=null&&amtWeiSell>tokBalNow){
         showTradeError('You only hold '+fmtTokUnits(tokBalNow,t.decimals)+' $'+t.symbol+' — reduce the sell amount.');
         toast('Sell amount exceeds your token balance');
@@ -6670,13 +6893,16 @@ async function doLiveTrade(){
           showQuoteFallbackNote();
         }
         var minOut2=quotedBuy*BigInt(10000-slipBps)/10000n;
+        armWalletHint('trade','tradeWalletHint');
         tx2=await router.swapExactETHForTokens(minOut2,[W3C.contracts.wloop,t.address],liveAccount,dl2,{value:weiIn2});
       }else{
         var amtWei2=ethers.parseUnits(amtStr,t.decimals);
         var tk2=tokenContract(t.address,signer);
         var allow2=await tk2.allowance(liveAccount,resolvedRouter);
         if(allow2<amtWei2){
+          armWalletHint('trade','tradeWalletHint');
           var atx2=await tk2.approve(resolvedRouter,amtWei2);
+          clearWalletHint('trade','tradeWalletHint');
           toastTx('Approving $'+t.symbol+' for the V2 router…',atx2.hash);
           if(btn)btn.textContent='Approving…';
           await atx2.wait();
@@ -6693,8 +6919,10 @@ async function doLiveTrade(){
           showQuoteFallbackNote();
         }
         var minOut3=quotedSell*BigInt(10000-slipBps)/10000n;
+        armWalletHint('trade','tradeWalletHint');
         tx2=await router.swapExactTokensForETH(amtWei2,minOut3,[t.address,W3C.contracts.wloop],liveAccount,dl2);
       }
+      clearWalletHint('trade','tradeWalletHint');
       toastTx('Transaction pending…',tx2.hash);
       if(btn)btn.textContent='Transaction pending…';
       var rcpt2=await tx2.wait();
@@ -6722,13 +6950,16 @@ async function doLiveTrade(){
       /* The chosen slippage (preset or Custom) sets the curve
          minimum-out too — one slippage state for every builder. */
       var minOut=est*BigInt(10000-Math.round(v2SlippagePct*100))/10000n;
+      armWalletHint('trade','tradeWalletHint');
       tx=await curve.buy(minOut,deadline,{value:weiIn});
     }else{
       var amtWei=ethers.parseUnits(amtStr,t.decimals);
       var tk=tokenContract(t.address,signer);
       var allow=await tk.allowance(liveAccount,t.curve);
       if(allow<amtWei){
+        armWalletHint('trade','tradeWalletHint');
         var atx=await tk.approve(t.curve,amtWei);
+        clearWalletHint('trade','tradeWalletHint');
         toastTx('Approving $'+t.symbol+' for the curve…',atx.hash);
         if(btn)btn.textContent='Approving…';
         await atx.wait();
@@ -6737,8 +6968,10 @@ async function doLiveTrade(){
       var gross=t.virtualPair*amtWei/(t.virtualToken+amtWei);
       var estOut=gross*BigInt(10000-feeBps)/10000n;
       var minPair=estOut*BigInt(10000-Math.round(v2SlippagePct*100))/10000n;
+      armWalletHint('trade','tradeWalletHint');
       tx=await curve.sell(amtWei,minPair,deadline);
     }
+    clearWalletHint('trade','tradeWalletHint');
     toastTx('Transaction pending…',tx.hash);
     if(btn)btn.textContent='Transaction pending…';
     var rcpt=await tx.wait();
@@ -6765,8 +6998,9 @@ async function doLiveTrade(){
        in-flight paths above repaint through paintLiveTradePanel,
        which deliberately leaves a busy button alone. */
     tradeBusy=false;
+    clearWalletHint('trade','tradeWalletHint');
     var fb=el('tradeBtn');
-    if(fb&&fb.disabled)paintLiveTradePanel();
+    if(fb){fb.classList.remove('cta-working');if(fb.disabled)paintLiveTradePanel()}
   }
 }
 /* Stale-read rule: the public RPC has served stale reads right after a
@@ -7314,6 +7548,9 @@ async function paintLiveTrades(t,evs){
 function gateLiveLaunch(){
   var btn=el('launchBtn'),note=el('livePairNote');
   if(!btn||!note)return;
+  /* Never repaint the Launch button out from under a running
+     launch flow (this gate also fires from wallet-UI refreshes). */
+  if(launchBusy)return;
   if(liveConnected&&selPair.sym!=='LOOP'){
     btn.disabled=true; btn.style.opacity='.55';
     note.style.display='block';
@@ -7374,10 +7611,14 @@ async function liveCreate(){
      another createToken). Same synchronous-lock pattern as
      doMigrate / buyPromoteBanner / confirmClaim. */
   launchBusy=true;
-  if(btn){btn.disabled=true;btn.textContent='Preparing launch…'}
+  if(btn){btn.disabled=true;btn.classList.add('cta-working');btn.textContent='Checking launch costs…'}
   hideLaunchCheck();
   try{
-    var launchFee=await configRO.launchFee();
+    /* The launch fee rides every Lens cycle into LENS_CONFIG, so
+       a recent read is reused instead of a fresh config call; the
+       on-chain value is only fetched when that copy is stale or
+       missing. The fee amount itself is unchanged either way. */
+    var launchFee=(LENS_CONFIG&&LENS_CONFIG.launchFee!=null&&liveReadAgeMs()<=CACHE_TTL)?LENS_CONFIG.launchFee:await configRO.launchFee();
     var openBuyEth=parseFloat(el('fOpenBuy').value)||0;
     var openBuyWei=openBuyEth>0?ethers.parseEther(String(openBuyEth)):0n;
     /* Balance pre-flight — BEFORE the wallet is ever asked to
@@ -7392,8 +7633,12 @@ async function liveCreate(){
        error after a wallet confirmation, with no breakdown.) */
     var bp=new ethers.BrowserProvider(walletProvider());
     var launchBal=null;
-    try{launchBal=await bp.getBalance(liveAccount)}catch(e){}
-    if(launchBal==null&&readProvider){try{launchBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+    if(liveBalanceWei!=null&&cacheFresh(liveCache.balAt))launchBal=liveBalanceWei;
+    else{
+      try{launchBal=await bp.getBalance(liveAccount)}catch(e){}
+      if(launchBal==null&&readProvider){try{launchBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+      if(launchBal!=null){liveBalanceWei=launchBal;liveCache.balAt=Date.now()}
+    }
     var launchGas=await estimateGasCostWei(3000000);
     var launchNeed=launchFee+openBuyWei+launchGas;
     if(launchBal==null){
@@ -7418,7 +7663,9 @@ async function liveCreate(){
        factory reverts at its launch-fee credit. */
     var factory=new ethers.Contract(W3C.contracts.launchFactory,W3C.abi.factory,signer);
     if(btn){btn.disabled=true;btn.textContent='Confirm in your wallet…'}
+    armWalletHint('launch','launchWalletHint');
     var tx=await factory.createToken(name,ticker,metadataURI,ZERO_ADDR,BigInt(creatorTax*100),destIdx,openBuyWei,{value:launchFee+openBuyWei});
+    clearWalletHint('launch','launchWalletHint');
     toastTx('Transaction pending…',tx.hash);
     if(btn)btn.textContent='Transaction pending…';
     await tx.wait();
@@ -7476,9 +7723,14 @@ async function liveCreate(){
     renderFees();
   }catch(e){
     if(btn){btn.disabled=false;btn.textContent='Launch My Token'}
+    /* The failure also lands inline next to the button, not only
+       as a passing toast. */
+    showLaunchCheck(humanTxError(e),null,false);
     txErrorToast(e);
   }finally{
     launchBusy=false;
+    clearWalletHint('launch','launchWalletHint');
+    if(btn)btn.classList.remove('cta-working');
   }
 }
 /* ===== Fix H: one-click migration ================================
@@ -7502,13 +7754,18 @@ async function doMigrate(){
   var migErr=el('migError'); if(migErr){migErr.textContent='';migErr.style.display='none'}
   var btns=[].slice.call(document.querySelectorAll('[data-act="migrate"]'));
   migrateBusy=true;
-  btns.forEach(function(b){b.disabled=true;b.textContent='Migrating…'});
+  btns.forEach(function(b){b.disabled=true;b.classList.add('cta-working');b.textContent='Checking balance…'});
   try{
     var bp=new ethers.BrowserProvider(walletProvider());
     var signer=await bp.getSigner();
-    /* Pre-flight: never send what the wallet cannot pay gas for. */
+    /* Pre-flight: never send what the wallet cannot pay gas for.
+       Balance from the short-TTL cache when fresh. */
     var loopBal=null;
-    try{loopBal=await bp.getBalance(liveAccount)}catch(e){try{loopBal=await readProvider.getBalance(liveAccount)}catch(e2){}}
+    if(liveBalanceWei!=null&&cacheFresh(liveCache.balAt))loopBal=liveBalanceWei;
+    else{
+      try{loopBal=await bp.getBalance(liveAccount)}catch(e){try{loopBal=await readProvider.getBalance(liveAccount)}catch(e2){}}
+      if(loopBal!=null){liveBalanceWei=loopBal;liveCache.balAt=Date.now()}
+    }
     if(loopBal!=null){
       var gasCost=await estimateGasCostWei(900000);
       if(gasCost>loopBal){
@@ -7518,7 +7775,10 @@ async function doMigrate(){
       }
     }
     var curve=new ethers.Contract(t.curve,W3C.abi.curve,signer);
+    btns.forEach(function(b){b.textContent='Confirm in your wallet…'});
+    armWalletHint('mig','migWalletHint');
     var tx=await curve.graduate();
+    clearWalletHint('mig','migWalletHint');
     toastTx('Migration pending…',tx.hash);
     btns.forEach(function(b){b.textContent='Migration pending…'});
     await tx.wait();
@@ -7527,10 +7787,12 @@ async function doMigrate(){
     await refreshDetailToken(t);
     try{await loadLiveTokens()}catch(e){}
   }catch(e){
+    if(migErr){migErr.textContent=humanTxError(e);migErr.style.display='block'}
     txErrorToast(e);
   }finally{
     migrateBusy=false;
-    btns.forEach(function(b){b.disabled=false;b.textContent='Migrate to Uniswap V2'});
+    clearWalletHint('mig','migWalletHint');
+    btns.forEach(function(b){b.disabled=false;b.classList.remove('cta-working');b.textContent='Migrate to Uniswap V2'});
   }
 }
 /* ================= Profile: live claim, my tokens, real stats ================= */
@@ -7709,7 +7971,7 @@ function liveOpenClaim(){
   var cf=el('claimFoot');
   if(cf)cf.innerHTML='One transaction on Loop.<br/>Fees never expire, and claiming never touches curve liquidity.';
   el('claimBusy').classList.remove('show');
-  el('claimConfirmBtn').style.display='block';
+  var lcb=el('claimConfirmBtn'); lcb.style.display='block'; lcb.classList.remove('cta-working');
   el('claimModal').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -7726,13 +7988,17 @@ async function liveClaimAll(){
        read; a failed read is reported as a failed check, never
        guessed as insufficient. */
     var cBal=null;
-    try{cBal=await new ethers.BrowserProvider(walletProvider()).getBalance(liveAccount)}catch(e){}
-    if(cBal==null&&readProvider){try{cBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+    if(liveBalanceWei!=null&&cacheFresh(liveCache.balAt))cBal=liveBalanceWei;
+    else{
+      try{cBal=await new ethers.BrowserProvider(walletProvider()).getBalance(liveAccount)}catch(e){}
+      if(cBal==null&&readProvider){try{cBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+      if(cBal!=null){liveBalanceWei=cBal;liveCache.balAt=Date.now()}
+    }
     var cGas=await estimateGasCostWei(600000);
     if(cBal==null||cBal<cGas){
       claimBusy=false;
       el('claimBusy').classList.remove('show');
-      el('claimConfirmBtn').style.display='block';
+      var ccb0=el('claimConfirmBtn'); ccb0.style.display='block'; ccb0.classList.remove('cta-working');
       var ce=el('claimError');
       if(ce){ce.style.display='block';ce.textContent=cBal==null
         ?'Couldn\'t check your LOOP balance — the Loop read didn\'t respond, so nothing was sent. Try again.'
@@ -7743,13 +8009,16 @@ async function liveClaimAll(){
     var bp=new ethers.BrowserProvider(walletProvider());
     var signer=await bp.getSigner();
     var vault=new ethers.Contract(W3C.contracts.feeVault,W3C.abi.feeVault,signer);
+    armWalletHint('claim','claimWalletHint');
     var tx=await vault.claimAll();
+    clearWalletHint('claim','claimWalletHint');
     toastTx('Claim transaction pending…',tx.hash);
     await tx.wait();
     /* Confirmed: pull a fresh Lens read right away, in addition
        to the continuous loop. */
     kickLiveRefresh();
     claimBusy=false; pendingClaim=null;
+    var ccb1=el('claimConfirmBtn'); if(ccb1)ccb1.classList.remove('cta-working');
     el('claimModal').classList.remove('open');
     document.body.style.overflow='';
     liveClaimHistory.unshift({amount:summary,when:'Just now',tx:tx.hash});
@@ -7759,8 +8028,11 @@ async function liveClaimAll(){
     refreshLiveWalletUI();
   }catch(e){
     claimBusy=false;
+    clearWalletHint('claim','claimWalletHint');
     el('claimBusy').classList.remove('show');
-    el('claimConfirmBtn').style.display='block';
+    var ccb=el('claimConfirmBtn'); ccb.style.display='block'; ccb.classList.remove('cta-working');
+    var ce2=el('claimError');
+    if(ce2){ce2.style.display='block';ce2.textContent=humanTxError(e)}
     txErrorToast(e);
   }
 }
@@ -8223,13 +8495,17 @@ async function buyPromoteBanner(){
        failed read is reported as a failed check, never guessed
        as insufficient. */
     var pBal=null;
-    try{pBal=await new ethers.BrowserProvider(walletProvider()).getBalance(liveAccount)}catch(e){}
-    if(pBal==null&&readProvider){try{pBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+    if(liveBalanceWei!=null&&cacheFresh(liveCache.balAt))pBal=liveBalanceWei;
+    else{
+      try{pBal=await new ethers.BrowserProvider(walletProvider()).getBalance(liveAccount)}catch(e){}
+      if(pBal==null&&readProvider){try{pBal=await readProvider.getBalance(liveAccount)}catch(e){}}
+      if(pBal!=null){liveBalanceWei=pBal;liveCache.balAt=Date.now()}
+    }
     var pGas=await estimateGasCostWei(300000);
     if(pBal==null||pBal<tier.price+pGas){
       PROMOTE_PAGE.busy=false;
       el('promoBusy').classList.remove('show');
-      el('promoPayBtn').style.display='block';
+      var ppb0=el('promoPayBtn'); ppb0.style.display='block'; ppb0.classList.remove('cta-working');
       syncPromoPay();
       if(pBal==null)setPromoError('Couldn\'t check your LOOP balance — the Loop read didn\'t respond, so nothing was sent. Try again.');
       else setPromoError('You need ≈ '+fmtEth(tier.price+pGas)+' LOOP — banner '+fmtEth(tier.price)+' + gas ≈ '+fmtEth(pGas)+'. You have '+fmtEth(pBal)+' LOOP.');
@@ -8244,7 +8520,9 @@ async function buyPromoteBanner(){
     var bp=new ethers.BrowserProvider(walletProvider());
     var signer=await bp.getSigner();
     var ads=new ethers.Contract(W3C.contracts.bannerAds,W3C.abi.bannerAds,signer);
+    armWalletHint('promo','promoWalletHint');
     var tx=await ads.buyBanner(tier.index,token,imageURI,tagline,{value:tier.price});
+    clearWalletHint('promo','promoWalletHint');
     toastTx('Banner purchase pending…',tx.hash);
     var receipt=await tx.wait();
     /* The exact booked window + id come from the BannerPurchased event. */
@@ -8285,9 +8563,11 @@ async function buyPromoteBanner(){
     refreshLiveWalletUI();
   }catch(e){
     PROMOTE_PAGE.busy=false;
+    clearWalletHint('promo','promoWalletHint');
     el('promoBusy').classList.remove('show');
-    el('promoPayBtn').style.display='block';
+    var ppb=el('promoPayBtn'); ppb.style.display='block'; ppb.classList.remove('cta-working');
     syncPromoPay();
+    setPromoError(humanTxError(e));
     txErrorToast(e);
   }
 }
@@ -8295,7 +8575,7 @@ function resetPromoteForm(){
   PROMOTE_PAGE.done=false;
   el('promoDone').style.display='none';
   el('promoForm').style.display='block';
-  var pb=el('promoPayBtn'); if(pb)pb.style.display='block';
+  var pb=el('promoPayBtn'); if(pb){pb.style.display='block';pb.classList.remove('cta-working')}
   syncPromoPay();
 }
 /* ---- page entry ---- */
