@@ -348,6 +348,15 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .wm-connecting.show{display:block}
 .spinner{width:38px;height:38px;border-radius:50%;border:3.5px solid var(--pink-pale);border-top-color:var(--pink);margin:0 auto 12px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* ===== Intro video player ===== */
+.modal-overlay.video-overlay{align-items:center;padding:16px}
+.video-modal{background:var(--surface);width:100%;max-width:880px;border-radius:20px;padding:20px;box-shadow:var(--shadow-lg);animation:sheetUp .28s cubic-bezier(.2,.9,.3,1)}
+.video-modal video{display:block;width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;border:1px solid var(--line)}
+/* ===== How It Works: intro embed ===== */
+.intro-video-sec{margin:0 0 24px}
+.intro-video-sec h3{font-size:22px;font-weight:800;margin:0 0 4px}
+.intro-video-sec p{color:var(--muted);font-size:14.5px;font-weight:600;margin:0 0 14px}
+.intro-video{display:block;width:100%;aspect-ratio:16/9;border-radius:16px;border:1px solid var(--line);background:#000}
 /* ===== No-wallet panel (shown when no provider can be detected) ===== */
 .nw-panel{display:none;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:16px;padding:16px;margin-top:12px;text-align:left}
 .nw-panel.show{display:block;animation:viewIn .2s ease}
@@ -797,7 +806,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 }
 @media(max-width:560px){.token-list.grid{grid-template-columns:1fr}.page-head{padding-top:32px}}
 @media(prefers-reduced-motion: reduce){
-  .view.active,.detail.open,.wallet-modal,.modal-overlay.open{animation:none}
+  .view.active,.detail.open,.wallet-modal,.video-modal,.modal-overlay.open{animation:none}
   html{scroll-behavior:auto}
   .trend-track{scroll-behavior:auto}
   .btn,.trend-art,.logo-mark{transition:none}
@@ -1188,10 +1197,9 @@ button.qrow{cursor:pointer}
         <p class="hero-banner-tag">Launch, trade, and grow together on the most friendly Loop Network launchpad.</p>
         <div class="hero-banner-actions">
           <button class="btn btn-primary hero-banner-cta" data-act="view" data-view="buat">Launch a Token</button>
-          <!-- Watch Intro: the future home of the owner's "how the launchpad works" video.
-               Until he delivers that video, the button navigates to the How It Works view
-               (the video's topic). Rewire it to open the video when it exists. -->
-          <button type="button" class="hero-banner-watch" data-act="view" data-view="cara"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z" fill="currentColor" stroke="none"/></svg>Watch Intro</button>
+          <!-- Watch Intro: opens the in-page player for intro-video.mp4, a
+               standalone file served next to this page. -->
+          <button type="button" class="hero-banner-watch" data-act="intro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5Z" fill="currentColor" stroke="none"/></svg>Watch Intro</button>
         </div>
       </div>
     </div>
@@ -1263,6 +1271,11 @@ button.qrow{cursor:pointer}
   <div class="wrap view-top"><button class="btn btn-ghost" data-act="view" data-view="jelajahi">← Back to Launches</button></div>
   <section class="section" id="cara-kerja" style="background:var(--bg2);border-block:1px solid var(--line)"><div class="wrap">
     <div class="sec-head" style="display:block"><h2 style="font-size:30px">How Sakura Works</h2><p>Launch, trade, graduate — fair from the first second.</p></div>
+    <div class="intro-video-sec">
+      <h3>Watch the intro</h3>
+      <p>Two minutes — every feature, end to end.</p>
+      <video class="intro-video" controls preload="none" playsinline src="intro-video.mp4"></video>
+    </div>
     <div class="steps">
       <div class="step"><div class="step-num">1</div><h3>Create in 1 transaction</h3><p>Name it, add a logo, launch. The full fixed supply of <strong>1 billion tokens</strong> lands on the bonding curve and trading starts instantly. Launch fee: <strong>0.0005 LOOP</strong>.</p></div>
       <div class="step"><div class="step-num">2</div><h3>Trade on the curve</h3><p>Buy and sell on the curve — the price rises with every buy and falls with every sell. <strong>Anti-snipe:</strong> a 99% buy tax in the first second decays to 0% within ±5 seconds, so bots can't front-run you.</p></div>
@@ -1912,6 +1925,17 @@ button.qrow{cursor:pointer}
     <p class="wallet-hint" id="claimWalletHint" style="text-align:center">If the confirmation doesn’t appear, tap your wallet icon.</p>
     <button class="btn btn-primary" id="claimConfirmBtn" data-act="claim-confirm" style="width:100%;margin-top:14px;padding:14px">Confirm Claim</button>
     <p class="wm-foot" id="claimFoot">One transaction on Loop.<br/>Fees never expire, and claiming never touches curve liquidity.</p>
+  </div>
+</div>
+
+<!-- ===== INTRO VIDEO PLAYER ===== -->
+<div class="modal-overlay video-overlay" id="introModal" role="dialog" aria-modal="true" aria-label="Sakura intro video">
+  <div class="video-modal">
+    <div class="wm-head">
+      <div><h3>Watch the intro</h3><p>Two minutes — every feature, end to end.</p></div>
+      <button class="wm-close" aria-label="Close video player" data-act="intro-close"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <video id="introVideo" src="intro-video.mp4" controls playsinline preload="none"></video>
   </div>
 </div>
 
@@ -2845,7 +2869,7 @@ function disconnectWallet(){
   walletConnected=false;
   renderProfileState();
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeWallet();closeClaim()}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeWallet();closeClaim();closeIntro()}});
 /* ===== Profile + Creator fees (design-preview state for wallet 0x7a…F3d9) =====
    Fees are denominated in each token's pair asset: LOOP-paired tokens earn LOOP,
    USDC-paired tokens earn USDC. Totals are always grouped per asset. */
@@ -3047,6 +3071,21 @@ function closeClaim(){
   if(!document.getElementById('walletModal').classList.contains('open'))document.body.style.overflow='';
   pendingClaim=null;
 }
+/* ===== Intro video player (intro-video.mp4, served next to this page) ===== */
+function openIntro(){
+  var m=document.getElementById('introModal'); if(!m)return;
+  m.classList.add('open');
+  document.body.style.overflow='hidden';
+  var v=document.getElementById('introVideo');
+  if(v){var p=v.play(); if(p&&p.catch)p.catch(function(){/* autoplay blocked — native controls stay visible */})}
+}
+function closeIntro(){
+  var m=document.getElementById('introModal'); if(!m)return;
+  var v=document.getElementById('introVideo'); if(v)v.pause();
+  m.classList.remove('open');
+  var wm=document.getElementById('walletModal'), cm=document.getElementById('claimModal');
+  if(!(wm&&wm.classList.contains('open'))&&!(cm&&cm.classList.contains('open')))document.body.style.overflow='';
+}
 function fakeTx(){
   var h='0123456789abcdef', s='';
   for(var i=0;i<4;i++)s+=h[Math.floor(Math.random()*16)];
@@ -3110,6 +3149,8 @@ document.addEventListener('click',function(e){
     if(act==='view'){e.preventDefault();goToView(el.getAttribute('data-view'),el.getAttribute('data-anchor')||undefined)}
     else if(act==='theme')toggleTheme();
     else if(act==='menu')toggleMenu();
+    else if(act==='intro')openIntro();
+    else if(act==='intro-close')closeIntro();
     else if(act==='wallet')openWallet();
     else if(act==='wallet-close')closeWallet();
     else if(act==='wallet-pick')pickWallet(el.getAttribute('data-wallet'));
@@ -3175,6 +3216,7 @@ bindEv('fLogo','change',function(){handleLogoFile(this.files&&this.files[0])});
 bindEv('createForm','submit',function(e){e.preventDefault();if(createStep===1){goStep(2)}else{submitCreate()}});
 bindEv('walletModal','click',function(e){if(e.target===this)closeWallet()});
 bindEv('claimModal','click',function(e){if(e.target===this)closeClaim()});
+bindEv('introModal','click',function(e){if(e.target===this)closeIntro()});
 /* Settings: custom default slippage — same rules as the trade form's
    Custom input ('.' or ',' decimals, 0.1–50%); a valid value writes
    through applySlippageValue, so the trade forms pick it up too. */
