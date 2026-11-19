@@ -17,10 +17,10 @@
      toggle ([data-theme="light"]). */
   color-scheme:dark;
   --bg:#000000; --bg2:#050505; --surface:#0B0B0B; --surface2:#141414;
-  --ink:#F8F3F5; --muted:#AFAFAF; --faint:#7F7F7F;
+  --ink:#F4F4F5; --muted:#AFAFAF; --faint:#7F7F7F;
   --pink:#FF6B9A; --pink-dark:#FF8FB3; --pink-soft:#33101F; --pink-pale:#141414;
   --gold:#E3B34E; --green:#3ECF8E; --red:#FF7070;
-  --line:#222222; --line2:#2F2F2F;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.11);
   --shadow:0 6px 24px rgba(0,0,0,.35);
   --shadow-lg:0 16px 44px rgba(0,0,0,.5);
   --radius:16px;
@@ -30,10 +30,10 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#000000; --bg2:#050505; --surface:#0B0B0B; --surface2:#141414;
-    --ink:#F8F3F5; --muted:#AFAFAF; --faint:#7F7F7F;
+    --ink:#F4F4F5; --muted:#AFAFAF; --faint:#7F7F7F;
     --pink:#FF6B9A; --pink-dark:#FF8FB3; --pink-soft:#33101F; --pink-pale:#141414;
     --gold:#E3B34E; --green:#3ECF8E; --red:#FF7070;
-    --line:#222222; --line2:#2F2F2F;
+    --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.11);
     --shadow:0 6px 24px rgba(0,0,0,.35); --shadow-lg:0 16px 44px rgba(0,0,0,.5);
     --cta-grad:linear-gradient(135deg,#FF7CA6 0%,#F4528A 55%,#E8437A 100%);
     --cta-shadow:0 8px 22px rgba(244,82,138,.30);
@@ -41,10 +41,10 @@
 }
 :root[data-theme="dark"]{
   --bg:#000000; --bg2:#050505; --surface:#0B0B0B; --surface2:#141414;
-  --ink:#F8F3F5; --muted:#AFAFAF; --faint:#7F7F7F;
+  --ink:#F4F4F5; --muted:#AFAFAF; --faint:#7F7F7F;
   --pink:#FF6B9A; --pink-dark:#FF8FB3; --pink-soft:#33101F; --pink-pale:#141414;
   --gold:#E3B34E; --green:#3ECF8E; --red:#FF7070;
-  --line:#222222; --line2:#2F2F2F;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.11);
   --shadow:0 6px 24px rgba(0,0,0,.35); --shadow-lg:0 16px 44px rgba(0,0,0,.5);
   --cta-grad:linear-gradient(135deg,#FF7CA6 0%,#F4528A 55%,#E8437A 100%);
   --cta-shadow:0 8px 22px rgba(244,82,138,.30);
@@ -62,7 +62,7 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;font-family:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{margin:0;font-family:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 h1,h2,h3{font-family:inherit;line-height:1.12;margin:0;letter-spacing:-.02em}
 a{color:inherit;text-decoration:none}
 button,[role="button"],select,input,textarea{font-family:inherit}
@@ -87,10 +87,10 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .nav a.active{color:var(--ink);background:var(--pink-pale)}
 .top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
 .icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:.18s}
-.icon-btn:hover{border-color:var(--pink);color:var(--pink-dark);transform:translateY(-1px)}
+.icon-btn:hover{border-color:color-mix(in srgb,var(--ink) 26%, transparent);color:var(--ink);transform:translateY(-1px)}
 .icon-btn:active{transform:scale(.94)}
 .wallet-pill{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:7px 14px 7px 10px;font-weight:800;font-size:13.5px;cursor:pointer;color:var(--ink);transition:.18s;min-height:42px}
-.wallet-pill:hover{border-color:var(--pink);box-shadow:var(--shadow)}
+.wallet-pill:hover{border-color:color-mix(in srgb,var(--ink) 26%, transparent);box-shadow:var(--shadow)}
 .wallet-pill:active{transform:scale(.97)}
 .wallet-pill .wico{width:26px;height:26px;border-radius:50%;background:var(--pink-pale);color:var(--pink-dark);display:flex;align-items:center;justify-content:center}
 .wallet-pill .wico svg{width:15px;height:15px}
@@ -103,7 +103,7 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .btn-primary:hover{transform:translateY(-1px) scale(1.015);box-shadow:0 12px 28px rgba(232,67,122,.42)}
 .btn-primary:active{transform:scale(.97)}
 .btn-ghost{background:var(--surface);border:1px solid var(--line2);color:var(--ink)}
-.btn-ghost:hover{border-color:var(--pink);color:var(--pink-dark)}
+.btn-ghost:hover{border-color:color-mix(in srgb,var(--ink) 26%, transparent);color:var(--ink)}
 .btn-soft{background:var(--pink-pale);color:var(--pink-dark)}
 .btn-soft:hover{background:var(--pink-soft)}
 .btn .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:rip .55s ease-out forwards;pointer-events:none}
@@ -112,18 +112,18 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 @keyframes burst{to{transform:translate(var(--bx),var(--by)) rotate(160deg) scale(.5);opacity:0}}
 /* ===== Page head (Launches) ===== */
 .page-head{padding:30px 0 6px}
-.page-head h1{font-size:clamp(38px,5.4vw,54px);font-weight:800}
-.page-head p{color:var(--muted);font-size:16.5px;max-width:58ch;margin:10px 0 18px}
+.page-head h1{font-size:clamp(30px,4.6vw,42px);font-weight:800}
+.page-head p{color:var(--muted);font-size:15px;max-width:58ch;margin:10px 0 18px}
 .page-head p strong{color:var(--ink)}
 .head-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .section{padding:38px 0}
 .sec-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;scroll-margin-top:88px;scroll-margin-bottom:118px}
-.sec-head h2{font-size:24px;font-weight:800}
+.sec-head h2{font-size:20px;font-weight:700}
 .sec-head p{color:var(--muted);margin:4px 0 0;font-size:14px}
 /* ===== Trending carousel ===== */
 .carousel-nav{display:flex;gap:8px}
 .arrow-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:.18s}
-.arrow-btn:hover{border-color:var(--pink);color:var(--pink-dark);transform:translateY(-1px)}
+.arrow-btn:hover{border-color:color-mix(in srgb,var(--ink) 26%, transparent);color:var(--ink);transform:translateY(-1px)}
 .arrow-btn:active{transform:scale(.93)}
 .arrow-btn svg{width:18px;height:18px}
 .trend-viewport{overflow:hidden;margin:0 -20px;padding:2px 20px 8px}
@@ -132,17 +132,17 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .trend-track::-webkit-scrollbar{display:none}
 .trend-track.dragging{cursor:grabbing;scroll-behavior:auto}
 .trend-card{flex:0 0 252px;scroll-snap-align:start;background:none;border:0;padding:0;cursor:pointer;text-align:left;color:var(--ink)}
-.trend-art{height:252px;border-radius:20px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:transform .25s ease,box-shadow .25s ease;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+.trend-art{height:252px;border-radius:16px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:transform .25s ease,box-shadow .25s ease;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
 .trend-card:hover .trend-art{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
-.trend-art .big-glyph{font-size:104px;font-weight:800;color:rgba(255,255,255,.92);letter-spacing:-.04em;text-shadow:0 4px 18px rgba(0,0,0,.18);position:relative;z-index:2}
+.trend-art .big-glyph{font-size:88px;font-weight:700;color:rgba(255,255,255,.92);letter-spacing:-.04em;text-shadow:0 4px 18px rgba(0,0,0,.18);position:relative;z-index:2}
 .trend-art .ring{position:absolute;border:2px solid rgba(255,255,255,.28);border-radius:50%}
 .trend-art .pair-tag{position:absolute;top:12px;left:12px;z-index:3;background:rgba(10,6,10,.42);color:#fff;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px;backdrop-filter:blur(4px)}
 .trend-art .grad-tag{position:absolute;top:12px;right:12px;z-index:3;background:#fff;color:#0E6B43;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px}
 .trend-meta{padding:12px 2px 0}
 .trend-meta .rank{color:var(--faint);font-weight:700;margin-right:8px}
-.trend-meta .tname{font-weight:800;font-size:17px}
+.trend-meta .tname{font-weight:600;font-size:15.5px}
 .trend-vals{display:flex;align-items:baseline;gap:9px;margin-top:2px}
-.trend-vals .mcap{font-size:21px;font-weight:800;letter-spacing:-.01em}
+.trend-vals .mcap{font-size:17px;font-weight:700;letter-spacing:-.01em}
 .up{color:var(--green);font-weight:800}.down{color:var(--red);font-weight:800}
 /* ===== Filter tabs (underline, Pons-style) ===== */
 .filter-tabs{display:flex;gap:26px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);margin-top:8px}
@@ -165,27 +165,25 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .token-list{display:block}
 .trow,.gcard{animation:rowIn .35s ease both}
 @keyframes rowIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.trow{display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);padding:14px 8px;cursor:pointer;text-align:left;color:var(--ink);transition:background .15s;border-radius:10px}
+.trow{display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);padding:12px 8px;cursor:pointer;text-align:left;color:var(--ink);transition:background .15s;border-radius:10px}
 .trow:hover{background:var(--surface2)}
 .trow:active{transform:scale(.995)}
-.tavatar{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#fff;flex:none;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
-.tavatar::after{content:"";position:absolute;top:-60%;left:-30%;width:70%;height:100%;background:linear-gradient(115deg,rgba(255,255,255,.35),rgba(255,255,255,0));transform:rotate(18deg);border-radius:50%}
+.tavatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;color:rgba(255,255,255,.94);flex:none;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
 .trow-main{flex:1;min-width:0}
-.trow-name{font-weight:800;font-size:16.5px;display:flex;align-items:center;gap:7px}
+.trow-name{font-weight:600;font-size:15.5px;display:flex;align-items:center;gap:7px}
 .verified{width:16px;height:16px;flex:none}
-.trow-sub{color:var(--faint);font-size:13px;font-weight:600;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.trow-sub .pair-ic{width:14px;height:14px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
+.trow-sub{color:var(--faint);font-size:12.5px;font-weight:500;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .trow-right{text-align:right;flex:none}
-.trow-mcap{font-weight:800;font-size:17px}
-.trow-change{font-size:13px}
+.trow-mcap{font-weight:700;font-size:15.5px}
+.trow-change{font-size:12.5px}
 .trow-prog{height:5px;background:var(--pink-pale);border-radius:99px;overflow:hidden;margin-top:7px;max-width:210px}
 .trow-prog i{display:block;height:100%;background:var(--pink);border-radius:99px}
 /* ===== Token grid view ===== */
 .token-list.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-top:8px}
-.gcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:0;cursor:pointer;text-align:left;color:var(--ink);overflow:hidden;transition:transform .18s,box-shadow .18s;width:100%}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:0;cursor:pointer;text-align:left;color:var(--ink);overflow:hidden;transition:transform .18s,box-shadow .18s;width:100%}
 .gcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
 .gcard-art{height:138px;display:flex;align-items:center;justify-content:center;position:relative}
-.gcard-art .big-glyph{font-size:56px;font-weight:800;color:rgba(255,255,255,.92);text-shadow:0 3px 12px rgba(0,0,0,.16)}
+.gcard-art .big-glyph{font-size:48px;font-weight:700;color:rgba(255,255,255,.92);text-shadow:0 3px 12px rgba(0,0,0,.16)}
 .gcard-body{padding:14px 16px 16px}
 .show-more-wrap{text-align:center;margin:26px 0 4px}
 .btn-more{border-radius:14px;padding:13px 38px;font-size:15px}
@@ -201,7 +199,7 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 :root[data-theme="dark"] .graduated-tag{background:#123528;color:#7CE8B5}
 :root[data-theme="dark"] .pending-tag{background:#3A2C10;color:#FFC86B}
 :root[data-theme="dark"] .wtag.hot{background:#3A2C10;color:#FFC86B}
-.detail{display:none;background:var(--surface);border:1px solid var(--line2);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-lg);margin-top:22px}
+.detail{display:none;background:var(--surface);border:1px solid var(--line2);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-lg);margin-top:22px}
 .detail.open{display:block;animation:viewIn .25s ease}
 .detail-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:0}
 .detail-main{padding:22px;border-right:1px solid var(--line)}
@@ -223,6 +221,8 @@ svg.ic{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;strok
 .trades{width:100%;border-collapse:collapse;font-size:13.5px}
 .trades th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:8px 6px}
 .trades td{padding:8px 6px;border-top:1px solid var(--line);font-weight:600}
+.trade-tx{font-size:11px;font-weight:700;color:var(--faint);text-decoration:none;white-space:nowrap}
+.trade-tx:hover{color:var(--pink);text-decoration:underline}
 .fee-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line);font-weight:600;font-size:14.5px}
 .fee-token-row{display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .fee-token-row:last-child{border-bottom:0}
@@ -230,18 +230,18 @@ button:disabled{cursor:not-allowed}
 .fee-row:last-child{border:0}
 /* ===== How it works / create ===== */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.step{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
-.step-num{width:42px;height:42px;border-radius:12px;background:var(--cta-grad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;margin-bottom:14px;box-shadow:var(--cta-shadow)}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
+.step-num{width:42px;height:42px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;margin-bottom:14px}
 .step h3{font-size:18px;margin-bottom:6px}.step p{color:var(--muted);margin:0;font-size:14.5px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
 .panel h3{font-size:20px;margin-bottom:8px}.panel p{color:var(--muted)}
 .kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
 .kv div{background:var(--surface2);border-radius:12px;padding:10px 12px}
 .kv small{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
 .kv strong{display:block;font-size:16px}
 .safety{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.safe{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.safe{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
 .safe .ico{width:44px;height:44px;border-radius:12px;background:var(--pink-pale);color:var(--pink-dark);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .safe .ico svg{width:22px;height:22px}
 .safe h3{font-size:16.5px}.safe p{color:var(--muted);font-size:14px;margin:6px 0 0}
@@ -252,7 +252,7 @@ button:disabled{cursor:not-allowed}
 .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--pink)}
 .field textarea{min-height:84px;resize:vertical}
 .hint{font-size:12px;color:var(--faint);font-weight:600;margin-top:4px}
-.preview-card{background:var(--bg2);border:1.5px dashed var(--pink);border-radius:18px;padding:18px}
+.preview-card{background:var(--bg2);border:1px dashed var(--line2);border-radius:16px;padding:18px}
 .next-pages{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
 .next-card{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;text-align:left;cursor:pointer;color:var(--ink);width:100%;transition:.18s}
 .next-card:hover{border-color:var(--pink-soft);box-shadow:var(--shadow)}
@@ -268,7 +268,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .foot-note{color:var(--faint);font-size:12.5px;font-weight:600}
 .foot-col h4{font-size:15px;color:var(--ink);margin:2px 0 10px;font-weight:800}
 .foot-col a{display:block;padding:5px 0;font-size:14.5px;font-weight:600;color:var(--muted);cursor:pointer}
-.foot-col a:hover{color:var(--pink-dark)}
+.foot-col a:hover{color:var(--ink)}
 .foot-col .ext{font-size:11px;color:var(--faint);font-weight:800}
 .foot-bottom{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:28px;padding-top:18px;font-weight:600;font-size:14px}
 .socials{display:flex;gap:8px}
@@ -357,7 +357,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .tax-seg button{flex:1;border:0;background:transparent;border-radius:999px;padding:11px 10px;font-weight:800;font-size:15.5px;color:var(--muted);cursor:pointer;min-height:46px;transition:background .18s,color .18s,box-shadow .18s,transform .15s}
 .tax-seg button:hover{color:var(--ink)}
 .tax-seg button:active{transform:scale(.96)}
-.tax-seg button.sel{background:var(--cta-grad);color:#fff;box-shadow:var(--cta-shadow)}
+.tax-seg button.sel{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.22)}
 .form-nav{display:flex;align-items:center;gap:12px;margin-top:18px}
 .form-nav .spacer{flex:1}
 .eco-summary{font-size:13.5px;color:var(--muted);font-weight:600;margin:16px 0 0}
@@ -371,7 +371,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
 .stat-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
 .stat-card small{color:var(--muted);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;display:block}
-.stat-card strong{font-size:23px;display:block;margin:5px 0 2px;letter-spacing:-.01em}
+.stat-card strong{font-size:20px;display:block;margin:5px 0 2px;letter-spacing:-.01em}
 .stat-card span{color:var(--faint);font-size:12.5px;font-weight:600}
 .kv4{grid-template-columns:repeat(4,1fr)}
 .pair-row{display:grid;grid-template-columns:132px 1fr 54px;align-items:center;gap:12px;padding:8px 0;font-weight:700;font-size:14px}
@@ -501,7 +501,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .pt-layer .panel{margin-bottom:0}
 .claim-total{margin:18px 0 6px}
 .claim-total small{color:var(--muted);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;display:block}
-.claim-total strong{font-size:32px;letter-spacing:-.02em;color:var(--ink);display:block;line-height:1.15;margin-top:3px}
+.claim-total strong{font-size:28px;letter-spacing:-.02em;color:var(--ink);display:block;line-height:1.15;margin-top:3px}
 .claim-total .per-asset{color:var(--muted);font-size:13.5px;font-weight:600;display:block;margin-top:4px}
 .btn-claim{width:100%;padding:15px;font-size:16px;margin:12px 0 6px}
 .breakdown-toggle{border:0;background:none;color:var(--pink-dark);font-weight:800;font-size:13.5px;cursor:pointer;padding:10px 2px;min-height:40px;display:inline-flex;align-items:center;gap:6px}
@@ -521,8 +521,8 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .d-back{margin:18px 0 14px}
 .d-head{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 .d-head-main{flex:1;min-width:250px;display:flex;gap:14px;align-items:flex-start}
-.d-avatar{width:64px;height:64px;border-radius:18px;font-size:27px}
-.d-name{font-size:27px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.d-avatar{width:56px;height:56px;border-radius:14px;font-size:23px}
+.d-name{font-size:24px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .d-ticker{color:var(--muted);font-weight:800;font-size:16px}
 .fav-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--line2);background:var(--surface);color:var(--faint);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:.18s;flex:none}
 .fav-btn:hover{border-color:var(--gold);color:var(--gold)}
@@ -542,16 +542,16 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .copy-mini svg{width:13px;height:13px}
 .d-mcap{text-align:right}
 .d-mcap small{color:var(--muted);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;display:block}
-.d-mcap strong{font-size:27px;letter-spacing:-.02em}
+.d-mcap strong{font-size:23px;letter-spacing:-.02em}
 .d-mcap span{color:var(--muted);font-weight:600;font-size:13.5px;display:block}
 .d-price-row{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap;margin:20px 0 12px}
-.d-price{font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.d-price{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1}
 .d-change{font-weight:800;font-size:15px;padding-bottom:3px}
 .chart-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .seg2{display:flex;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
 .seg2 button{border:0;background:transparent;border-radius:999px;padding:7px 13px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;min-height:34px;transition:.15s}
 .seg2 button.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 7px rgba(25,18,24,.12);font-weight:800}
-.chart-box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px 6px 4px;margin-top:12px}
+.chart-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 6px 4px;margin-top:12px}
 .d-grid{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;margin-top:18px}
 .d-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
 .d-stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
@@ -723,11 +723,11 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .quick button:hover{transform:translateY(-1px)}
 .quick button:active{transform:scale(.95)}
 .quick button:disabled:hover{transform:none}
-.quick button.sel{border-color:var(--pink);background:var(--pink);color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--pink) 38%, transparent)}
+.quick button.sel{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 15%, transparent);color:var(--ink);box-shadow:none}
 .slip-group{flex-wrap:wrap;justify-content:flex-end}
 .slip-group button{min-height:44px;padding:6px 13px;transition:border-color .2s ease,background-color .2s ease,color .2s ease,transform .15s ease,box-shadow .2s ease}
 .slip-group button:active{transform:scale(.94)}
-.slip-group button.sel{border-color:var(--pink);background:var(--pink);color:#fff;box-shadow:0 6px 16px color-mix(in srgb,var(--pink) 38%, transparent)}
+.slip-group button.sel{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 15%, transparent);color:var(--ink);box-shadow:none}
 .slip-custom-input{min-height:44px;transition:border-color .2s ease,box-shadow .2s ease}
 .slip-custom-input:focus{outline:none;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--pink) 26%, transparent)}
 #liveBalanceLine{min-height:19px;line-height:1.45}
@@ -738,6 +738,20 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 #tradeBtn.flash-ok{background:var(--green);box-shadow:0 10px 26px color-mix(in srgb,var(--green) 45%, transparent)}
 #tradeBtn.flash-err{background:var(--red);box-shadow:0 10px 26px color-mix(in srgb,var(--red) 45%, transparent)}
 @media(prefers-reduced-motion:reduce){.tt-thumb,.trade-toggle button,.quick button,.slip-group button,.btn-max,.amount,.slip-custom-input,#tradeBtn,#tradeBtn::before{transition:none}#tradeBtn:disabled::before{animation-duration:1.8s}}
+/* ===== Reskin: slim sticky control bar on Launches ================
+   Tabs (with their animated underline), pair select, view toggle
+   and search live in ONE bar that sticks under the header, so the
+   controls stay reachable without eating a full row of height. */
+.control-bar{position:sticky;top:68px;z-index:40;background:var(--bg);padding-bottom:10px}
+.control-bar .filter-tabs{margin-top:0}
+.control-bar .filter-row{margin:10px 0 0}
+.control-bar .ftab{padding-top:10px;padding-bottom:10px;min-height:44px}
+/* Card hover lift is a pointer-device pleasure only — touch
+   screens get no sticky hover states. */
+@media(hover:none){
+  .gcard:hover,.trend-card:hover .trend-art,.btn-primary:hover,.next-card:hover{transform:none}
+  .trend-card:hover .trend-art{box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+}
 </style>
 </head>
 <body>
@@ -824,6 +838,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
         </div>
       </div>
       <p id="liveNote" style="display:none;color:var(--muted);font-weight:600;font-size:13.5px;margin:8px 2px 14px"></p>
+    <div class="control-bar">
     <div class="filter-tabs" role="tablist" aria-label="Filter tokens">
       <button class="ftab active" data-filter="mcap" data-act="filter">Market cap</button>
       <button class="ftab" data-filter="new" data-act="filter">New</button>
@@ -841,6 +856,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
         <button id="segGrid" aria-label="Grid view" data-act="viewmode" data-mode="grid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg></button>
       </div>
       <label class="search"><svg class="ic" viewBox="0 0 24 24" style="width:17px;height:17px"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="searchInput" type="search" placeholder="Search Sakura tokens…" aria-label="Search Sakura tokens by name, ticker, or creator"/></label>
+    </div>
     </div>
     <div class="token-list" id="tokenList"></div>
     <p id="emptyState" style="display:none;text-align:center;color:var(--muted);font-weight:700;padding:28px">No tokens launched on Sakura match your search.</p>
@@ -955,7 +971,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
       <div>
         <p style="font-weight:800;margin:0 0 8px;color:var(--muted);font-size:12.5px;letter-spacing:.06em">ON THE BOARD</p>
         <div class="preview-card">
-          <div style="display:flex;gap:12px;align-items:center"><div class="tavatar" id="pAvatar" style="background:#E8873D">T</div><div><h3 id="pName" style="font-size:19px">Your Token</h3><span style="color:var(--pink-dark);font-weight:800;font-size:13px" id="pTicker">$TKN</span> <span style="color:var(--faint);font-size:12.5px;font-weight:600">· by You (Creator)</span> <span class="pair-badge" id="pPairBadge">LOOP pair</span></div></div>
+          <div style="display:flex;gap:12px;align-items:center"><div class="tavatar" id="pAvatar" style="background:linear-gradient(140deg,hsl(344,32%,37%),hsl(336,36%,26%))">T</div><div><h3 id="pName" style="font-size:19px">Your Token</h3><span style="color:var(--pink-dark);font-weight:800;font-size:13px" id="pTicker">$TKN</span> <span style="color:var(--faint);font-size:12.5px;font-weight:600">· by You (Creator)</span> <span class="pair-badge" id="pPairBadge">LOOP pair</span></div></div>
           <p id="pDesc" style="color:var(--muted);font-size:14px;margin:10px 0 4px">Your token description will appear here.</p>
           <div class="pstats">
             <div><small>Supply</small><strong>1,000,000,000</strong></div>
@@ -996,7 +1012,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
     <!-- 1 · Identity header -->
     <div class="panel" style="margin-bottom:16px">
       <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-        <div class="tavatar" style="background:linear-gradient(140deg,#F2789F,#D63A6E);width:58px;height:58px;font-size:24px">S</div>
+        <div class="tavatar" style="background:linear-gradient(140deg,hsl(344,32%,37%),hsl(336,36%,26%));width:58px;height:58px;font-size:24px">S</div>
         <div style="flex:1;min-width:220px">
           <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong style="font-size:19px" id="profileAddrShort">Connect Wallet</strong><button class="icon-mini" data-act="copy-addr" aria-label="Copy full wallet address" title="Copy address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
           <span class="addr-full" id="profileAddrFull"></span><br/>
@@ -1227,6 +1243,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
         </div>
         <div id="dTradesWrap">
           <div class="trades-wrap"><table class="trade-table"><thead><tr><th>Side</th><th>Trader</th><th class="num" id="dPairCol">Pair</th><th class="num" id="dTokenCol">Token</th><th class="num">Price</th><th class="num">Age</th></tr></thead><tbody id="dTradesBody"></tbody></table></div>
+          <div class="show-more-wrap"><button type="button" id="dTradesMore" class="btn btn-ghost btn-more" style="display:none" data-act="trades-more">Load more trades</button></div>
         </div>
         <div id="dHoldersWrap" style="display:none">
           <ul class="holders" id="dHoldersList"></ul>
@@ -1381,6 +1398,19 @@ var TOKENS=[]; /* legacy index-based helpers stay inert — nothing renders from
 var currentFilter="mcap", currentToken=0, side="buy", visibleLimit=8, viewMode="list";
 var VERIFIED='<svg class="verified" viewBox="0 0 24 24" aria-label="Verified creator"><circle cx="12" cy="12" r="10" fill="#3B99FC"/><path d="m8.2 12.4 2.5 2.5 5-5.4" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function artBg(t){return 'background:linear-gradient(140deg,'+t.c2+' 0%,'+t.color+' 70%)'}
+/* Letter-avatar palette: a muted petal gradient whose hue varies
+   deterministically with the token address (plum → rose → petal →
+   warm rose), so rows stay distinguishable without any single
+   saturated block shouting. Saturation and lightness stay low;
+   the letter sits on it in a calm semibold. */
+function petalColors(addr){
+  var a=String(addr||'').toLowerCase(),h=0,i;
+  for(i=0;i<a.length;i++)h=(h*31+a.charCodeAt(i))>>>0;
+  var hue=306+(h%68); if(hue>360)hue-=360;
+  var hue2=hue+14; if(hue2>360)hue2-=360;
+  return {c2:'hsl('+hue+',34%,37%)',color:'hsl('+hue2+',38%,26%)'};
+}
+function softGrad(addr){var p=petalColors(addr);return 'linear-gradient(140deg,'+p.c2+' 0%,'+p.color+' 100%)'}
 function escHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function avatarInner(t){return t.img?'<img src="'+t.img+'" alt=""/>':escHtml(t.name.charAt(0))}
 function avatarStyle(t){return t.img?'background:var(--surface2)':artBg(t)}
@@ -1451,7 +1481,10 @@ function filteredTokens(){
   return list;
 }
 function changeHtml(t,cls){
-  if(t.changePct==null)return '<span class="'+cls+'" style="color:var(--muted)">\u2014</span>';
+  /* No real change figure (graduated tokens, no first trade yet):
+     render NOTHING — a dangling "—" under the market cap reads
+     like a bug, so the slot simply stays empty. */
+  if(t.changePct==null)return '';
   var up=t.changePct>=0;
   return '<span class="'+cls+' '+(up?'up':'down')+'">'+(up?'+':'')+t.changePct.toFixed(1)+'%</span>';
 }
@@ -1459,12 +1492,13 @@ function feedAvatar(t,cls){
   if(t.img)return '<span class="'+(cls||'tavatar')+'" data-letter="'+escHtml(t.name.charAt(0))+'" data-bg="linear-gradient(140deg,'+t.c2+','+t.color+')" style="background:var(--surface2)"><img data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/></span>';
   return '<span class="'+(cls||'tavatar')+'" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+escHtml(t.name.charAt(0))+'</span>';
 }
-/* Data-mode tag: every row on this page is rendered from a live
-   Lens read, so rows carry the Live tag. Freshness (block + read
-   time, or the honest unreachable warning) lives in the header
-   badge — see the web3 layer's status machine. */
+/* Live status is NOT repeated per row: the header badge
+   (feedBadge) already carries the live state, block and read
+   time for the whole list, so rows stay quiet. This helper is
+   kept (returning nothing) so every existing call site renders
+   the calmer row unchanged in structure. */
 function feedTagHtml(){
-  return '<span class="live-tag">Live \u00b7 Loop</span>';
+  return '';
 }
 /* Empty-surface wording follows the live load state (published by the
    web3 layer on window.__liveLoadState): a surface must never claim
@@ -1570,7 +1604,10 @@ function syncArtTag(art,sig,html,sel){
 function primeArt(art,t,tagSig){if(!art)return;art.__imgKey=t.img||'';art.__tagSig=tagSig}
 /* ===== Launches list rows (list + grid) ===== */
 function rowSubHtml(t){
-  return '<span class="pair-ic" style="background:'+t.color+'">'+t.pair.charAt(0)+'</span>by '+escHtml(t.creator)+' · '+t.dateStr+(t.pendMig?' · <span class="pending-tag">Graduated · pending migration</span>':(t.grad?' · <span class="graduated-tag">Graduated'+(t.gradDex?' · '+escHtml(t.gradDex):'')+'</span>':' · '+t.prog.toFixed(2)+'% to graduation'));
+  /* One quiet meta line: creator · date · status as plain text.
+     No pair badge square, no status chips — the header badge
+     carries live state, and graduation reads as words here. */
+  return 'by '+escHtml(t.creator)+' · '+t.dateStr+(t.pendMig?' · Graduated · pending migration':(t.grad?' · Graduated'+(t.gradDex?' · '+escHtml(t.gradDex):''):' · '+t.prog.toFixed(2)+'% to graduation'));
 }
 function listRowHtml(t){
   return '<button class="trow" data-act="live-token" data-addr="'+t.addr+'">'+feedAvatar(t)
@@ -1953,7 +1990,7 @@ function updatePreview(){
   document.getElementById('pName').textContent=n; document.getElementById('pTicker').textContent='$'+tk; document.getElementById('pDesc').textContent=d;
   var pa=document.getElementById('pAvatar');
   if(logoDataUrl){pa.innerHTML='<img src="'+logoDataUrl+'" alt=""/>';pa.style.background='var(--surface2)'}
-  else{pa.textContent=n.charAt(0).toUpperCase();pa.style.background='#E8873D'}
+  else{pa.textContent=n.charAt(0).toUpperCase();pa.style.background='linear-gradient(140deg,hsl(344,32%,37%),hsl(336,36%,26%))'}
 }
 /* ===== Token logo upload (reads the real file, downscales, previews instantly) ===== */
 var logoDataUrl=null;
@@ -3263,8 +3300,8 @@ function resolveTokenImg(addr){
 function liveAvatarHtml(t,sz){
   var img=resolveTokenImg(t.address);
   var st='width:'+sz+'px;height:'+sz+'px;border-radius:13px;font-size:19px;';
-  if(img)return '<span class="tavatar" data-letter="'+escHtml(t.symbol.charAt(0))+'" data-bg="linear-gradient(140deg,#F2789F,#D63A6E)" style="'+st+'background:var(--surface2)"><img data-tokimg data-addr="'+String(t.address).toLowerCase()+'" src="'+img+'" alt=""/></span>';
-  return '<span class="tavatar" style="'+st+'background:linear-gradient(140deg,#F2789F,#D63A6E)">'+escHtml(t.symbol.charAt(0))+'</span>';
+  if(img)return '<span class="tavatar" data-letter="'+escHtml(t.symbol.charAt(0))+'" data-bg="'+softGrad(t.address)+'" style="'+st+'background:var(--surface2)"><img data-tokimg data-addr="'+String(t.address).toLowerCase()+'" src="'+img+'" alt=""/></span>';
+  return '<span class="tavatar" style="'+st+'background:'+softGrad(t.address)+'">'+escHtml(t.symbol.charAt(0))+'</span>';
 }
 /* Advance one token image down its fallback chain by one step:
    Pinata gateway → fallback gateway (dweb.link) → designed letter
@@ -3801,21 +3838,37 @@ function storeTradesSorted(t,desc){
   return arr;
 }
 var BLOCK_TS_CACHE={};
+/* Relative age for trade rows ("3m ago") — the Age column's whole
+   point; falls back to the absolute date past a month. */
+function fmtAge(ts){
+  var s=Math.floor(Date.now()/1000)-ts;
+  if(s<0)s=0;
+  if(s<60)return 'just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  if(s<86400*30)return Math.floor(s/86400)+'d ago';
+  return fmtDateTime(ts);
+}
 function tradeRowWhen(e){
-  if(e.ts!=null)return fmtDateTime(e.ts);
-  if(e.blockNumber&&BLOCK_TS_CACHE[e.blockNumber])return fmtDateTime(BLOCK_TS_CACHE[e.blockNumber]);
+  if(e.ts!=null)return fmtAge(e.ts);
+  if(e.blockNumber&&BLOCK_TS_CACHE[e.blockNumber])return fmtAge(BLOCK_TS_CACHE[e.blockNumber]);
   return 'Block '+e.blockNumber;
 }
 function buildTradeRow(t,e){
   var tr=document.createElement('tr');
   tr.setAttribute('data-tkey',tradeKeyOf(e));
   var buy=e.args.isBuy;
+  /* LOOP amount / price stay blank (—) until the explorer index
+     supplies them — a trade whose LOOP leg cannot be found shows
+     its token amount only, never an invented number. The cells
+     carry data-pair / data-price so the amount can be filled in
+     place when its lookup lands, without rebuilding the row. */
   tr.innerHTML='<td data-label="Side"><span class="'+(buy?'side-buy':'side-sell')+'">'+(buy?'↗ Buy':'↘ Sell')+'</span></td>'
-    +'<td data-label="Trader"><span class="trader-cell"><span class="cav" style="background:#D63A6E">'+escHtml(String(e.args.trader).charAt(2).toUpperCase())+'</span>'+truncAddr(e.args.trader)+'</span></td>'
-    +'<td class="num" data-label="LOOP">'+fmtEth(e.args.pairAmount)+'</td>'
+    +'<td data-label="Trader"><span class="trader-cell"><span class="cav" style="background:'+softGrad(e.args.trader)+'">'+escHtml(String(e.args.trader).charAt(2).toUpperCase())+'</span>'+truncAddr(e.args.trader)+'</span></td>'
+    +'<td class="num" data-label="LOOP" data-pair="1">'+(e.args.pairAmount!=null?fmtEth(e.args.pairAmount):'—')+'</td>'
     +'<td class="num" data-label="'+escHtml(t.symbol)+'">'+fmtTokUnits(e.args.tokenAmount,t.decimals)+'</td>'
-    +'<td class="num" data-label="Price">'+fmtPriceEth(e.args.spotPriceAfter)+'</td>'
-    +'<td class="num" data-label="When" data-when="1">'+tradeRowWhen(e)+'</td>';
+    +'<td class="num" data-label="Price" data-price="1">'+(e.args.spotPriceAfter!=null?fmtPriceEth(e.args.spotPriceAfter):'—')+'</td>'
+    +'<td class="num" data-label="When"><span data-when="1">'+tradeRowWhen(e)+'</span>'+(e.transactionHash?'<br/><a class="trade-tx" href="'+W3C.explorer+'/tx/'+e.transactionHash+'" target="_blank" rel="noopener" title="View transaction on the explorer">'+truncAddr(e.transactionHash)+' ↗</a>':'')+'</td>';
   return tr;
 }
 /* Incremental renderer: inserts only the rows that are not yet in
@@ -3832,7 +3885,7 @@ function renderTradesIncremental(t){
      refresh, and rows must never mix across tokens. */
   var rKey=String(t.address).toLowerCase();
   if(TRADES_DOM_TOKEN!==rKey){tb.innerHTML='';TRADES_DOM_TOKEN=rKey}
-  var arr=storeTradesSorted(t,true).slice(0,50);
+  var arr=storeTradesSorted(t,true).slice(0,bsVisibleLimit(t));
   if(!arr.length)return;
   tb.querySelectorAll('tr:not([data-tkey])').forEach(function(r){r.remove()});
   var existing={};
@@ -3913,15 +3966,268 @@ function insertOwnTrade(t,tx,receipt,side,known){
     }
   }catch(e){}
 }
+/* =====================================================================
+   BLOCKSCOUT INDEX — Trades & Holders data source
+   ---------------------------------------------------------------------
+   The detail page's Trades and Holders tabs are fed by the Loop
+   explorer's indexed REST API (Blockscout v2), NOT by scanning
+   eth_getLogs from the browser: on a phone the log scan over Loop's
+   slow RPC never finished, so both tabs sat empty forever. The
+   explorer has already indexed everything — the page just reads
+   results. Trades still land in the same merge-only TRADE_STORE
+   (keyed by txHash + logIndex), so rows union in across refreshes
+   and never vanish or duplicate, and the user's own confirmed
+   trades (inserted from their receipts) reconcile against the
+   indexed copies instead of doubling. */
+var BS_API='https://explorer.mainnetloop.com/api/v2';
+var BS_WLOOP=String(W3C.contracts.wloop||'').toLowerCase();
+var BS_TRADES={};
+var BS_LOOP_BY_TX={}, BS_LOOP_QUEUE=[], BS_LOOP_INFLIGHT=0;
+function bsState(t){
+  var key=String(t.address).toLowerCase();
+  if(!BS_TRADES[key])BS_TRADES[key]={next:undefined,loading:false,loaded:false,error:false,visible:50,attemptAt:0};
+  return BS_TRADES[key];
+}
+function bsVisibleLimit(t){
+  if(!t||!t.address)return 50;
+  var st=BS_TRADES[String(t.address).toLowerCase()];
+  return (st&&st.visible)||50;
+}
+function bsIsOpen(t){
+  return !!t&&detailMode==='live'&&!!currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase();
+}
+function bsFetchJson(path){
+  var ctl=(typeof AbortController!=='undefined')?new AbortController():null;
+  var timer=ctl?setTimeout(function(){try{ctl.abort()}catch(e){}},25000):null;
+  return fetch(BS_API+path,{signal:ctl?ctl.signal:undefined,headers:{'Accept':'application/json'}}).then(function(r){
+    if(timer)clearTimeout(timer);
+    if(!r.ok)throw new Error('Explorer API HTTP '+r.status);
+    return r.json();
+  }).catch(function(e){if(timer)clearTimeout(timer);throw e});
+}
+function bsQuery(params){
+  return Object.keys(params||{}).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k])}).join('&');
+}
+/* Protocol contracts that appear as the counterparty-side of a
+   transfer without being a trader: fee skims (pool → FeeVault /
+   Treasury on every fee-split swap), the launch mint (factory →
+   curve), routers and factories. A transfer whose non-curve/pool
+   side is one of these is plumbing, not a trade. */
+var BS_PROTOCOL=null;
+function bsProtocolAddrs(){
+  if(BS_PROTOCOL)return BS_PROTOCOL;
+  var s={}, c=W3C.contracts||{};
+  ['feeVault','treasury','lpLocker','factory','launchFactory','v2Factory','v2Router','v2FactoryLegacy','v2RouterLegacy','graduationDex','config','lens','wloop'].forEach(function(k){if(c[k])s[String(c[k]).toLowerCase()]=1});
+  (c.factories||[]).forEach(function(f){var a=(typeof f==='string'?f:(f.address||f.addr));if(a)s[String(a).toLowerCase()]=1});
+  s[ZERO_ADDR]=1;
+  BS_PROTOCOL=s;
+  return s;
+}
+/* Turn one page of the token's indexed transfers into trade events
+   in the store's shape. Only transfers against the token's curve
+   (pre-graduation) or its pool (post-graduation) are trades:
+   counterparty → trader is a SELL, counterparty → trader a BUY.
+   Internal moves (curve ↔ pool at graduation, mints, burns, fee
+   skims) are filtered out. The LOOP amount starts null and is
+   filled in place by bsResolveLoopAmounts once the trade's WLOOP
+   leg is known — it stays blank when no leg exists (curve trades
+   settle in native LOOP), never invented. */
+function bsTradeEvents(t,items){
+  var curve=String(t.curve||'').toLowerCase(), pool=t.pairAddr?String(t.pairAddr).toLowerCase():null;
+  var cps={}; if(curve)cps[curve]=1; if(pool)cps[pool]=1;
+  var proto=bsProtocolAddrs();
+  var self=String(t.address).toLowerCase();
+  var out=[];
+  (items||[]).forEach(function(it){
+    if(!it||!it.from||!it.to||!it.total)return;
+    var from=String(it.from.hash||'').toLowerCase(), to=String(it.to.hash||'').toLowerCase();
+    var isBuy=false, trader=null;
+    if(cps[from]&&!cps[to]){isBuy=true;trader=to}
+    else if(cps[to]&&!cps[from]){isBuy=false;trader=from}
+    else return;
+    if(!trader||cps[trader]||proto[trader]||trader===self)return;
+    var tokAmt; try{tokAmt=BigInt(it.total.value)}catch(e){return}
+    if(!(tokAmt>0n))return;
+    var ts=null;
+    if(it.timestamp){var ms=Date.parse(it.timestamp); if(!isNaN(ms))ts=Math.floor(ms/1000)}
+    out.push({args:{trader:trader,isBuy:isBuy,pairAmount:null,tokenAmount:tokAmt,spotPriceAfter:null},
+      blockNumber:(it.block_number!=null?Number(it.block_number):0),
+      transactionHash:it.tx_hash||null,
+      index:(it.log_index!=null?Number(it.log_index):null),
+      ts:ts});
+  });
+  return out;
+}
+/* A row inserted from the user's own receipt is keyed by the Trade
+   event's log index; the indexed copy is keyed by the Transfer's.
+   Same tx + trader + token amount + side = the same trade: fold
+   the timestamp into the existing row and drop the duplicate. */
+function bsReconcileOwn(t,evs){
+  var store=tradeStoreFor(t);
+  return evs.filter(function(e){
+    var dup=null;
+    Object.keys(store.map).forEach(function(k){
+      if(dup)return;
+      var o=store.map[k];
+      if(o&&String(o.transactionHash||'').toLowerCase()===String(e.transactionHash||'').toLowerCase()
+        &&String(o.args.trader).toLowerCase()===String(e.args.trader).toLowerCase()
+        &&String(o.args.tokenAmount)===String(e.args.tokenAmount)
+        &&!!o.args.isBuy===!!e.args.isBuy)dup=o;
+    });
+    if(dup){if(dup.ts==null&&e.ts!=null)dup.ts=e.ts;return false}
+    return true;
+  });
+}
+function bsSyncMoreBtn(t){
+  var btn=el('dTradesMore'); if(!btn)return;
+  if(!bsIsOpen(t)){btn.style.display='none';return}
+  var st=BS_TRADES[String(t.address).toLowerCase()];
+  var show=!!(st&&st.loaded&&st.next);
+  btn.style.display=show?'inline-flex':'none';
+  btn.disabled=!!(st&&st.loading);
+  btn.textContent=(st&&st.loading)?'Loading…':'Load more trades';
+}
+/* Panel states after a fetch settles: rows win over everything (a
+   failed refresh never blanks a populated panel); a failed first
+   load shows an honest error line that the next refresh cycle
+   retries; a successful empty load says so plainly. */
+function bsPaintTradesState(t){
+  if(!bsIsOpen(t))return;
+  var st=BS_TRADES[String(t.address).toLowerCase()];
+  bsSyncMoreBtn(t);
+  if(tradeStoreHasRows(t)){renderTradesIncremental(t);updateTradeCounts(t);paintChartFromStore(t);return}
+  var tb=el('dTradesBody'); if(!tb)return;
+  if(st&&st.error){
+    tb.innerHTML='<tr><td colspan="6" style="color:var(--muted)">Trades couldn’t be loaded from the explorer index right now — retrying automatically on the next refresh.</td></tr>';
+  }else if(st&&st.loaded){
+    tb.innerHTML='<tr><td colspan="6" style="color:var(--muted)">No trades yet</td></tr>';
+    var se=el('dStatTrades'); if(se)se.textContent='0';
+    if(dTab==='trades'){var tt=el('dTradesTotal'); if(tt)tt.textContent='0 total'}
+    paintChartFromStore(t);
+  }
+}
+async function bsFetchTradesPage(t,useNext){
+  if(!t||!t.address)return;
+  var st=bsState(t);
+  if(st.loading)return;
+  if(useNext&&st.next==null)return;
+  st.loading=true; st.attemptAt=Date.now();
+  bsSyncMoreBtn(t);
+  try{
+    var q='';
+    if(useNext&&st.next)q='?'+bsQuery(st.next);
+    var d=await bsFetchJson('/tokens/'+t.address+'/transfers'+q);
+    st.next=(d&&d.next_page_params)?d.next_page_params:null;
+    st.loaded=true; st.error=false;
+    var evs=bsReconcileOwn(t,bsTradeEvents(t,(d&&d.items)||[]));
+    if(evs.length)mergeTradesIntoStore(t,evs,null);
+    if(bsIsOpen(t)){renderTradesIncremental(t);updateTradeCounts(t);paintChartFromStore(t)}
+    bsPaintTradesState(t);
+    bsResolveLoopAmounts(t);
+  }catch(e){
+    st.error=true;
+    bsPaintTradesState(t);
+  }finally{
+    st.loading=false;
+    bsSyncMoreBtn(t);
+  }
+}
+/* The LOOP leg of a trade: the WLOOP transfer inside the trade's
+   transaction, preferring the leg that touches the curve/pool
+   (a swap routes WLOOP through the router too — the counterparty
+   leg is the trade's own amount). Cached per tx hash; lookups run
+   at most 4 at a time. Null means "no WLOOP leg exists" — the
+   LOOP cell then stays blank by design. */
+function bsPickLoopLeg(items,cps){
+  var legs=[];
+  (items||[]).forEach(function(it){
+    if(!it||!it.token||String(it.token.address||'').toLowerCase()!==BS_WLOOP)return;
+    var v; try{v=BigInt(it.total.value)}catch(e){return}
+    var f=String((it.from&&it.from.hash)||'').toLowerCase(), tt=String((it.to&&it.to.hash)||'').toLowerCase();
+    legs.push({v:v,cp:(cps.indexOf(f)>-1||cps.indexOf(tt)>-1)});
+  });
+  if(!legs.length)return null;
+  var pref=legs.filter(function(l){return l.cp});
+  var pool=pref.length?pref:legs, best=null;
+  pool.forEach(function(l){if(best===null||l.v>best)best=l.v});
+  return best;
+}
+function bsLoopAmount(txHash,cps){
+  var h=String(txHash||'').toLowerCase();
+  var c=BS_LOOP_BY_TX[h];
+  if(c&&c.done)return Promise.resolve(c.value);
+  if(c&&c.promise)return c.promise;
+  var p=new Promise(function(res){BS_LOOP_QUEUE.push({hash:h,cps:cps,res:res});bsLoopPump()});
+  BS_LOOP_BY_TX[h]={done:false,promise:p,value:null};
+  return p;
+}
+function bsLoopPump(){
+  while(BS_LOOP_INFLIGHT<4&&BS_LOOP_QUEUE.length){
+    var job=BS_LOOP_QUEUE.shift();
+    BS_LOOP_INFLIGHT++;
+    (async function(){
+      var v=null;
+      try{
+        var d=await bsFetchJson('/transactions/'+job.hash+'/token-transfers');
+        v=bsPickLoopLeg((d&&d.items)||[],job.cps);
+      }catch(e){v=null}
+      BS_LOOP_BY_TX[job.hash]={done:true,promise:null,value:v};
+      job.res(v);
+    })().then(function(){BS_LOOP_INFLIGHT--;bsLoopPump()},function(){BS_LOOP_INFLIGHT--;bsLoopPump()});
+  }
+}
+/* Fill LOOP amounts (and the derived execution price) into store
+   rows that lack them, updating the rendered cells in place — the
+   row itself is never rebuilt, so nothing flickers. */
+function bsResolveLoopAmounts(t){
+  var key=String(t.address).toLowerCase();
+  var cps=[];
+  if(t.curve)cps.push(String(t.curve).toLowerCase());
+  if(t.pairAddr)cps.push(String(t.pairAddr).toLowerCase());
+  var store=tradeStoreFor(t);
+  Object.keys(store.map).forEach(function(k){
+    var e=store.map[k];
+    if(!e||e.args.pairAmount!=null||!e.transactionHash)return;
+    bsLoopAmount(e.transactionHash,cps).then(function(v){
+      if(v==null)return;
+      e.args.pairAmount=v;
+      if(e.args.tokenAmount>0n)e.args.spotPriceAfter=v*(10n**BigInt(t.decimals))/e.args.tokenAmount;
+      if(bsIsOpen(t)){
+        var row=document.querySelector('#dTradesBody tr[data-tkey="'+k+'"]');
+        if(row){
+          var pc=row.querySelector('[data-pair]'); if(pc)pc.textContent=fmtEth(v);
+          var pr=row.querySelector('[data-price]'); if(pr&&e.args.spotPriceAfter!=null)pr.textContent=fmtPriceEth(e.args.spotPriceAfter);
+        }
+        paintChartFromStore(t);
+      }
+    });
+  });
+}
+/* The Lens refresh cycle drives the tabs too: while the detail
+   page is open, the newest transfers page is re-read at most once
+   per 20s (new trades union in at the top; a failed tab load
+   retries here), and a failed holders load retries with it. */
+function maybeRefreshDetailTabs(){
+  if(detailMode!=='live'||!currentLive)return;
+  var dv=el('view-detail');
+  if(!dv||!dv.classList.contains('active'))return;
+  var t=currentLive, key=String(t.address).toLowerCase();
+  var st=BS_TRADES[key];
+  if(!st||Date.now()-(st.attemptAt||0)>20000)bsFetchTradesPage(t,false);
+  if(dTab==='holders'){
+    var hc=HOLDERS_CACHE[key];
+    if(!hc||hc.status==='error')ensureHoldersLoaded(t);
+  }
+}
 /* ---------- Holders derived from Transfer history (Fix C) ---------- */
 var HOLDERS_CACHE={};
 function holderLabelFor(t,addr){
   var a=String(addr||'').toLowerCase();
   if(a===ZERO_ADDR)return 'Burn';
   if(t.pairAddr&&a===String(t.pairAddr).toLowerCase())return 'Pool';
-  if(t.curve&&a===String(t.curve).toLowerCase())return 'Bonding Curve';
+  if(t.curve&&a===String(t.curve).toLowerCase())return 'Curve';
   if(W3C.contracts.lpLocker&&a===String(W3C.contracts.lpLocker).toLowerCase())return 'LP Locker';
-  if(a===String(W3C.contracts.feeVault).toLowerCase())return 'FeeVault';
+  if(a===String(W3C.contracts.feeVault).toLowerCase())return 'Fee Vault';
   if(W3C.contracts.treasury&&a===String(W3C.contracts.treasury).toLowerCase())return 'Treasury';
   if(t.creator&&a===String(t.creator).toLowerCase())return 'Creator';
   return null;
@@ -3936,19 +4242,21 @@ function holderRowsFromBalances(t,bal){
   rows.sort(function(x,y){return y.balance>x.balance?1:(y.balance<x.balance?-1:0)});
   return {rows:rows,burn:burn,count:rows.length};
 }
-function renderHoldersFallback(t){
+function renderHoldersError(t){
   var ul=el('dHoldersList'); if(!ul)return;
-  ul.innerHTML='<li><span>Holder breakdown is not exposed by the token contract — every holder can be inspected on the Loop explorer.</span><span><a class="ext-link" href="'+W3C.explorer+'/token/'+t.address+'" target="_blank" rel="noopener">Token on the explorer ↗</a></span></li>';
+  ul.innerHTML='<li><span style="color:var(--muted)">Holders couldn’t be loaded from the explorer index right now — retrying automatically on the next refresh.</span><span><a class="ext-link" href="'+W3C.explorer+'/token/'+t.address+'" target="_blank" rel="noopener">Token on the explorer ↗</a></span></li>';
 }
 function renderHoldersLoading(t){
   var ul=el('dHoldersList'); if(!ul)return;
-  ul.innerHTML='<li><span style="color:var(--muted)">Reading transfers from the chain…</span></li>';
+  ul.innerHTML='<li><span style="color:var(--muted)">Loading holders…</span></li>';
 }
 function renderHolders(t){
   var cache=HOLDERS_CACHE[String(t.address).toLowerCase()];
   var ul=el('dHoldersList'); if(!ul||!cache||cache.status!=='done')return;
   var derived=holderRowsFromBalances(t,cache.balances);
-  var html='<li class="holders-note"><span>'+derived.count+' holder'+(derived.count===1?'':'s')+' · computed from on-chain Transfer history</span></li>';
+  var totalCount=(cache.holderTotal!=null?cache.holderTotal:derived.count);
+  var shown=Math.min(50,derived.rows.length);
+  var html='<li class="holders-note"><span>'+totalCount+' holder'+(totalCount===1?'':'s')+(totalCount>shown?' · showing top '+shown:'')+' · via the Loop explorer index</span></li>';
   derived.rows.slice(0,50).forEach(function(r,i){
     var pct=t.totalSupply>0n?Number(r.balance*10000n/t.totalSupply)/100:0;
     var label=holderLabelFor(t,r.addr);
@@ -3958,16 +4266,19 @@ function renderHolders(t){
     var bpct=t.totalSupply>0n?Number(derived.burn.balance*10000n/t.totalSupply)/100:0;
     html+='<li class="holder-row"><span class="h-left"><span class="h-rank">—</span><span style="font-weight:800">'+truncAddr(derived.burn.addr)+'</span><span class="h-tag">Burn</span></span><span class="h-right"><strong>'+fmtTokUnits(derived.burn.balance,t.decimals)+' $'+escHtml(t.symbol)+'</strong><span class="h-pct">'+bpct.toFixed(2)+'% of supply</span></span></li>';
   }
-  if(!derived.rows.length&&!derived.burn)html+='<li><span style="color:var(--muted)">No transfers found for this token yet.</span></li>';
+  if(!derived.rows.length&&!derived.burn)html='<li><span style="color:var(--muted)">No holders yet</span></li>';
   ul.innerHTML=html;
-  var hs=el('dStatHolders'); if(hs&&currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())hs.textContent=String(derived.count);
-  if(dTab==='holders'){var tt=el('dTradesTotal'); if(tt)tt.textContent=derived.count+' holders'}
+  var hs=el('dStatHolders'); if(hs&&currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())hs.textContent=String(totalCount);
+  if(dTab==='holders'){var tt=el('dTradesTotal'); if(tt)tt.textContent=totalCount+' holders'}
 }
-/* Lazy holder derivation: chunked Transfer scan from the launch-era
-   anchor (W3C.scanFromBlock), aggregated per address, cached in
-   memory per token. Runs only when the Holders tab is first opened;
-   any RPC failure falls back to the explanatory text — never an
-   error panel, never blocking the rest of the page. */
+/* Holders come from the explorer's indexed holders endpoint —
+   balances arrive pre-aggregated and ranked, paginated with
+   next_page_params until at least the top 50 are in hand. Cached
+   in memory per token; runs when the Holders tab is opened and
+   retries from the refresh cycle after a failure (a fresh error
+   shows the honest error line instead of retrying in a hot loop).
+   No RPC and no log scan are involved, so this works on the slow
+   connections where the old Transfer scan never finished. */
 async function ensureHoldersLoaded(t){
   if(!t||detailMode!=='live')return;
   var key=String(t.address).toLowerCase();
@@ -3975,35 +4286,35 @@ async function ensureHoldersLoaded(t){
   if(cache){
     if(cache.status==='done'){renderHolders(t);return}
     if(cache.status==='loading'){renderHoldersLoading(t);return}
-    if(cache.status==='error'){renderHoldersFallback(t);return}
+    if(cache.status==='error'&&Date.now()-(cache.at||0)<15000){renderHoldersError(t);return}
   }
   HOLDERS_CACHE[key]={status:'loading',balances:null,scannedTo:0};
   renderHoldersLoading(t);
   try{
-    var okE=await ensureEthers();
-    if(!okE)throw new Error('web3 library unavailable');
-    if(!readProvider)setReadProvider(W3C.rpcUrl);
-    if(!readProvider)throw new Error('no read provider');
-    var tc=tokenContract(t.address);
-    var evs=await withTimeout(queryChunked(tc,tc.filters.Transfer(),function(){var c=tokenContract(t.address);return [c,c.filters.Transfer()]}),90000,'Holder transfer scan');
-    var bal={};
-    var latest=0;
-    evs.forEach(function(e){
-      if(!e.args)return;
-      var f=String(e.args.from).toLowerCase(),to=String(e.args.to).toLowerCase(),v=e.args.value;
-      if(f!==ZERO_ADDR)bal[f]=(bal[f]||0n)-v;
-      bal[to]=(bal[to]||0n)+v;
-      if(e.blockNumber>latest)latest=e.blockNumber;
-    });
-    HOLDERS_CACHE[key]={status:'done',balances:bal,scannedTo:latest};
+    var bal={}, total=null, params=null, pages=0;
+    while(pages<5){
+      var q=params?('?'+bsQuery(params)):'';
+      var d=await bsFetchJson('/tokens/'+t.address+'/holders'+q);
+      ((d&&d.items)||[]).forEach(function(it){
+        if(!it||!it.address||!it.address.hash)return;
+        var a=String(it.address.hash).toLowerCase();
+        try{bal[a]=BigInt(it.value)}catch(e){}
+        if(total==null&&it.token&&it.token.holders!=null){var hn=Number(it.token.holders); if(!isNaN(hn))total=hn}
+      });
+      pages++;
+      if(Object.keys(bal).length>=50)break;
+      params=(d&&d.next_page_params)?d.next_page_params:null;
+      if(!params)break;
+    }
+    HOLDERS_CACHE[key]={status:'done',balances:bal,scannedTo:0,holderTotal:total};
     if(currentLive&&String(currentLive.address).toLowerCase()===key){
       if(dTab==='holders')renderHolders(t);
       var derived=holderRowsFromBalances(t,bal);
-      var hs=el('dStatHolders'); if(hs)hs.textContent=String(derived.count);
+      var hs=el('dStatHolders'); if(hs)hs.textContent=String(total!=null?total:derived.count);
     }
   }catch(e){
-    HOLDERS_CACHE[key]={status:'error',balances:null,scannedTo:0};
-    if(currentLive&&String(currentLive.address).toLowerCase()===key&&dTab==='holders')renderHoldersFallback(t);
+    HOLDERS_CACHE[key]={status:'error',balances:null,scannedTo:0,at:Date.now()};
+    if(currentLive&&String(currentLive.address).toLowerCase()===key&&dTab==='holders')renderHoldersError(t);
   }
 }
 /* ---------- Sell % chips + custom slippage (Fixes D & E) ---------- */
@@ -4644,6 +4955,10 @@ async function loadLiveTokensInner(){
       if(detailMode==='live'){
         var dv=el('view-detail');
         if(dv&&dv.classList.contains('active'))paintLiveDetail(currentLive);
+        /* The Trades/Holders tabs ride this cycle too: throttled
+           explorer-index refresh (new trades prepend, failed tab
+           loads retry) — no manual refresh control anywhere. */
+        maybeRefreshDetailTabs();
       }
     }
     liveRegistryLoaded=true;
@@ -4699,7 +5014,8 @@ function buildFeed(){
        stays — until pool swap history is indexed. */
     if(!t.graduated&&t.firstSpot&&t.firstSpot>0n)change=Number((t.spotPrice-t.firstSpot)*10000n/t.firstSpot)/100;
     var meta=tokenMeta(t.address);
-    return {addr:t.address,name:t.name,ticker:t.symbol,creator:truncAddr(t.creator),creatorFull:t.creator,ts:t.launchTs,dateStr:fmtDateShort(t.launchTs),pair:'LOOP',color:'#D63A6E',c2:'#F2789F',img:resolveTokenImg(t.address),mcapN:Number(unitsToDecimalStr(mcapWei,18)),mcapText:fmtEth(mcapWei)+' LOOP',priceText:fmtPriceEth(t.spotPrice)+' LOOP',prog:pct,progText:t.pendingMigration?'Graduated · pending migration':(pct.toFixed(2)+'% to graduation \u00b7 '+fmtEth(t.realReserves)+' / '+fmtEth(t.threshold)+' LOOP'),grad:t.graduated,pendMig:!!t.pendingMigration,gradDex:t.gradDex,changePct:change,trades:t.tradeCount||0,volumeN:t.volumeWei?Number(unitsToDecimalStr(t.volumeWei,18)):0,volumeText:t.volumeWei?fmtEth(t.volumeWei)+' LOOP':'0 LOOP'};
+    var pc=petalColors(t.address);
+    return {addr:t.address,name:t.name,ticker:t.symbol,creator:truncAddr(t.creator),creatorFull:t.creator,ts:t.launchTs,dateStr:fmtDateShort(t.launchTs),pair:'LOOP',color:pc.color,c2:pc.c2,img:resolveTokenImg(t.address),mcapN:Number(unitsToDecimalStr(mcapWei,18)),mcapText:fmtEth(mcapWei)+' LOOP',priceText:fmtPriceEth(t.spotPrice)+' LOOP',prog:pct,progText:t.pendingMigration?'Graduated · pending migration':(pct.toFixed(2)+'% to graduation \u00b7 '+fmtEth(t.realReserves)+' / '+fmtEth(t.threshold)+' LOOP'),grad:t.graduated,pendMig:!!t.pendingMigration,gradDex:t.gradDex,changePct:change,trades:t.tradeCount||0,volumeN:t.volumeWei?Number(unitsToDecimalStr(t.volumeWei,18)):0,volumeText:t.volumeWei?fmtEth(t.volumeWei)+' LOOP':'0 LOOP'};
   });
 }
 function renderLiveTokens(){
@@ -4853,7 +5169,7 @@ function paintLiveDetail(t){
   var meta=tokenMeta(t.address);
   av.className='tavatar d-avatar';
   var dImg=resolveTokenImg(t.address);
-  av.setAttribute('data-letter',t.symbol.charAt(0)); av.setAttribute('data-bg','linear-gradient(140deg,#F2789F,#D63A6E)');
+  av.setAttribute('data-letter',t.symbol.charAt(0)); av.setAttribute('data-bg',softGrad(t.address));
   /* In-place refresh: the avatar <img> is only rebuilt when the
      resolved image URL actually changed — on a plain refresh the
      loaded image element, its src and its pixels stay untouched,
@@ -4866,13 +5182,13 @@ function paintLiveDetail(t){
   }else{
     if(av.__imgKey){av.__imgKey='';av.innerHTML='';av.textContent=t.symbol.charAt(0)}
     else if(!av.querySelector('img')&&av.textContent!==t.symbol.charAt(0))av.textContent=t.symbol.charAt(0);
-    av.style.cssText='background:linear-gradient(140deg,#F2789F,#D63A6E)';
+    av.style.cssText='background:'+softGrad(t.address);
   }
   el('dName').textContent=t.name;
   el('dTicker').textContent='$'+t.symbol;
   el('dVerified').innerHTML='';
   var fav=el('dFav'); if(fav)fav.style.display='none';
-  var dMetaEl=el('dMeta'), dMetaHtml='by <strong style="color:var(--ink)">'+truncAddr(t.creator)+'</strong> · LOOP pair · '+feedTagHtml()+(t.gradDex?' · '+(t.graduated?'Graduated to ':'Graduates to ')+t.gradDex:'');
+  var dMetaEl=el('dMeta'), dMetaHtml='by <strong style="color:var(--ink)">'+truncAddr(t.creator)+'</strong> · LOOP pair'+(t.gradDex?' · '+(t.graduated?'Graduated to ':'Graduates to ')+t.gradDex:'');
   if(dMetaEl.__h!==dMetaHtml){dMetaEl.__h=dMetaHtml;dMetaEl.innerHTML=dMetaHtml}
   var mcapWei=t.spotPrice*t.totalSupply/(10n**BigInt(t.decimals));
   el('dMcapBig').textContent=fmtEth(mcapWei)+' LOOP';
@@ -4891,7 +5207,7 @@ function paintLiveDetail(t){
   el('dProgLabel').textContent=t.pendingMigration?'Graduated — waiting for migration':(t.graduated?(t.gradDex?'Graduated — now trading on '+t.gradDex:'Graduated'):'Bonding curve progress to graduation');
   el('dStatMcap').textContent=fmtEth(mcapWei)+' LOOP';
   var hCache=HOLDERS_CACHE[dKey];
-  el('dStatHolders').textContent=(hCache&&hCache.status==='done')?String(holderRowsFromBalances(t,hCache.balances).count):'—';
+  el('dStatHolders').textContent=(hCache&&hCache.status==='done')?String(hCache.holderTotal!=null?hCache.holderTotal:holderRowsFromBalances(t,hCache.balances).count):'—';
   el('dStatTrades').textContent=t.tradeCount!=null?String(t.tradeCount):'…';
   el('dStatSupply').textContent=fmtSupply(t);
   el('dStatEarned').textContent='—';
@@ -4928,11 +5244,12 @@ function paintLiveDetail(t){
     el('dPairCol').textContent='LOOP';
     el('dTokenCol').textContent=t.symbol;
     if(tradeStoreHasRows(t)){renderTradesIncremental(t);updateTradeCounts(t)}
-    else el('dTradesBody').innerHTML='<tr><td colspan="6" style="color:var(--muted)">Loading trades from the curve contract…</td></tr>';
+    else el('dTradesBody').innerHTML='<tr><td colspan="6" style="color:var(--muted)">Loading trades…</td></tr>';
+    var mb2=el('dTradesMore'); if(mb2)mb2.style.display='none';
     var hc2=HOLDERS_CACHE[dKey];
     if(hc2&&hc2.status==='done')renderHolders(t);
-    else if(hc2&&hc2.status==='error')renderHoldersFallback(t);
-    else el('dHoldersList').innerHTML='<li><span>Holder breakdown is not exposed by the token contract — every holder can be inspected on the Loop explorer.</span><span><a class="ext-link" href="'+W3C.explorer+'/token/'+t.address+'" target="_blank" rel="noopener">Token on the explorer ↗</a></span></li>';
+    else if(hc2&&hc2.status==='error')renderHoldersError(t);
+    else el('dHoldersList').innerHTML='<li><span style="color:var(--muted)">Loading holders…</span></li>';
   }
   paintLiveTradePanel();
 }
@@ -5376,66 +5693,43 @@ async function refreshLiveAfterTx(){
     await sleep(1500);
   }
 }
-/* ================= Live chart + trades from Trade events =================
-   Round 3: everything flows through the merge-only TRADE_STORE.
-   The store starts empty; live scans UNION into it; the
-   list renders incrementally and is never cleared once it has
-   rows — a lagging or failed scan leaves the panel exactly as it
-   was (Fix A). */
+/* ================= Live chart + trades =================
+   Everything flows through the merge-only TRADE_STORE. The store
+   starts empty; explorer-index reads UNION into it; the list
+   renders incrementally and is never cleared once it has rows —
+   a lagging or failed read leaves the panel exactly as it was
+   (Fix A). */
 function paintChartFromStore(t){
   var box=el('chartBox'); if(!box)return;
-  var arr=storeTradesSorted(t,false);
+  var all=storeTradesSorted(t,false);
+  /* The chart plots trades whose price is known — pool trades get
+     theirs from the WLOOP leg as soon as its lookup lands; a trade
+     without a priced leg yet simply isn't a chart point yet. */
+  var arr=all.filter(function(e){return e.args&&e.args.spotPriceAfter!=null});
   if(!arr.length){
-    box.innerHTML='<div style="padding:38px 16px;text-align:center;color:var(--muted);font-weight:700">No trades recorded on-chain yet</div>';
+    box.innerHTML='<div style="padding:38px 16px;text-align:center;color:var(--muted);font-weight:700">'+(all.length?'No priced trades indexed for this token yet':'No trades recorded on-chain yet')+'</div>';
     return;
   }
   box.innerHTML=liveLineSvg(arr);
 }
+/* Detail-page trades now load from the explorer index (see the
+   Blockscout layer above): the newest transfers page unions into
+   the merge-only store and renders incrementally — rows already
+   on screen are never cleared, and a failed read leaves the panel
+   exactly as it was. No eth_getLogs scan feeds this panel. */
 async function loadLiveChartAndTrades(t){
-  var box=el('chartBox');
-  /* The merge store starts EMPTY for every token and is filled
-     only by live Trade-event scans (plus the user's own confirmed
-     trades, inserted from their receipts) — nothing else can put
-     a row on this panel. Rows already scanned stay on screen no
-     matter what any later scan returns. */
+  renderTradesIncremental(t);
   if(tradeStoreHasRows(t)){
-    renderTradesIncremental(t);
     paintChartFromStore(t);
     updateTradeCounts(t);
+    bsSyncMoreBtn(t);
+  }else{
+    var st0=BS_TRADES[String(t.address).toLowerCase()];
+    var tb0=el('dTradesBody');
+    if(tb0&&!(st0&&st0.loaded))tb0.innerHTML='<tr><td colspan="6" style="color:var(--muted)">Loading trades…</td></tr>';
   }
-  try{
-    var scanBlock=null;
-    try{scanBlock=await readProvider.getBlockNumber()}catch(e){}
-    var store=tradeStoreFor(t);
-    if(scanBlock!=null&&store.block&&scanBlock<store.block){
-      /* Monotonic: this refresh was produced from a lower block
-         than the trades already displayed — ignore it entirely. */
-      return;
-    }
-    var cv=curveContract(t.curve);
-    var evs=await queryChunked(cv,cv.filters.Trade(),function(){var c=curveContract(t.curve);return [c,c.filters.Trade()]});
-    if(detailMode!=='live'||!currentLive||currentLive.address!==t.address)return;
-    var added=mergeTradesIntoStore(t,evs,scanBlock);
-    if(tradeStoreHasRows(t)){
-      renderTradesIncremental(t);
-      if(added>0)paintChartFromStore(t);
-      updateTradeCounts(t);
-    }else{
-      if(box)box.innerHTML='<div style="padding:38px 16px;text-align:center;color:var(--muted);font-weight:700">No trades recorded on-chain yet</div>';
-      var tb1=el('dTradesBody');
-      if(tb1)tb1.innerHTML='<tr><td colspan="6" style="color:var(--muted)">No trades recorded on-chain yet.</td></tr>';
-      var st1=el('dStatTrades'); if(st1)st1.textContent='0';
-      var tt1=el('dTradesTotal'); if(tt1&&dTab==='trades')tt1.textContent='0 total';
-    }
-  }catch(e){
-    /* A failed scan NEVER blanks a populated panel: rows already
-       in the store stay exactly as rendered. The error row only
-       appears when there is nothing to show at all. */
-    if(tradeStoreHasRows(t)){renderTradesIncremental(t);return}
-    if(box)box.innerHTML='<div style="padding:38px 16px;text-align:center;color:var(--muted);font-weight:700">No trades recorded on-chain yet</div>';
-    var tb=el('dTradesBody');
-    if(tb)tb.innerHTML='<tr><td colspan="6" style="color:var(--muted)">Trade history could not be loaded from the RPC right now.</td></tr>';
-  }
+  await bsFetchTradesPage(t,false);
+  bsPaintTradesState(t);
 }
 function liveLineSvg(evs){
   var pts=evs.map(function(e){return Number(unitsToDecimalStr(e.args.spotPriceAfter,18))});
@@ -5902,11 +6196,10 @@ setDTab=function(name){
     el('dHoldersWrap').style.display=name==='holders'?'block':'none';
     el('dTradesTotal').textContent=name==='trades'?((currentLive.tradeCount!=null?currentLive.tradeCount:0)+' total'):'';
     if(name==='holders'){
-      /* Holders are derived lazily from Transfer history the first
-         time the tab is opened for this token (Fix C). */
-      var hc=HOLDERS_CACHE[String(currentLive.address).toLowerCase()];
-      if(hc&&hc.status==='done')renderHolders(currentLive);
-      else ensureHoldersLoaded(currentLive);
+      /* Holders load lazily from the explorer's holders index the
+         first time the tab is opened for this token; the loader
+         renders per cache state (done / loading / retrying). */
+      ensureHoldersLoaded(currentLive);
     }
     return;
   }
@@ -6192,6 +6485,13 @@ async function bootLiveData(){
     else if(act==='slip-custom'){openSlipCustom()}
     else if(act==='sell-pct'){var pctV=parseInt(b.getAttribute('data-pct'),10)||0;if(pctV){chipSelKey='pct:'+pctV;paintQuickChips()}applySellPct(pctV)}
     else if(act==='copy-holder'){e.stopPropagation();copyText(b.getAttribute('data-addr'),'Holder address copied')}
+    else if(act==='trades-more'){
+      if(detailMode==='live'&&currentLive){
+        var mst=bsState(currentLive);
+        mst.visible+=50;
+        bsFetchTradesPage(currentLive,true);
+      }
+    }
     else if(detailMode==='live'&&currentLive&&(act==='copy-contract'||act==='copy-pool')){
       e.stopPropagation();
       var poolTarget=(currentLive.graduated&&currentLive.pairAddr)?currentLive.pairAddr:currentLive.curve;
