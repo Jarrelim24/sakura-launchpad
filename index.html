@@ -201,6 +201,15 @@ button,a,[data-act],select,input,textarea,label{touch-action:manipulation}
 .search input{border:0;background:transparent;outline:none;width:100%;color:var(--ink);font-weight:600;font-size:14px}
 /* ===== Token rows (list view) ===== */
 .token-list{display:flex;flex-direction:column;gap:12px}
+/* Launches "All" view: Bonding / Graduated section headers —
+   name + live group count, closed by a divider rule. In grid
+   view a header spans the full row. */
+.list-sec-head{display:flex;align-items:center;gap:10px;padding:16px 2px 0}
+.list-sec-head:first-child{padding-top:2px}
+.lsh-name{font-size:16.5px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.lsh-count{color:var(--faint);font-weight:700;font-size:12.5px;background:var(--surface2);border:1px solid var(--line);padding:3px 10px;border-radius:999px;white-space:nowrap}
+.list-sec-head::after{content:"";flex:1;height:1px;background:var(--line)}
+.token-list.grid .list-sec-head{grid-column:1/-1}
 .trow,.gcard,.bcard{animation:rowIn .35s ease both}
 @keyframes rowIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .trow{display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);padding:12px 8px;cursor:pointer;text-align:left;color:var(--ink);transition:background .15s;border-radius:10px}
@@ -666,8 +675,8 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .d-tab::after{content:"";position:absolute;left:50%;right:50%;bottom:-1px;height:2.5px;background:var(--pink);border-radius:2px;transition:left .25s,right .25s}
 .d-tab.active{color:var(--ink);font-weight:800}
 .d-tab.active::after{left:0;right:0}
-.d-tab-total{margin-left:auto;color:var(--faint);font-weight:700;font-size:13px}
-.trade-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.d-tab-total{margin-left:auto;color:var(--faint);font-weight:700;font-size:13px;white-space:nowrap;flex:none}
+.trade-table{width:100%;min-width:560px;border-collapse:collapse;font-size:13.5px}
 .trade-table th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:9px 6px}
 .trade-table th.num,.trade-table td.num{text-align:right}
 .trade-table td{padding:9px 6px;border-top:1px solid var(--line);font-weight:600;vertical-align:middle}
@@ -810,6 +819,20 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
   .filter-tabs{flex-wrap:wrap;overflow-x:visible;gap:6px 20px}
 }
 @media(max-width:560px){.token-list.grid{grid-template-columns:1fr}.page-head{padding-top:32px}}
+/* Phone: the filter tabs always get their own full-width row in
+   the filter line (never squeezed or occluded by the pair select
+   and view toggle beside them), the detail tabs tighten so the
+   trade total never truncates, and the chart controls wrap
+   without clipped labels. */
+@media(max-width:560px){
+  .filter-line{gap:8px 12px}
+  .filter-line .filter-tabs{flex:1 1 100%;min-width:0}
+  .d-tabs{gap:16px}
+  .chart-panel .chart-controls{gap:8px}
+  .tf-seg button{padding:7px 8px;font-size:12.5px}
+  .seg2 button{padding:7px 10px;white-space:nowrap}
+  .chart-latest{white-space:nowrap}
+}
 @media(prefers-reduced-motion: reduce){
   .view.active,.detail.open,.wallet-modal,.video-modal,.modal-overlay.open{animation:none}
   html{scroll-behavior:auto}
@@ -1109,7 +1132,8 @@ button.qrow{cursor:pointer}
    mobile bottom nav (same pattern as .sec-head's scroll margins) */
 #searchInput{scroll-margin-top:150px;scroll-margin-bottom:120px}
 .search-big input{font-size:15px}
-.sort-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:2px 0 4px}
+.sort-row{display:flex;gap:8px;align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;max-width:100%;padding:2px 0 6px}
+.sort-row::-webkit-scrollbar{display:none}
 .sort-label{color:var(--faint);font-weight:700;font-size:13.5px;flex:none;margin-right:2px}
 .sort-chip{flex:none;border:1px solid var(--line2);background:var(--surface);color:var(--muted);border-radius:999px;padding:9px 15px;font-weight:700;font-size:14px;cursor:pointer;min-height:42px;transition:border-color .18s,color .18s,background .18s,transform .15s}
 .sort-chip:hover{color:var(--ink)}
@@ -1118,6 +1142,10 @@ button.qrow{cursor:pointer}
 .filter-line{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;margin-top:6px}
 .filter-line .filter-tabs{margin-top:0;border-bottom:0;flex:1 1 auto;min-width:210px}
 .filter-line .ftab{padding-top:8px;padding-bottom:8px;min-height:42px;scroll-margin-top:150px;scroll-margin-bottom:120px}
+/* Same scroll-into-view clearance for the rest of the filter
+   line: the pair select and the view-mode toggle must land
+   clear of the fixed mobile bottom nav, never under it. */
+.filter-line .pair-select,.filter-line .seg{scroll-margin-top:150px;scroll-margin-bottom:120px}
 /* Big token cards (the Launches list presentation) */
 .bcard{position:relative;display:block;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 15px;cursor:pointer;text-align:left;color:var(--ink);overflow:hidden;transition:border-color .18s,box-shadow .18s,transform .15s}
 .bcard:hover{border-color:var(--line2);box-shadow:var(--shadow)}
@@ -1151,7 +1179,7 @@ button.qrow{cursor:pointer}
 .panel-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 .panel-scroll::-webkit-scrollbar{width:6px}
 .panel-scroll::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px}
-.trades-scroll{max-height:440px}
+.trades-scroll{max-height:440px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .holders-scroll{max-height:400px}
 .trades-scroll .show-more-wrap{margin:12px 0 6px}
 .trade-compact{font-size:12.5px}
@@ -2318,23 +2346,62 @@ function renderFeatured(){
 }
 
 var PAGE_SIZE=10;
+/* "All" view section headers: the filtered + sorted list is
+   partitioned into Bonding (still on the curve) and Graduated,
+   each group keeping the active sort order, and the single pager
+   walks the combined grouped sequence. A header is an item in
+   the same keyed reconciliation as the cards — keyed by group —
+   so refresh cycles move/update it in place like any row and
+   never drop, duplicate, or flicker it. */
+function secHeadHtml(it){
+  var name=it.secHead==='grad'?'Graduated':'Bonding';
+  return '<div class="list-sec-head"><span class="lsh-name">'+name+'</span><span class="lsh-count">'+it.count+' token'+(it.count===1?'':'s')+'</span></div>';
+}
+function updateSecHead(n,it){
+  setTextIf(n.querySelector('.lsh-count'),it.count+' token'+(it.count===1?'':'s'));
+}
 function renderTokens(){
   var list=filteredTokens(), total=list.length;
+  /* In the "All" filter only, partition into Bonding first, then
+     Graduated (graduated-pending-migration counts as Graduated);
+     the other filter tabs keep the single ungrouped list. */
+  var grouped=currentFilter==="all";
+  var seq=list, bondN=0, gradN=0;
+  if(grouped){
+    var bond=list.filter(function(t){return !t.grad});
+    var grad=list.filter(function(t){return t.grad});
+    bondN=bond.length; gradN=grad.length;
+    seq=bond.concat(grad);
+  }
   var pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
   if(listPage>pages)listPage=pages;
   if(listPage<1)listPage=1;
-  var shown=list.slice((listPage-1)*PAGE_SIZE,listPage*PAGE_SIZE);
+  var shown=seq.slice((listPage-1)*PAGE_SIZE,listPage*PAGE_SIZE);
+  var items=shown;
+  if(grouped){
+    items=[];
+    var seenG={};
+    shown.forEach(function(t){
+      var g=t.grad?'grad':'bond';
+      if(!seenG[g]){
+        seenG[g]=1;
+        items.push({secHead:g,count:g==='grad'?gradN:bondN});
+      }
+      items.push(t);
+    });
+  }
   var box=document.getElementById('tokenList');
   var cls='token-list'+(viewMode==="grid"?' grid':'');
   if(box.className!==cls)box.className=cls;
-  reconcileKids(box,shown,
-    function(t){return viewMode+':'+String(t.addr||'').toLowerCase()},
-    function(t){
-      var n=elFromHtml(bigCardHtml(t));
-      n.__imgKey=t.img||''; n.__pillSig=pillSigOf(t); n.__botSig=cardBottomSig(t);
+  reconcileKids(box,items,
+    function(it){return it.secHead?('sechdr:'+it.secHead+':'+viewMode):(viewMode+':'+String(it.addr||'').toLowerCase())},
+    function(it){
+      if(it.secHead)return elFromHtml(secHeadHtml(it));
+      var n=elFromHtml(bigCardHtml(it));
+      n.__imgKey=it.img||''; n.__pillSig=pillSigOf(it); n.__botSig=cardBottomSig(it);
       return n;
     },
-    function(n,t){updateBigCard(n,t)},
+    function(n,it){if(it.secHead)updateSecHead(n,it); else updateBigCard(n,it)},
     null);
   var es=document.getElementById('emptyState');
   if(!total){
@@ -5252,10 +5319,11 @@ function bsProtocolAddrs(){
    (pre-graduation) or its pool (post-graduation) are trades:
    counterparty → trader is a SELL, counterparty → trader a BUY.
    Internal moves (curve ↔ pool at graduation, mints, burns, fee
-   skims) are filtered out. The LOOP amount starts null and is
-   filled in place by bsResolveLoopAmounts once the trade's WLOOP
-   leg is known — it stays blank when no leg exists (curve trades
-   settle in native LOOP), never invented. */
+   skims) are filtered out. The quote amount starts null and is
+   filled in place by bsResolveLoopAmounts once the trade's quote
+   leg is known (the WLOOP leg for native pairs, the pair-asset
+   leg for ERC20 pairs) — it stays blank when no leg exists,
+   never invented. */
 function bsTradeEvents(t,items){
   var curve=String(t.curve||'').toLowerCase(), pool=t.pairAddr?String(t.pairAddr).toLowerCase():null;
   var cps={}; if(curve)cps[curve]=1; if(pool)cps[pool]=1;
@@ -5356,16 +5424,22 @@ async function bsFetchTradesPage(t,useNext){
     bsSyncMoreBtn(t);
   }
 }
-/* The LOOP leg of a trade: the WLOOP transfer inside the trade's
-   transaction, preferring the leg that touches the curve/pool
-   (a swap routes WLOOP through the router too — the counterparty
-   leg is the trade's own amount). Cached per tx hash; lookups run
-   at most 8 at a time. Null means "no WLOOP leg exists" — the
-   LOOP cell then stays blank by design. */
-function bsPickLoopLeg(items,cps){
+/* The quote leg of a trade: the transfer of the token's QUOTE
+   asset inside the trade's transaction, preferring the leg that
+   touches the curve/pool and taking the largest such leg (a swap
+   routes the quote asset through the router too — the
+   counterparty leg is the trade's own gross amount; fee-skim
+   legs out of the pair are far smaller). For native LOOP pairs
+   the quote asset is WLOOP; ERC20-paired trades (tUSDC, tUSDT,
+   xStocks) settle entirely in the pair asset, so their quote leg
+   is that asset's transfer. Cached per tx hash + leg asset, so
+   different pair assets never share a cached leg; lookups run at
+   most 8 at a time. Null means "no such leg exists" — the cell
+   then stays blank by design, never invented. */
+function bsPickQuoteLeg(items,cps,asset){
   var legs=[];
   (items||[]).forEach(function(it){
-    if(!it||!it.token||String(it.token.address||'').toLowerCase()!==BS_WLOOP)return;
+    if(!it||!it.token||String(it.token.address||'').toLowerCase()!==asset)return;
     var v; try{v=BigInt(it.total.value)}catch(e){return}
     var f=String((it.from&&it.from.hash)||'').toLowerCase(), tt=String((it.to&&it.to.hash)||'').toLowerCase();
     legs.push({v:v,cp:(cps.indexOf(f)>-1||cps.indexOf(tt)>-1)});
@@ -5376,13 +5450,18 @@ function bsPickLoopLeg(items,cps){
   pool.forEach(function(l){if(best===null||l.v>best)best=l.v});
   return best;
 }
-function bsLoopAmount(txHash,cps){
+function bsPickLoopLeg(items,cps){
+  return bsPickQuoteLeg(items,cps,BS_WLOOP);
+}
+function bsLoopAmount(txHash,cps,legAsset){
+  var asset=legAsset?String(legAsset).toLowerCase():BS_WLOOP;
   var h=String(txHash||'').toLowerCase();
-  var c=BS_LOOP_BY_TX[h];
+  var ck=h+'|'+asset;
+  var c=BS_LOOP_BY_TX[ck];
   if(c&&c.done)return Promise.resolve(c.value);
   if(c&&c.promise)return c.promise;
-  var p=new Promise(function(res){BS_LOOP_QUEUE.push({hash:h,cps:cps,res:res});bsLoopPump()});
-  BS_LOOP_BY_TX[h]={done:false,promise:p,value:null};
+  var p=new Promise(function(res){BS_LOOP_QUEUE.push({hash:h,key:ck,asset:asset,cps:cps,res:res});bsLoopPump()});
+  BS_LOOP_BY_TX[ck]={done:false,promise:p,value:null};
   return p;
 }
 function bsLoopPump(){
@@ -5393,9 +5472,9 @@ function bsLoopPump(){
       var v=null;
       try{
         var d=await bsFetchJson('/transactions/'+job.hash+'/token-transfers');
-        v=bsPickLoopLeg((d&&d.items)||[],job.cps);
+        v=bsPickQuoteLeg((d&&d.items)||[],job.cps,job.asset);
       }catch(e){v=null}
-      if(v==null){
+      if(v==null&&job.asset===BS_WLOOP){
         /* Curve trades settle in native LOOP, so no WLOOP leg
            exists for them. A curve BUY carries its LOOP as the
            transaction's own value; a curve SELL receives it as an
@@ -5410,7 +5489,7 @@ function bsLoopPump(){
           if(tx&&tx.value){var tv=BigInt(tx.value); if(tv>0n)v=tv}
         }catch(e){}
       }
-      if(v==null){
+      if(v==null&&job.asset===BS_WLOOP){
         try{
           var itd=await bsFetchJson('/transactions/'+job.hash+'/internal-transactions');
           var best=null;
@@ -5424,32 +5503,40 @@ function bsLoopPump(){
           v=best;
         }catch(e){}
       }
-      BS_LOOP_BY_TX[job.hash]={done:true,promise:null,value:v};
+      BS_LOOP_BY_TX[job.key]={done:true,promise:null,value:v};
       job.res(v);
     })().then(function(){BS_LOOP_INFLIGHT--;bsLoopPump()},function(){BS_LOOP_INFLIGHT--;bsLoopPump()});
   }
 }
-/* Fill LOOP amounts (and the derived execution price) into store
+/* Fill quote amounts (and the derived execution price) into store
    rows that lack them, updating the rendered cells in place — the
-   row itself is never rebuilt, so nothing flickers. */
+   row itself is never rebuilt, so nothing flickers. The leg is
+   resolved in the token's own quote asset: WLOOP for native pairs
+   (unchanged), the pair asset itself for ERC20 pairs, whose
+   trades settle entirely in that asset. pairAmount lands in
+   pair-asset smallest units and spotPriceAfter in pair-asset
+   units per whole token — the convention buildTradeRow,
+   fmtSpotTinyFor and chartPricedTrades already expect. */
 function bsResolveLoopAmounts(t){
   var key=String(t.address).toLowerCase();
   var cps=[];
   if(t.curve)cps.push(String(t.curve).toLowerCase());
   if(t.pairAddr)cps.push(String(t.pairAddr).toLowerCase());
+  var info=pairInfoForToken(t);
+  var legAsset=info.native?BS_WLOOP:String(info.addr).toLowerCase();
   var store=tradeStoreFor(t);
   Object.keys(store.map).forEach(function(k){
     var e=store.map[k];
     if(!e||e.args.pairAmount!=null||!e.transactionHash)return;
-    bsLoopAmount(e.transactionHash,cps).then(function(v){
+    bsLoopAmount(e.transactionHash,cps,legAsset).then(function(v){
       if(v==null)return;
       e.args.pairAmount=v;
       if(e.args.tokenAmount>0n)e.args.spotPriceAfter=v*(10n**BigInt(t.decimals))/e.args.tokenAmount;
       if(bsIsOpen(t)){
         var row=document.querySelector('#dTradesBody tr[data-tkey="'+k+'"]');
         if(row){
-          var pc=row.querySelector('[data-pair]'); if(pc)pc.textContent=fmtEth(v);
-          var pr=row.querySelector('[data-price]'); if(pr&&e.args.spotPriceAfter!=null)pr.textContent=fmtSpotTiny(e.args.spotPriceAfter);
+          var pc=row.querySelector('[data-pair]'); if(pc)pc.textContent=info.native?fmtEth(v):fmtUnitsSmart(v,info.dec);
+          var pr=row.querySelector('[data-price]'); if(pr&&e.args.spotPriceAfter!=null)pr.textContent=fmtSpotTinyFor(t,e.args.spotPriceAfter);
         }
         paintChartFromStore(t);
       }
@@ -5515,11 +5602,31 @@ async function fetchTokenSummaryRun(t,key){
     var cps=[];
     if(t.curve)cps.push(String(t.curve).toLowerCase());
     if(t.pairAddr)cps.push(String(t.pairAddr).toLowerCase());
-    var legs=await Promise.all(legSet.map(function(e){return e.transactionHash?bsLoopAmount(e.transactionHash,cps):Promise.resolve(null)}));
+    /* Legs resolve in the token's quote asset. Native pairs keep
+       the LOOP leg exactly as before. ERC20 pairs resolve the
+       pair-asset leg, then convert it — and the derived price —
+       to LOOP through the live peg price, so vol24hLoop, the
+       trending score, chg24 and the sparkline rank these tokens
+       by real activity. With no peg price known the token's
+       summary stays unpriced — a figure is never invented. */
+    var sInfo=pairInfoForToken(t);
+    var legAsset=sInfo.native?BS_WLOOP:String(sInfo.addr).toLowerCase();
+    var sPeg=sInfo.native?null:pegLoopCached(sInfo.addr);
+    var legs=await Promise.all(legSet.map(function(e){return e.transactionHash?bsLoopAmount(e.transactionHash,cps,legAsset):Promise.resolve(null)}));
     var legOf=new Map(), priceOf=new Map();
     legSet.forEach(function(e,i){
       var leg=legs[i];
       if(leg==null||!(leg>0n))return;
+      if(!sInfo.native){
+        if(!sPeg)return;
+        var loopWei=leg*sPeg/(10n**BigInt(sInfo.dec));
+        if(!(loopWei>0n))return;
+        legOf.set(e,loopWei);
+        if(e.args.tokenAmount>0n){
+          try{var prp=leg*(10n**BigInt(t.decimals))/e.args.tokenAmount; var pr2=Number(unitsToDecimalStr(prp*sPeg/(10n**BigInt(sInfo.dec)),18)); if(pr2>0)priceOf.set(e,pr2)}catch(err){}
+        }
+        return;
+      }
       legOf.set(e,leg);
       if(e.args.tokenAmount>0n){
         try{var pr=Number(unitsToDecimalStr(leg*(10n**BigInt(t.decimals))/e.args.tokenAmount,18)); if(pr>0)priceOf.set(e,pr)}catch(err){}
@@ -8487,47 +8594,18 @@ function drawCandles(t){
     ctx.fillStyle=c.c>=c.o?'rgba(52,169,123,.45)':'rgba(217,95,95,.45)';
     ctx.fillRect(cx-bw/2,volBase-vh,bw,vh);
   });
-  if(chartMode==='mcap'){
-    /* Market cap mode is a LINE chart: bucket closes (price ×
-       fixed total supply) joined in order over a soft area
-       fill, in the window's trend colour. */
-    var lineUp=chartCandles[n-1].c>=chartCandles[0].o;
-    var lineCol=lineUp?CHART_UP:CHART_DOWN;
-    ctx.beginPath();
-    chartCandles.forEach(function(c,i){
-      var cx=i*slot+slot/2, cy=Y(c.c*mult);
-      if(i===0)ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
-    });
-    ctx.save();
-    ctx.lineTo((n-1)*slot+slot/2,topPad+priceH);
-    ctx.lineTo(slot/2,topPad+priceH);
-    ctx.closePath();
-    var grad=ctx.createLinearGradient(0,topPad,0,topPad+priceH);
-    grad.addColorStop(0,lineUp?'rgba(52,169,123,.20)':'rgba(217,95,95,.20)');
-    grad.addColorStop(1,lineUp?'rgba(52,169,123,0)':'rgba(217,95,95,0)');
-    ctx.fillStyle=grad; ctx.fill();
-    ctx.restore();
-    ctx.beginPath();
-    chartCandles.forEach(function(c,i){
-      var cx=i*slot+slot/2, cy=Y(c.c*mult);
-      if(i===0)ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
-    });
-    ctx.strokeStyle=lineCol; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke();
-    ctx.lineWidth=1;
-    var ex=(n-1)*slot+slot/2, ey=Y(chartCandles[n-1].c*mult);
-    ctx.beginPath(); ctx.arc(ex,ey,3.5,0,Math.PI*2);
-    ctx.fillStyle='#fff'; ctx.fill();
-    ctx.strokeStyle=lineCol; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
-  }else{
-    chartCandles.forEach(function(c,i){
-      var cx=i*slot+slot/2, col=c.c>=c.o?CHART_UP:CHART_DOWN;
-      ctx.strokeStyle=col;
-      ctx.beginPath(); ctx.moveTo(cx,Y(c.h*mult)); ctx.lineTo(cx,Y(c.l*mult)); ctx.stroke();
-      var yO=Y(c.o*mult), yC=Y(c.c*mult);
-      ctx.fillStyle=col;
-      ctx.fillRect(cx-bw/2,Math.min(yO,yC),bw,Math.max(1,Math.abs(yC-yO)));
-    });
-  }
+  /* Both modes draw CANDLESTICKS: Price mode plots the bucket
+     OHLC directly; Market cap mode plots the same OHLC × total
+     supply (the constant chartMult multiplier), so the candle
+     shapes are identical and only the axis scale differs. */
+  chartCandles.forEach(function(c,i){
+    var cx=i*slot+slot/2, col=c.c>=c.o?CHART_UP:CHART_DOWN;
+    ctx.strokeStyle=col;
+    ctx.beginPath(); ctx.moveTo(cx,Y(c.h*mult)); ctx.lineTo(cx,Y(c.l*mult)); ctx.stroke();
+    var yO=Y(c.o*mult), yC=Y(c.c*mult);
+    ctx.fillStyle=col;
+    ctx.fillRect(cx-bw/2,Math.min(yO,yC),bw,Math.max(1,Math.abs(yC-yO)));
+  });
   var lastC=chartCandles[n-1], lv=lastC.c*mult, ly=Y(lv), lastCol=lastC.c>=lastC.o?CHART_UP:CHART_DOWN;
   ctx.strokeStyle=lastCol;
   ctx.setLineDash([4,4]);
@@ -8558,11 +8636,6 @@ function drawCandles(t){
     ctx.beginPath(); ctx.moveTo(hx,0); ctx.lineTo(hx,plotH); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0,Y(hc.c*mult)); ctx.lineTo(plotW,Y(hc.c*mult)); ctx.stroke();
     ctx.setLineDash([]);
-    if(chartMode==='mcap'){
-      ctx.beginPath(); ctx.arc(hx,Y(hc.c*mult),4,0,Math.PI*2);
-      ctx.fillStyle='#fff'; ctx.fill();
-      ctx.strokeStyle=hc.c>=hc.o?CHART_UP:CHART_DOWN; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
-    }
   }
   var lb=el('chartLatestBtn'); if(lb)lb.style.display=chartWin.follow?'none':'inline-flex';
   paintReadout(t);
