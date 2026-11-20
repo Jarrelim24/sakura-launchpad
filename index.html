@@ -62,7 +62,7 @@
   --cta-shadow:0 8px 22px rgba(232,67,122,.32);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;overflow-x:hidden;overflow-x:clip}
+html{scroll-behavior:smooth;overflow-x:hidden;overflow-x:clip;scroll-padding-bottom:130px}
 body{margin:0;font-family:"Plus Jakarta Sans",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;overflow-x:hidden;overflow-x:clip;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 h1,h2,h3{font-family:inherit;line-height:1.12;margin:0;letter-spacing:-.02em}
 a{color:inherit;text-decoration:none}
@@ -210,6 +210,12 @@ button,a,[data-act],select,input,textarea,label{touch-action:manipulation}
 .lsh-count{color:var(--faint);font-weight:700;font-size:12.5px;background:var(--surface2);border:1px solid var(--line);padding:3px 10px;border-radius:999px;white-space:nowrap}
 .list-sec-head::after{content:"";flex:1;height:1px;background:var(--line)}
 .token-list.grid .list-sec-head{grid-column:1/-1}
+/* Freshness line under the "All Tokens" heading: the wall-clock
+   time + block of the latest COMPLETED live read (the same read
+   state the footer note uses). Empty — and so hidden — until the
+   first read lands. */
+.fresh-line{margin:0 2px 12px;color:var(--faint);font-size:12.5px;font-weight:700}
+.fresh-line:empty{display:none}
 .trow,.gcard,.bcard{animation:rowIn .35s ease both}
 @keyframes rowIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 .trow{display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);padding:12px 8px;cursor:pointer;text-align:left;color:var(--ink);transition:background .15s;border-radius:10px}
@@ -1144,8 +1150,11 @@ button.qrow{cursor:pointer}
 .filter-line .ftab{padding-top:8px;padding-bottom:8px;min-height:42px;scroll-margin-top:150px;scroll-margin-bottom:120px}
 /* Same scroll-into-view clearance for the rest of the filter
    line: the pair select and the view-mode toggle must land
-   clear of the fixed mobile bottom nav, never under it. */
-.filter-line .pair-select,.filter-line .seg{scroll-margin-top:150px;scroll-margin-bottom:120px}
+   clear of the fixed mobile bottom nav, never under it. The
+   toggle's own buttons carry the margin too — a scroll that
+   targets a button does not inherit its container's margin,
+   and the root scroll-padding above backs every target. */
+.filter-line .pair-select,.filter-line .seg,.filter-line .seg button{scroll-margin-top:150px;scroll-margin-bottom:120px}
 /* Big token cards (the Launches list presentation) */
 .bcard{position:relative;display:block;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 15px;cursor:pointer;text-align:left;color:var(--ink);overflow:hidden;transition:border-color .18s,box-shadow .18s,transform .15s}
 .bcard:hover{border-color:var(--line2);box-shadow:var(--shadow)}
@@ -1167,6 +1176,7 @@ button.qrow{cursor:pointer}
 .bpill{display:inline-flex;align-items:center;background:var(--surface2);border:1px solid var(--line2);color:var(--muted);font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
 .bpill.grad{background:color-mix(in srgb,var(--green) 14%, transparent);color:var(--green);border-color:transparent}
 .bpill.pend{background:color-mix(in srgb,var(--gold) 15%, transparent);color:var(--gold);border-color:transparent}
+.bpill.bond{background:color-mix(in srgb,var(--pink) 14%, transparent);color:var(--pink);border-color:transparent}
 .bcard-prog{display:block;height:5px;background:var(--pink-pale);border-radius:99px;overflow:hidden;margin-top:8px}
 .bcard-prog i{display:block;height:100%;background:var(--pink);border-radius:99px}
 .bcard-div{display:block;height:1px;background:var(--line);margin:11px 0 10px;position:relative;z-index:1}
@@ -1196,7 +1206,6 @@ button.qrow{cursor:pointer}
 @media(max-width:560px){.trade-compact{font-size:11.8px}.trade-compact th,.trade-compact td{padding:6px 3.5px}.bcard{padding:16px}.bcard-mcap{font-size:26px}}
 .chart-latest{border:1px solid var(--line2);background:var(--surface);color:var(--pink-dark);border-radius:999px;padding:8px 14px;font-weight:800;font-size:12.5px;cursor:pointer;min-height:36px;align-items:center;transition:border-color .15s}
 .chart-latest:hover{border-color:var(--pink)}
-.chart-zoom{display:inline-flex;justify-content:center;min-width:38px;padding:8px 0;font-size:17px;line-height:1}
 </style>
 </head>
 <body>
@@ -1254,6 +1263,7 @@ button.qrow{cursor:pointer}
   <section class="section" id="explore" style="padding-top:10px"><div class="wrap">
     <div class="list-zone">
     <div class="sec-head" style="margin-bottom:10px"><h2 style="font-size:21px" id="allTokensHead">All Tokens — Loop Network</h2></div>
+    <p class="fresh-line" id="freshLine" role="status"></p>
     <label class="search search-big"><svg class="ic" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="searchInput" type="search" placeholder="Search name, ticker, or creator…" aria-label="Search Sakura tokens by name, ticker, or creator"/></label>
       <div class="live-status show" id="liveStatus" role="status" aria-live="polite">
         <div class="spinner" id="lsSpinner" aria-hidden="true"></div>
@@ -1707,8 +1717,6 @@ button.qrow{cursor:pointer}
           <button data-act="chart-mode" data-mode="price">Price</button>
           <button data-act="chart-mode" data-mode="mcap" class="active">Market cap</button>
         </div>
-        <button type="button" class="chart-latest chart-zoom" data-act="chart-zoom-out" aria-label="Zoom out chart">−</button>
-        <button type="button" class="chart-latest chart-zoom" data-act="chart-zoom-in" aria-label="Zoom in chart">+</button>
         <button type="button" class="chart-latest" id="chartLatestBtn" data-act="chart-latest" style="display:none">Back to latest</button>
       </div>
       <div class="chart-hero">
@@ -2253,9 +2261,13 @@ function cardAvatarHtml(t){
   if(t.img)return '<span class="bcard-ava" style="background:var(--surface2)"><img data-tokimg data-addr="'+String(t.addr||'').toLowerCase()+'" src="'+t.img+'" alt=""/></span>';
   return '<span class="bcard-ava" style="background:linear-gradient(140deg,'+t.c2+','+t.color+')">'+escHtml(t.name.charAt(0))+'</span>';
 }
-function pillSigOf(t){return t.pendMig?'pend':(t.grad?'grad':'prog')}
+function pillSigOf(t){return (t.pendMig?'pend':(t.grad?'grad':'prog'))+(LIST_FLAT?':f':'')}
 function pairLineHtml(t){
-  var pill=t.pendMig?'<span class="bpill pend">Graduated · pending migration</span>':(t.grad?'<span class="bpill grad">Graduated</span>':'<span class="bpill">'+t.prog.toFixed(2)+'% to graduation</span>');
+  /* In the flat ranked list (LIST_FLAT) a bonding card also carries
+     an explicit "Bonding" phase badge next to its progress pill —
+     with no section headers there, the phase must stay readable
+     on the card itself. Graduated cards already say so. */
+  var pill=t.pendMig?'<span class="bpill pend">Graduated · pending migration</span>':(t.grad?'<span class="bpill grad">Graduated</span>':((LIST_FLAT?'<span class="bpill bond">Bonding</span> ':'')+'<span class="bpill prog">'+t.prog.toFixed(2)+'% to graduation</span>'));
   /* Native pairs render exactly as before; ERC20 pairs show the
      asset's own icon + symbol. */
   var mark=t.pairNative===false?pairIcon({sym:t.pairSym,ticker:t.pairTicker,color:t.pairColor,address:t.pairAddr},15):LOOP_MARK;
@@ -2310,7 +2322,7 @@ function updateBigCard(node,t){
   }else if(!t.grad){
     var bar=node.querySelector('.bcard-prog i');
     if(bar){var w=t.prog+'%'; if(bar.style.width!==w)bar.style.width=w}
-    var pill=node.querySelector('.bpill');
+    var pill=node.querySelector('.bpill.prog');
     if(pill)setTextIf(pill,t.prog.toFixed(2)+'% to graduation');
   }
   var bs=cardBottomSig(t);
@@ -2349,13 +2361,23 @@ function renderFeatured(){
 }
 
 var PAGE_SIZE=10;
-/* "All" view section headers: the filtered + sorted list is
-   partitioned into Bonding (still on the curve) and Graduated,
-   each group keeping the active sort order, and the single pager
-   walks the combined grouped sequence. A header is an item in
-   the same keyed reconciliation as the cards — keyed by group —
-   so refresh cycles move/update it in place like any row and
-   never drop, duplicate, or flicker it. */
+/* LIST_FLAT is true while the Launches list renders as ONE
+   globally ranked sequence (the "All" filter with any sort other
+   than New): no Bonding/Graduated section grouping, so the #1
+   card on screen really is the #1 token by the active sort.
+   pairLineHtml reads it to give bonding cards an explicit
+   "Bonding" phase badge in that mode, and pillSigOf folds it
+   into the pair-line signature so switching sorts repaints the
+   pair line in the right shape. Set by renderTokens before every
+   reconcile; false everywhere else. */
+var LIST_FLAT=false;
+/* "All" view section headers (New sort only): the filtered +
+   sorted list is partitioned into Bonding (still on the curve)
+   and Graduated, each group keeping the active sort order, and
+   the single pager walks the combined grouped sequence. A header
+   is an item in the same keyed reconciliation as the cards —
+   keyed by group — so refresh cycles move/update it in place
+   like any row and never drop, duplicate, or flicker it. */
 function secHeadHtml(it){
   var name=it.secHead==='grad'?'Graduated':'Bonding';
   return '<div class="list-sec-head"><span class="lsh-name">'+name+'</span><span class="lsh-count">'+it.count+' token'+(it.count===1?'':'s')+'</span></div>';
@@ -2365,10 +2387,15 @@ function updateSecHead(n,it){
 }
 function renderTokens(){
   var list=filteredTokens(), total=list.length;
-  /* In the "All" filter only, partition into Bonding first, then
-     Graduated (graduated-pending-migration counts as Graduated);
-     the other filter tabs keep the single ungrouped list. */
-  var grouped=currentFilter==="all";
+  /* Section grouping belongs to the New sort only: with Market
+     cap, Trending, 24h volume or Oldest active, the list is ONE
+     globally ranked sequence across every token (all factory
+     generations) — grouping Bonding first would put a $5K curve
+     token above a $1.1M graduated one and make the sort read as
+     wrong. The other filter tabs keep the single ungrouped list
+     they have always had. */
+  var grouped=currentFilter==="all"&&currentSort==="new";
+  LIST_FLAT=currentFilter==="all"&&!grouped;
   var seq=list, bondN=0, gradN=0;
   if(grouped){
     var bond=list.filter(function(t){return !t.grad});
@@ -3364,8 +3391,6 @@ document.addEventListener('click',function(e){
     else if(act==='sort')setSort(el);
     else if(act==='copy-ca'){e.stopPropagation();copyText(el.getAttribute('data-addr'),'Contract address copied')}
     else if(act==='chart-latest'){if(typeof chartGoLatest==='function')chartGoLatest()}
-    else if(act==='chart-zoom-in'){if(typeof chartZoomStep==='function')chartZoomStep(0.7)}
-    else if(act==='chart-zoom-out'){if(typeof chartZoomStep==='function')chartZoomStep(1.45)}
     else if(act==='viewmode')setViewMode(el.getAttribute('data-mode'));
     else if(act==='page-prev'){if(listPage>1)setListPage(listPage-1)}
     else if(act==='page-next'){setListPage(listPage+1)}
@@ -4625,6 +4650,19 @@ function setLiveStatus(state,detail,errorMsg,refreshing){
   var panel=el('liveStatus'),title=el('lsTitle'),det=el('lsDetail'),err=el('lsError'),spin=el('lsSpinner'),slow=el('lsSlow'),note=el('liveNote');
   var badge=el('feedBadge'),foot=el('footDataNote'),anaNote=el('anaDataNote'),head=el('allTokensHead');
   var stamp=(LIVE_BLOCK!=null?'block '+LIVE_BLOCK:'')+(LIVE_READ_AT?((LIVE_BLOCK!=null?' · ':'')+liveTimeStr(LIVE_READ_AT)):'');
+  /* Freshness line under the "All Tokens" heading: repainted on
+     every status transition from the SAME real read state the
+     footer note uses (LIVE_READ_AT + LIVE_BLOCK — the latest
+     COMPLETED live read), never from a fabricated stamp. On
+     'ok' this runs at the end of each completed refresh cycle,
+     and the renderTokens() call at the bottom of this function
+     re-applies the active sort with the fresh figures, so the
+     line and the ranking update together without a reload. */
+  var fl=el('freshLine');
+  if(fl&&(state==='ok'||state==='stale')){
+    var flTxt=(LIVE_READ_AT&&LIVE_BLOCK!=null)?('Updated '+liveTimeStr(LIVE_READ_AT)+' · block '+LIVE_BLOCK):(LIVE_READ_AT?('Updated '+liveTimeStr(LIVE_READ_AT)):(LIVE_BLOCK!=null?('block '+LIVE_BLOCK):''));
+    if(flTxt&&fl.textContent!==flTxt)fl.textContent=flTxt;
+  }
   if(state==='loading'){
     if(badge){badge.textContent='Live · Loop · loading…';badge.classList.remove('stale')}
     if(panel){
@@ -7393,10 +7431,12 @@ function paintLiveDetail(t){
     var mSubE2=el('dStatMcapSub'); if(mSubE2)mSubE2.textContent='';
   }
   /* Until the chart has candles of its own, the big number
-     above it carries the live market cap; once candles exist,
-     paintReadout owns it (and follows the crosshair). */
+     above it carries the live value for the active chart mode
+     (price or market cap); once candles exist, paintReadout
+     owns it (and follows the crosshair). */
   if(!chartCandles.length){
     if(mcapLoopWeiD!=null)paintChartHero(t,Number(unitsToDecimalStr(mcapLoopWeiD,18)),null);
+    else if(chartMode==='price'){var hvP=el('chartHeroVal');if(hvP)hvP.textContent=fmtTinyPrice(Number(unitsToDecimalStr(mcapWei,pInfo.dec))/chartSupplyMult(t),'')+' '+pInfo.sym;var hlP=el('chartHeroLabel');if(hlP)hlP.textContent='Price'}
     else{var hvE=el('chartHeroVal');if(hvE)hvE.textContent=fmtUnitsSmart(mcapWei,pInfo.dec)+' '+pInfo.sym;var hlE=el('chartHeroLabel');if(hlE)hlE.textContent='Market cap'}
   }
   var liqRow=el('dStatLiqRow'), liqEl=el('dStatLiq'), liqLab=el('dStatLiqLabel');
@@ -8315,7 +8355,7 @@ function chartResetForToken(t){
   chartHover=-1; chartCandles=[]; chartAllCandles=[]; chartWin={n:120,endT:null,follow:true};
   var ro=el('chartReadout'); if(ro)ro.innerHTML='';
   var hv=el('chartHeroVal'); if(hv)hv.textContent='\u2026';
-  var hl=el('chartHeroLabel'); if(hl)hl.textContent='Market cap';
+  var hl=el('chartHeroLabel'); if(hl)hl.textContent=chartMode==='price'?'Price':'Market cap';
   syncChartControls();
   chartSetMessage('Loading on-chain price history…');
 }
@@ -8452,15 +8492,27 @@ function fmtMcapFromLoop(loopAmt){
   if(loopAmt>=1000)return trimNumStr((loopAmt/1000).toFixed(1))+'K LOOP';
   return trimNumStr(loopAmt.toFixed(2))+' LOOP';
 }
-/* The one dominant number above the chart: the market cap at
-   the crosshair point while the reader scrubs, the live market
-   cap otherwise (ts is null then, and the label stays plain). */
+/* The one dominant number above the chart: it follows the
+   Price / Market cap toggle exactly — in Market cap mode it is
+   the market cap (at the crosshair point while the reader
+   scrubs, the live market cap otherwise; ts is null then, and
+   the label stays plain), and in Price mode it is the token
+   PRICE at that same point: the caller's market cap divided
+   back down by the total supply, formatted through the same
+   chartFmtVal the axis and readout use, so the hero can never
+   show a market-cap figure while the Price toggle is active. */
 function paintChartHero(t,loopMcap,ts){
   var v=el('chartHeroVal'); if(!v)return;
-  v.textContent=fmtMcapFromLoop(loopMcap);
+  var priceMode=chartMode==='price';
+  if(priceMode){
+    var priceLoop=loopMcap/chartSupplyMult(t);
+    v.textContent=chartFmtVal(priceLoop*(LOOP_USD||1))+(LOOP_USD?'':' LOOP');
+  }else{
+    v.textContent=fmtMcapFromLoop(loopMcap);
+  }
   var l=el('chartHeroLabel');
   if(l){
-    var s='Market cap';
+    var s=priceMode?'Price':'Market cap';
     if(ts!=null){
       var d=new Date(ts*1000);
       s+=' \u00b7 '+MONTHS3[d.getMonth()]+' '+d.getDate();
@@ -8560,29 +8612,6 @@ function chartGoLatest(){
   chartWin.follow=true; chartWin.endT=null; chartHover=-1;
   if(detailMode==='live'&&currentLive)paintChartFromStore(currentLive);
 }
-/* Visible zoom buttons: the same window math as the pinch / wheel
-   gestures, anchored at the centre of the visible window and
-   clamped to the same 20–400 visible buckets. Zooming in from the
-   live edge pins the window (follow drops through
-   chartApplyWindow); zooming back out to the edge restores
-   follow, so live trades keep extending the chart in place. */
-function chartZoomStep(f){
-  if(!chartAllCandles.length)return;
-  var tf=CHART_TFS[chartTf], all=chartAllCandles;
-  var firstT=all[0].t, lastT=all[all.length-1].t;
-  var n0=chartWin.n||120;
-  var n=Math.max(20,Math.min(400,Math.round(n0*f)));
-  var endT0=(chartWin.follow||chartWin.endT==null)?lastT:chartWin.endT;
-  var centerT=endT0-(n0-1)*tf/2;
-  var endT=Math.round((centerT+(n-1)*tf/2)/tf)*tf;
-  var loEnd=Math.min(lastT,firstT+(n-1)*tf);
-  chartWin.n=n;
-  chartWin.endT=Math.max(loEnd,Math.min(lastT,endT));
-  chartWin.follow=false;
-  chartApplyWindow();
-  if(detailMode==='live'&&currentLive)drawCandles(currentLive);
-  if(!chartWin.follow&&currentLive)chartEnsureHistory(currentLive,true);
-}
 function drawCandles(t){
   var cv=el('cvChart'); if(!cv||!chartCandles.length)return;
   var W=cv.clientWidth, H=cv.clientHeight;
@@ -8596,8 +8625,6 @@ function drawCandles(t){
   var cs=getComputedStyle(document.documentElement);
   var colLine=cs.getPropertyValue('--line').trim()||'rgba(128,128,128,.25)';
   var colFaint=cs.getPropertyValue('--faint').trim()||'#7F7F7F';
-  var colPink=cs.getPropertyValue('--pink').trim()||'#FF5C8A';
-  var colInk=cs.getPropertyValue('--ink').trim()||'#FFFFFF';
   var timeH=20, topPad=6;
   var mult=chartMult(t);
   /* Tight auto-scale: the y-axis fits the VISIBLE window's
@@ -8638,18 +8665,47 @@ function drawCandles(t){
     ctx.fillStyle=c.c>=c.o?'rgba(52,169,123,.45)':'rgba(217,95,95,.45)';
     ctx.fillRect(cx-bw/2,volBase-vh,bw,vh);
   });
-  /* Both modes draw CANDLESTICKS: Price mode plots the bucket
-     OHLC directly; Market cap mode plots the same OHLC × total
-     supply (the constant chartMult multiplier), so the candle
-     shapes are identical and only the axis scale differs. */
-  chartCandles.forEach(function(c,i){
-    var cx=i*slot+slot/2, col=c.c>=c.o?CHART_UP:CHART_DOWN;
-    ctx.strokeStyle=col;
-    ctx.beginPath(); ctx.moveTo(cx,Y(c.h*mult)); ctx.lineTo(cx,Y(c.l*mult)); ctx.stroke();
-    var yO=Y(c.o*mult), yC=Y(c.c*mult);
-    ctx.fillStyle=col;
-    ctx.fillRect(cx-bw/2,Math.min(yO,yC),bw,Math.max(1,Math.abs(yC-yO)));
-  });
+  if(chartMode==='mcap'){
+    /* Market cap mode is a LINE chart: bucket closes (price ×
+       fixed total supply) joined in order over a soft area
+       fill, in the window's trend colour. */
+    var lineUp=chartCandles[n-1].c>=chartCandles[0].o;
+    var lineCol=lineUp?CHART_UP:CHART_DOWN;
+    ctx.beginPath();
+    chartCandles.forEach(function(c,i){
+      var cx=i*slot+slot/2, cy=Y(c.c*mult);
+      if(i===0)ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
+    });
+    ctx.save();
+    ctx.lineTo((n-1)*slot+slot/2,topPad+priceH);
+    ctx.lineTo(slot/2,topPad+priceH);
+    ctx.closePath();
+    var grad=ctx.createLinearGradient(0,topPad,0,topPad+priceH);
+    grad.addColorStop(0,lineUp?'rgba(52,169,123,.20)':'rgba(217,95,95,.20)');
+    grad.addColorStop(1,lineUp?'rgba(52,169,123,0)':'rgba(217,95,95,0)');
+    ctx.fillStyle=grad; ctx.fill();
+    ctx.restore();
+    ctx.beginPath();
+    chartCandles.forEach(function(c,i){
+      var cx=i*slot+slot/2, cy=Y(c.c*mult);
+      if(i===0)ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
+    });
+    ctx.strokeStyle=lineCol; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke();
+    ctx.lineWidth=1;
+    var ex=(n-1)*slot+slot/2, ey=Y(chartCandles[n-1].c*mult);
+    ctx.beginPath(); ctx.arc(ex,ey,3.5,0,Math.PI*2);
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.strokeStyle=lineCol; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
+  }else{
+    chartCandles.forEach(function(c,i){
+      var cx=i*slot+slot/2, col=c.c>=c.o?CHART_UP:CHART_DOWN;
+      ctx.strokeStyle=col;
+      ctx.beginPath(); ctx.moveTo(cx,Y(c.h*mult)); ctx.lineTo(cx,Y(c.l*mult)); ctx.stroke();
+      var yO=Y(c.o*mult), yC=Y(c.c*mult);
+      ctx.fillStyle=col;
+      ctx.fillRect(cx-bw/2,Math.min(yO,yC),bw,Math.max(1,Math.abs(yC-yO)));
+    });
+  }
   var lastC=chartCandles[n-1], lv=lastC.c*mult, ly=Y(lv), lastCol=lastC.c>=lastC.o?CHART_UP:CHART_DOWN;
   ctx.strokeStyle=lastCol;
   ctx.setLineDash([4,4]);
@@ -8680,40 +8736,11 @@ function drawCandles(t){
     ctx.beginPath(); ctx.moveTo(hx,0); ctx.lineTo(hx,plotH); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0,Y(hc.c*mult)); ctx.lineTo(plotW,Y(hc.c*mult)); ctx.stroke();
     ctx.setLineDash([]);
-    /* Floating crosshair bubble (GMGN / DexScreener style): the
-       pointed candle's O / H / L / C and % change in a small dark
-       bubble beside the crosshair, clamped so it never leaves the
-       plot area. The readout strip above the chart and the hero
-       number keep following the same candle, unchanged. */
-    var bChg=hc.o>0?((hc.c-hc.o)/hc.o*100):0;
-    var bLines=[
-      {k:'O',v:chartFmtVal(hc.o*mult)},
-      {k:'H',v:chartFmtVal(hc.h*mult)},
-      {k:'L',v:chartFmtVal(hc.l*mult)},
-      {k:'C',v:chartFmtVal(hc.c*mult)},
-      {k:'',v:(bChg>=0?'+':'')+bChg.toFixed(2)+'%',chg:true}
-    ];
-    ctx.font='700 10.5px "Plus Jakarta Sans",system-ui,sans-serif';
-    var bW=0;
-    bLines.forEach(function(L){var w=ctx.measureText(L.v).width+18;if(w>bW)bW=w});
-    bW=Math.ceil(bW)+8;
-    var bH=bLines.length*14+10;
-    var bx=hx+10; if(bx+bW>plotW-2)bx=hx-10-bW;
-    bx=Math.max(2,Math.min(plotW-bW-2,bx));
-    var by=Y(hc.c*mult)-bH/2;
-    by=Math.max(2,Math.min(plotH-bH-2,by));
-    ctx.beginPath();
-    if(ctx.roundRect)ctx.roundRect(bx,by,bW,bH,7); else ctx.rect(bx,by,bW,bH);
-    ctx.fillStyle='rgba(8,8,10,.94)';
-    ctx.fill();
-    ctx.globalAlpha=.6; ctx.strokeStyle=colPink; ctx.lineWidth=1; ctx.stroke(); ctx.globalAlpha=1;
-    ctx.textAlign='left'; ctx.textBaseline='middle';
-    bLines.forEach(function(L,i){
-      var ly=by+12+i*14;
-      if(L.chg){ctx.fillStyle=bChg>=0?CHART_UP:CHART_DOWN;ctx.fillText(L.v,bx+19,ly);return}
-      ctx.fillStyle=colFaint; ctx.fillText(L.k,bx+8,ly);
-      ctx.fillStyle=colInk; ctx.fillText(L.v,bx+19,ly);
-    });
+    if(chartMode==='mcap'){
+      ctx.beginPath(); ctx.arc(hx,Y(hc.c*mult),4,0,Math.PI*2);
+      ctx.fillStyle='#fff'; ctx.fill();
+      ctx.strokeStyle=hc.c>=hc.o?CHART_UP:CHART_DOWN; ctx.lineWidth=2; ctx.stroke(); ctx.lineWidth=1;
+    }
   }
   var lb=el('chartLatestBtn'); if(lb)lb.style.display=chartWin.follow?'none':'inline-flex';
   paintReadout(t);
