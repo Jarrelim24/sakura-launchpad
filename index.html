@@ -1196,6 +1196,7 @@ button.qrow{cursor:pointer}
 @media(max-width:560px){.trade-compact{font-size:11.8px}.trade-compact th,.trade-compact td{padding:6px 3.5px}.bcard{padding:16px}.bcard-mcap{font-size:26px}}
 .chart-latest{border:1px solid var(--line2);background:var(--surface);color:var(--pink-dark);border-radius:999px;padding:8px 14px;font-weight:800;font-size:12.5px;cursor:pointer;min-height:36px;align-items:center;transition:border-color .15s}
 .chart-latest:hover{border-color:var(--pink)}
+.chart-zoom{display:inline-flex;justify-content:center;min-width:38px;padding:8px 0;font-size:17px;line-height:1}
 </style>
 </head>
 <body>
@@ -1706,6 +1707,8 @@ button.qrow{cursor:pointer}
           <button data-act="chart-mode" data-mode="price">Price</button>
           <button data-act="chart-mode" data-mode="mcap" class="active">Market cap</button>
         </div>
+        <button type="button" class="chart-latest chart-zoom" data-act="chart-zoom-out" aria-label="Zoom out chart">−</button>
+        <button type="button" class="chart-latest chart-zoom" data-act="chart-zoom-in" aria-label="Zoom in chart">+</button>
         <button type="button" class="chart-latest" id="chartLatestBtn" data-act="chart-latest" style="display:none">Back to latest</button>
       </div>
       <div class="chart-hero">
@@ -3361,6 +3364,8 @@ document.addEventListener('click',function(e){
     else if(act==='sort')setSort(el);
     else if(act==='copy-ca'){e.stopPropagation();copyText(el.getAttribute('data-addr'),'Contract address copied')}
     else if(act==='chart-latest'){if(typeof chartGoLatest==='function')chartGoLatest()}
+    else if(act==='chart-zoom-in'){if(typeof chartZoomStep==='function')chartZoomStep(0.7)}
+    else if(act==='chart-zoom-out'){if(typeof chartZoomStep==='function')chartZoomStep(1.45)}
     else if(act==='viewmode')setViewMode(el.getAttribute('data-mode'));
     else if(act==='page-prev'){if(listPage>1)setListPage(listPage-1)}
     else if(act==='page-next'){setListPage(listPage+1)}
@@ -8332,35 +8337,49 @@ function setChartMode(m){
   syncChartControls();
   if(detailMode==='live'&&currentLive)paintChartFromStore(currentLive);
 }
-/* Priced, timestamped trades from the store, oldest first. A trade
-   joins the chart only when its real LOOP leg has been resolved —
-   pool trades via their WLOOP leg, curve trades via the native
-   value / internal payout (see bsLoopPump). */
+/* Priced, timestamped trades from the store, oldest first. Every
+   trade is priced in the token's OWN pair asset first — pairAmount
+   and spotPriceAfter are pair-asset smallest units (spot = pair
+   units per whole token, scaled by the pair asset's real
+   decimals) — and converted to LOOP exclusively through
+   pairToLoopWei: the same BigInt conversion through the live
+   TestAssetPeg price that the Launches list uses, so the chart
+   can never drift from the list by a pair-decimals factor (a
+   6-decimal pair asset misread as 18 decimals is what once blew
+   a tUSDC token's market cap up to billions). Native LOOP pairs
+   pass through pairToLoopWei unchanged, exactly as before; an
+   ERC20 pair with no known peg price contributes no candle
+   rather than a mis-scaled one. */
 function chartPricedTrades(t){
   var out=[];
+  var info=pairInfoForToken(t);
   storeTradesSorted(t,false).forEach(function(e){
     if(!e.args||e.args.spotPriceAfter==null)return;
     var ts=e.ts!=null?e.ts:(e.blockNumber?BLOCK_TS_CACHE[e.blockNumber]:null);
     if(ts==null)return;
-    var price=0,vol=0;
-    var cInfo=pairInfoForToken(t);
-    if(!cInfo.native){
-      /* ERC20 pair: trade prices/volumes are pair-denominated —
-         convert to LOOP through the live peg price so the chart
-         (LOOP/USD) stays honest. Without a peg price there is no
-         honest conversion, so the trade contributes no candle. */
-      var pegC=pegLoopCached(cInfo.addr);
-      if(!pegC)return;
-      var pegW=Number(unitsToDecimalStr(pegC,18));
-      try{price=Number(unitsToDecimalStr(e.args.spotPriceAfter,cInfo.dec))*pegW}catch(err){price=0}
-      if(!(price>0))return;
-      if(e.args.pairAmount!=null){try{vol=Number(unitsToDecimalStr(e.args.pairAmount,cInfo.dec))*pegW}catch(err){vol=0}}
-      out.push({ts:ts,price:price,vol:vol});
-      return;
+    var priceWei=null, volWei=null;
+    if(e.args.pairAmount!=null){
+      volWei=pairToLoopWei(t,e.args.pairAmount);
+      if(volWei==null)return;
+      /* On an ERC20 pair the stored spot is truncated to whole
+         pair-smallest units (a 6-decimal asset's spot of 4.177 is
+         stored as 4 — a 4% under-read), so the candle price is
+         derived from the trade's own amounts through the same
+         conversion instead: the exact execution price. Native
+         pairs keep the stored spot — 18-decimal units make its
+         truncation negligible and their rendering is unchanged. */
+      if(!info.native&&e.args.tokenAmount!=null&&e.args.tokenAmount>0n){
+        priceWei=volWei*(10n**BigInt(t.decimals))/e.args.tokenAmount;
+      }
     }
-    try{price=Number(unitsToDecimalStr(e.args.spotPriceAfter,18))}catch(err){price=0}
+    if(priceWei==null){
+      priceWei=pairToLoopWei(t,e.args.spotPriceAfter);
+      if(priceWei==null)return;
+    }
+    var price=0,vol=0;
+    try{price=Number(unitsToDecimalStr(priceWei,18))}catch(err){price=0}
     if(!(price>0))return;
-    if(e.args.pairAmount!=null){try{vol=Number(unitsToDecimalStr(e.args.pairAmount,18))}catch(err){vol=0}}
+    if(volWei!=null){try{vol=Number(unitsToDecimalStr(volWei,18))}catch(err){vol=0}}
     out.push({ts:ts,price:price,vol:vol});
   });
   out.sort(function(a,b){return a.ts-b.ts});
@@ -8541,6 +8560,29 @@ function chartGoLatest(){
   chartWin.follow=true; chartWin.endT=null; chartHover=-1;
   if(detailMode==='live'&&currentLive)paintChartFromStore(currentLive);
 }
+/* Visible zoom buttons: the same window math as the pinch / wheel
+   gestures, anchored at the centre of the visible window and
+   clamped to the same 20–400 visible buckets. Zooming in from the
+   live edge pins the window (follow drops through
+   chartApplyWindow); zooming back out to the edge restores
+   follow, so live trades keep extending the chart in place. */
+function chartZoomStep(f){
+  if(!chartAllCandles.length)return;
+  var tf=CHART_TFS[chartTf], all=chartAllCandles;
+  var firstT=all[0].t, lastT=all[all.length-1].t;
+  var n0=chartWin.n||120;
+  var n=Math.max(20,Math.min(400,Math.round(n0*f)));
+  var endT0=(chartWin.follow||chartWin.endT==null)?lastT:chartWin.endT;
+  var centerT=endT0-(n0-1)*tf/2;
+  var endT=Math.round((centerT+(n-1)*tf/2)/tf)*tf;
+  var loEnd=Math.min(lastT,firstT+(n-1)*tf);
+  chartWin.n=n;
+  chartWin.endT=Math.max(loEnd,Math.min(lastT,endT));
+  chartWin.follow=false;
+  chartApplyWindow();
+  if(detailMode==='live'&&currentLive)drawCandles(currentLive);
+  if(!chartWin.follow&&currentLive)chartEnsureHistory(currentLive,true);
+}
 function drawCandles(t){
   var cv=el('cvChart'); if(!cv||!chartCandles.length)return;
   var W=cv.clientWidth, H=cv.clientHeight;
@@ -8554,6 +8596,8 @@ function drawCandles(t){
   var cs=getComputedStyle(document.documentElement);
   var colLine=cs.getPropertyValue('--line').trim()||'rgba(128,128,128,.25)';
   var colFaint=cs.getPropertyValue('--faint').trim()||'#7F7F7F';
+  var colPink=cs.getPropertyValue('--pink').trim()||'#FF5C8A';
+  var colInk=cs.getPropertyValue('--ink').trim()||'#FFFFFF';
   var timeH=20, topPad=6;
   var mult=chartMult(t);
   /* Tight auto-scale: the y-axis fits the VISIBLE window's
@@ -8636,6 +8680,40 @@ function drawCandles(t){
     ctx.beginPath(); ctx.moveTo(hx,0); ctx.lineTo(hx,plotH); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0,Y(hc.c*mult)); ctx.lineTo(plotW,Y(hc.c*mult)); ctx.stroke();
     ctx.setLineDash([]);
+    /* Floating crosshair bubble (GMGN / DexScreener style): the
+       pointed candle's O / H / L / C and % change in a small dark
+       bubble beside the crosshair, clamped so it never leaves the
+       plot area. The readout strip above the chart and the hero
+       number keep following the same candle, unchanged. */
+    var bChg=hc.o>0?((hc.c-hc.o)/hc.o*100):0;
+    var bLines=[
+      {k:'O',v:chartFmtVal(hc.o*mult)},
+      {k:'H',v:chartFmtVal(hc.h*mult)},
+      {k:'L',v:chartFmtVal(hc.l*mult)},
+      {k:'C',v:chartFmtVal(hc.c*mult)},
+      {k:'',v:(bChg>=0?'+':'')+bChg.toFixed(2)+'%',chg:true}
+    ];
+    ctx.font='700 10.5px "Plus Jakarta Sans",system-ui,sans-serif';
+    var bW=0;
+    bLines.forEach(function(L){var w=ctx.measureText(L.v).width+18;if(w>bW)bW=w});
+    bW=Math.ceil(bW)+8;
+    var bH=bLines.length*14+10;
+    var bx=hx+10; if(bx+bW>plotW-2)bx=hx-10-bW;
+    bx=Math.max(2,Math.min(plotW-bW-2,bx));
+    var by=Y(hc.c*mult)-bH/2;
+    by=Math.max(2,Math.min(plotH-bH-2,by));
+    ctx.beginPath();
+    if(ctx.roundRect)ctx.roundRect(bx,by,bW,bH,7); else ctx.rect(bx,by,bW,bH);
+    ctx.fillStyle='rgba(8,8,10,.94)';
+    ctx.fill();
+    ctx.globalAlpha=.6; ctx.strokeStyle=colPink; ctx.lineWidth=1; ctx.stroke(); ctx.globalAlpha=1;
+    ctx.textAlign='left'; ctx.textBaseline='middle';
+    bLines.forEach(function(L,i){
+      var ly=by+12+i*14;
+      if(L.chg){ctx.fillStyle=bChg>=0?CHART_UP:CHART_DOWN;ctx.fillText(L.v,bx+19,ly);return}
+      ctx.fillStyle=colFaint; ctx.fillText(L.k,bx+8,ly);
+      ctx.fillStyle=colInk; ctx.fillText(L.v,bx+19,ly);
+    });
   }
   var lb=el('chartLatestBtn'); if(lb)lb.style.display=chartWin.follow?'none':'inline-flex';
   paintReadout(t);
