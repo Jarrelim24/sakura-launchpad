@@ -840,7 +840,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .ls-main strong{display:block;font-size:15px}
 .ls-main span{display:block;color:var(--muted);font-weight:600;font-size:13.5px;margin-top:2px;line-height:1.55}
 .ls-main .ls-error{color:var(--red);font-weight:700;word-break:break-word;font-size:13px}
-@media(max-width:560px){.live-status{flex-wrap:wrap}}
+@media(max-width:560px){.live-status{flex-wrap:wrap}.ls-main span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
 /* ===== Stale state (live data on screen, refresh failing) =====
    The last successful live read stays fully rendered; the badge
    turns gold and the status panel becomes a compact, non-blocking
@@ -1183,7 +1183,7 @@ button.qrow{cursor:pointer}
   <div class="top-actions">
     <button class="icon-btn" id="themeBtn" aria-label="Toggle dark / light theme" data-act="theme"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none"/></svg></button>
     <div class="wallet-wrap"><button class="wallet-pill" id="walletPill" data-act="wallet" aria-label="Connect wallet"><span class="wico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span><span class="waddr" id="pillAddr">Connect Wallet</span><span class="waddr" id="pillBal" style="color:var(--muted);font-weight:700"></span><span class="net-tag" id="pillNetTag" style="display:none">Loop</span><span class="wdot" id="pillDot" aria-hidden="true"></span></button><div class="wallet-menu" id="walletMenu" role="menu" aria-label="Wallet menu"><button data-act="wallet-profile" role="menuitem">View Profile</button><button data-act="disconnect" role="menuitem" style="color:var(--red)">Disconnect wallet</button></div></div>
-    <div class="menu-wrap"><button class="icon-btn" id="menuBtn" aria-label="More links" aria-haspopup="menu" aria-expanded="false" data-act="menu"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.9" fill="currentColor" stroke="none"/></svg></button><div class="menu-pop" id="menuPop" role="menu" aria-label="More links"><button type="button" role="menuitem" class="menu-cta" data-act="promote-page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>Promote your token</button><div class="menu-sep" aria-hidden="true"></div><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X (Twitter)</button><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on Telegram — coming soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Telegram</button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Resources</div><button type="button" role="menuitem" data-act="toast" data-msg="Docs coming soon">Docs<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="Support opens soon">Support</button><a role="menuitem" href="https://explorer.mainnetloop.com" target="_blank" rel="noopener">Explorer<span class="ext">↗</span></a><a role="menuitem" href="#jelajahi" data-act="sakura-token">Sakura Token</a><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon">Updates on X<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="GitHub opens after the contract audit">GitHub<span class="ext">↗</span></button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Contracts</div><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x8C16a448A66030524aB1FF55e6025F94F5451c29" target="_blank" rel="noopener">Factory<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury<span class="ext">↗</span></a><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Legal</div><button type="button" role="menuitem" data-act="toast" data-msg="Terms of Use coming soon">Terms of Use</button><button type="button" role="menuitem" data-act="toast" data-msg="Privacy Policy coming soon">Privacy Policy</button><button type="button" role="menuitem" data-act="toast" data-msg="Takedown requests open soon">Takedown Requests</button><button type="button" role="menuitem" data-act="toast" data-msg="This channel opens soon">Law Enforcement Requests</button></div></div>
+    <div class="menu-wrap"><button class="icon-btn" id="menuBtn" aria-label="More links" aria-haspopup="menu" aria-expanded="false" data-act="menu"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.9" fill="currentColor" stroke="none"/></svg></button><div class="menu-pop" id="menuPop" role="menu" aria-label="More links"><button type="button" role="menuitem" class="menu-cta" data-act="promote-page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>Promote your token</button><div class="menu-sep" aria-hidden="true"></div><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X (Twitter)</button><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on Telegram — coming soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Telegram</button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Resources</div><button type="button" role="menuitem" data-act="toast" data-msg="Docs coming soon">Docs<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="Support opens soon">Support</button><a role="menuitem" href="https://explorer.mainnetloop.com" target="_blank" rel="noopener">Explorer<span class="ext">↗</span></a><a role="menuitem" href="#jelajahi" data-act="sakura-token">Sakura Token</a><button type="button" role="menuitem" data-act="toast" data-msg="Sakura on X — coming soon">Updates on X<span class="ext">↗</span></button><button type="button" role="menuitem" data-act="toast" data-msg="GitHub opens after the contract audit">GitHub<span class="ext">↗</span></button><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Contracts</div><a role="menuitem" href="https://explorer.mainnetloop.com/address/0xE4caad609dF38a248eCcF4fFD70b27f092942b26" target="_blank" rel="noopener">Factory<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault<span class="ext">↗</span></a><a role="menuitem" href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury<span class="ext">↗</span></a><div class="menu-sep" aria-hidden="true"></div><div class="menu-label" aria-hidden="true">Legal</div><button type="button" role="menuitem" data-act="toast" data-msg="Terms of Use coming soon">Terms of Use</button><button type="button" role="menuitem" data-act="toast" data-msg="Privacy Policy coming soon">Privacy Policy</button><button type="button" role="menuitem" data-act="toast" data-msg="Takedown requests open soon">Takedown Requests</button><button type="button" role="menuitem" data-act="toast" data-msg="This channel opens soon">Law Enforcement Requests</button></div></div>
   </div>
 </div></header>
 
@@ -1295,11 +1295,12 @@ button.qrow{cursor:pointer}
         <div class="fee-row"><span>Fee on every trade</span><strong>1%</strong></div>
         <div class="fee-row"><span>↳ To the token creator</span><strong style="color:var(--pink-dark)">70% of the fee</strong></div>
         <div class="fee-row"><span>↳ To the Sakura protocol</span><strong>30% of the fee</strong></div>
-        <div class="fee-row"><span>Pool fee after graduation</span><strong>0.3% per swap</strong></div>
-        <div class="fee-row"><span>↳ Stays in the pool</span><strong>0.20%</strong></div>
-        <div class="fee-row"><span>↳ To the token creator</span><strong style="color:var(--pink-dark)">0.05% + creator tax</strong></div>
-        <div class="fee-row"><span>↳ To the Sakura platform</span><strong>0.05%</strong></div>
-        <p style="font-size:13.5px">After graduation, each swap pays 0.3%: 0.20% stays in the pool, 0.05% goes to the creator, 0.05% to the platform — plus the creator tax (1–3%, locked at launch) entirely to the creator. Claim it all in Profile. Older pairs keep the original model: the full 0.3% stays in the pool.</p>
+        <div class="fee-row"><span>Creator tax (locked at launch)</span><strong>0–3% — curve + pool</strong></div>
+        <div class="fee-row"><span>Pool fee after graduation (new tokens)</span><strong>0.3% per swap</strong></div>
+        <div class="fee-row"><span>↳ To LPs — claimable anytime</span><strong>0.10%</strong></div>
+        <div class="fee-row"><span>↳ To the token creator (or its fee pot)</span><strong style="color:var(--pink-dark)">0.05% + creator tax</strong></div>
+        <div class="fee-row"><span>↳ To the Sakura platform</span><strong>0.15%</strong></div>
+        <p style="font-size:13.5px">New tokens graduate to the claim stack: each swap pays 0.3% — 0.10% to LPs (claimable anytime; it does not compound in the pool), 0.05% to the creator, 0.15% to the platform — plus the creator tax (0–3%, locked at launch), which is charged on curve and pool trades alike. For Buyback &amp; Burn and Holders tokens, the creator’s share and the tax go to the token’s fee pot instead — the creator receives 0. Claim creator fees in Profile. Older pairs keep their original models: corrected pairs split 0.10% pool / 0.05% creator / 0.15% platform, fee-split pairs 0.20% pool / 0.05% creator / 0.05% platform, and the oldest pairs keep the full 0.3% in the pool.</p>
         <div class="fee-row"><span>Supply</span><strong>Fixed 1,000,000,000</strong></div>
         <div class="fee-row"><span>Network</span><strong>EVM</strong></div>
         <p style="font-size:13.5px">Built EVM-agnostic — the same contracts can deploy to Base, BNB Chain, and Ethereum.</p>
@@ -1360,7 +1361,7 @@ button.qrow{cursor:pointer}
               <button type="button" class="tax-opt" data-act="tax" data-tax="2" role="radio" aria-checked="false">2%</button>
               <button type="button" class="tax-opt" data-act="tax" data-tax="3" role="radio" aria-checked="false">3%</button>
             </div>
-            <div class="hint">Locked at launch. Earned on pool trades after graduation, on top of the 0.3% pool fee — the curve never charges it.</div>
+            <div class="hint">Locked at launch. Charged on curve and pool trades, on top of the base fees.</div>
           </div>
           <div class="field"><label for="fOpenBuy">Opening buy</label><div class="input-suffix"><input id="fOpenBuy" type="number" min="0" step="0.01" placeholder="0"/><span class="sfx" id="openBuySym">LOOP</span></div><div class="hint">Optional — your first buy, in the same transaction.</div></div>
           <div class="field"><label>Where your creator fees go</label>
@@ -1370,7 +1371,14 @@ button.qrow{cursor:pointer}
               <button type="button" class="dest-opt" data-act="dest" data-dest="holders" aria-pressed="false"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span><strong>Holders</strong><p>All creator fees go to holders, split by balance and holding time. Permanent — fees can never come back to you.</p></span></button>
             </div>
           </div>
-          <p class="eco-summary" id="ecoSummary">Launch fee 0.0005 LOOP. Graduates at 75 LOOP. Curve fee 1.25%.</p>
+          <div class="field" id="rewardField" style="display:none"><label id="rewardLabel">Reward asset</label>
+            <div class="pair-dd" id="rewardWrap">
+              <button class="pair-btn" type="button" id="rewardBtn" data-act="reward-toggle" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="rewardLabel rewardBtnText"><span id="rewardBtnIcon"></span><span id="rewardBtnText">LOOP <span style="color:var(--muted);font-weight:600">Loop</span></span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+              <div class="pair-panel" id="rewardPanel" role="listbox" aria-label="Choose the reward asset"></div>
+            </div>
+            <div class="hint">Rewards are paid in this asset. Non-LOOP assets need a live pool against LOOP.</div>
+          </div>
+          <p class="eco-summary" id="ecoSummary">Launch fee 0.0005 LOOP. Graduates at 75 LOOP. Curve fee 1% (70% creator / 30% platform).</p>
           <p class="hint" style="margin-top:8px">New tokens can't be transferred wallet-to-wallet until they graduate. This keeps the launch fair — no side pools before graduation.</p>
           <p class="hint" id="livePairNote" style="display:none;color:var(--red);font-weight:700"></p>
           <p class="hint" id="ipfsNote" style="display:none"></p>
@@ -1574,11 +1582,11 @@ button.qrow{cursor:pointer}
       <p style="margin:8px 0 6px">Every trade pays 1% — split automatically: <strong style="color:var(--ink)">70% to the creator, 30% to the protocol</strong>.</p>
       <div class="split-bar" aria-hidden="true"><i style="width:70%;background:var(--pink)"></i><i style="width:30%;background:var(--gold)"></i></div>
       <div style="display:flex;justify-content:space-between;font-weight:800;font-size:13.5px"><span style="color:var(--pink-dark)">Creators · 70%</span><span style="color:var(--gold)">Protocol · 30%</span></div>
-      <p style="margin:10px 0 0;color:var(--muted);font-weight:600;font-size:13.5px">The protocol’s 30% accrues to the Treasury. Creator tax (locked at launch) goes entirely to the creator.</p>
+      <p style="margin:10px 0 0;color:var(--muted);font-weight:600;font-size:13.5px">The protocol’s 30% accrues to the Treasury. Where the creator’s share goes follows each token’s fee destination, locked at launch: fee-wallet tokens pay it — and the creator tax — to the creator; Buyback &amp; Burn and Holders tokens send it all to the token’s fee pot, and the creator receives 0.</p>
       <div class="ana-cfg">
         <p>Launch fee · <strong id="anaCfgLaunchFee">…</strong></p>
         <p>Trading fee · <strong id="anaCfgTradingFee">…</strong> on the curve</p>
-        <p>After graduation · <strong>0.3%</strong> per swap — 0.20% pool · 0.05% creator · 0.05% platform — plus the token’s creator tax</p>
+        <p>After graduation · <strong>0.3%</strong> per swap — 0.10% LPs (claimable) · 0.05% creator · 0.15% platform — plus the token’s creator tax (new tokens)</p>
       </div>
     </div>
 
@@ -1690,8 +1698,8 @@ button.qrow{cursor:pointer}
       <div style="margin-top:11px"><button class="btn btn-primary" data-act="goto-claim" style="min-height:44px;padding:10px 18px">Claim in Profile →</button></div>
     </div>
 
-    <!-- Gen-4/Gen-5 fee panels (live tokens launched by the gen-4
-         or gen-5 factory only): the LIVE fee recipient read from
+    <!-- Gen-4/Gen-5/Gen-7 fee panels (live tokens launched by the
+         gen-4, gen-5 or gen-7 factory only): the LIVE fee recipient read from
          the curve, the token's own fee facts, and — by fee
          destination — the Holder Rewards or Buyback & Burn panel,
          read live from SakuraFeeDestinations. Legacy tokens keep
@@ -1858,7 +1866,7 @@ button.qrow{cursor:pointer}
     </nav>
     <nav class="foot-col" aria-label="Contracts">
       <h4>Contracts</h4>
-      <a href="https://explorer.mainnetloop.com/address/0x8C16a448A66030524aB1FF55e6025F94F5451c29" target="_blank" rel="noopener">Factory <span class="ext">↗</span></a>
+      <a href="https://explorer.mainnetloop.com/address/0xE4caad609dF38a248eCcF4fFD70b27f092942b26" target="_blank" rel="noopener">Factory <span class="ext">↗</span></a>
       <a href="https://explorer.mainnetloop.com/address/0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8" target="_blank" rel="noopener">Fee Vault <span class="ext">↗</span></a>
       <a href="https://explorer.mainnetloop.com/address/0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5" target="_blank" rel="noopener">Treasury <span class="ext">↗</span></a>
     </nav>
@@ -2632,6 +2640,40 @@ var PAIRS=[
 ];
 var DEST_LABELS={wallet:'Your fee wallet',buyback:'Buyback & burn',holders:'Holders'};
 var createStep=1, selPair=PAIRS[0].items[0], feeDest='wallet', creatorTax=1;
+/* ===== Reward asset (gen-7) =========================================
+   Locked at launch for Buyback & Burn / Holders tokens: the asset
+   the fee pot pays out in. LOOP is the default (the zero address
+   on-chain); the other options mirror the pair-asset registry —
+   the two test stablecoins and the 12 test xStocks, with the same
+   icons as the Paired-with selector. Only shown when the chosen
+   fee destination is Holder Rewards or Buyback & Burn. */
+var REWARD_ASSETS=[{sym:'LOOP',ticker:'LOOP',name:'Loop',color:'#D63A6E',address:null}];
+PAIRS.forEach(function(g){g.items.forEach(function(p){if(p.address)REWARD_ASSETS.push(p)})});
+var selReward=REWARD_ASSETS[0];
+function rewardVisible(){return feeDest==='buyback'||feeDest==='holders'}
+function findReward(sym){for(var i=0;i<REWARD_ASSETS.length;i++)if(REWARD_ASSETS[i].sym===sym)return REWARD_ASSETS[i];return REWARD_ASSETS[0]}
+function renderRewardPanel(){
+  var panel=document.getElementById('rewardPanel'); if(!panel)return;
+  var html='';
+  REWARD_ASSETS.forEach(function(p){
+    html+='<button type="button" class="pair-opt'+(p.sym===selReward.sym?' sel':'')+'" role="option" aria-selected="'+(p.sym===selReward.sym)+'" data-act="reward-pick" data-sym="'+p.sym+'">'+pairIcon(p)+'<span class="sym">'+p.sym+'</span><span class="nm">'+p.name+'</span><span class="check"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span></button>';
+  });
+  panel.innerHTML=html;
+}
+function toggleRewardPanel(force){
+  var panel=document.getElementById('rewardPanel'), btn=document.getElementById('rewardBtn');
+  if(!panel||!btn)return;
+  var open=typeof force==='boolean'?force:!panel.classList.contains('open');
+  panel.classList.toggle('open',open);
+  btn.classList.toggle('open',open);
+  btn.setAttribute('aria-expanded',open?'true':'false');
+}
+function pickReward(sym){
+  selReward=findReward(sym);
+  toggleRewardPanel(false);
+  syncEco();
+  toast('Rewards paid in '+selReward.sym);
+}
 /* Darken a #RRGGBB hue toward black by factor f (0..1) — used for
    the lower stop of each pair icon's gradient. */
 function shadeHex(hex,f){
@@ -2708,9 +2750,15 @@ function syncEco(){
   var txt=document.getElementById('pairBtnText'); if(txt)txt.innerHTML=selPair.sym+' <span style="color:var(--muted);font-weight:600">'+selPair.name+'</span>';
   var note=document.getElementById('pairNote'); if(note)note.textContent='Buyers pay in '+selPair.sym+' on the curve and in the pool after graduation.';
   var ob=document.getElementById('openBuySym'); if(ob)ob.textContent=selPair.sym;
-  var sum=document.getElementById('ecoSummary'); if(sum)sum.textContent=selPair.address
-    ? 'Launch fee 0.0005 LOOP (paid in LOOP). Graduates at '+selPair.grad+'. Curve fee 1.25%. Creator tax '+creatorTax+'% (pool phase only).'
-    : 'Launch fee 0.0005 LOOP. Graduates at '+selPair.grad+'. Curve fee 1.25%. Creator tax '+creatorTax+'% (pool phase only).';
+  var sum=document.getElementById('ecoSummary'); if(sum)sum.textContent=(selPair.address
+    ? 'Launch fee 0.0005 LOOP (paid in LOOP). Graduates at '+selPair.grad+'. Curve fee 1% (70% creator / 30% platform). Creator tax '+creatorTax+'% (curve + pool).'
+    : 'Launch fee 0.0005 LOOP. Graduates at '+selPair.grad+'. Curve fee 1% (70% creator / 30% platform). Creator tax '+creatorTax+'% (curve + pool).')
+    +(rewardVisible()?' Rewards in '+selReward.sym+'.':'');
+  var rf=document.getElementById('rewardField'); if(rf)rf.style.display=rewardVisible()?'block':'none';
+  if(!rewardVisible())toggleRewardPanel(false);
+  var rIcon=document.getElementById('rewardBtnIcon'); if(rIcon)rIcon.innerHTML=pairIcon(selReward);
+  var rTxt=document.getElementById('rewardBtnText'); if(rTxt)rTxt.innerHTML=selReward.sym+' <span style="color:var(--muted);font-weight:600">'+selReward.name+'</span>';
+  renderRewardPanel();
   var badge=document.getElementById('pPairBadge'); if(badge)badge.innerHTML=selPair.address
     ? 'Paired with '+pairIcon(selPair,13)+' '+selPair.sym
     : LOOP_MARK+selPair.sym+' pair';
@@ -3227,6 +3275,8 @@ function doRipple(e){
 document.addEventListener('click',function(e){
   var pw=document.getElementById('pairWrap');
   if(pw&&!pw.contains(e.target))togglePairPanel(false);
+  var rw=document.getElementById('rewardWrap');
+  if(rw&&!rw.contains(e.target)&&typeof toggleRewardPanel==='function')toggleRewardPanel(false);
   var el=closestAct(e.target);
   if(el){
     if(el.tagName==='A')e.preventDefault();
@@ -3256,6 +3306,8 @@ document.addEventListener('click',function(e){
     else if(act==='step')goStep(parseInt(el.getAttribute('data-step'),10));
     else if(act==='pair-toggle')togglePairPanel();
     else if(act==='pair-pick')pickPair(el.getAttribute('data-sym'));
+    else if(act==='reward-toggle')toggleRewardPanel();
+    else if(act==='reward-pick')pickReward(el.getAttribute('data-sym'));
     else if(act==='dest')setDest(el.getAttribute('data-dest'));
     else if(act==='tax')setTax(parseInt(el.getAttribute('data-tax'),10));
     else if(act==='tc-period')setTcPeriod(el.getAttribute('data-period'));
@@ -3445,7 +3497,7 @@ var SAKURA_WEB3_CONFIG={
   contracts:{
     /* The Sakura stack on Loop. Curve trades and claims target the
        per-token addresses; Create Token launches target
-       launchFactory (gen-5) only. The token feed is the merged
+       launchFactory (gen-7) only. The token feed is the merged
        registry of ALL factories in the factories list below. */
     factory:'0x2cE51c433b05892D1fB4777B0c948cCc926fFcA4',
     /* Multi-factory registry: gen-1 (original launches) + gen-2
@@ -3453,12 +3505,16 @@ var SAKURA_WEB3_CONFIG={
        before its first launch — zero tokens, kept in the read
        list) + gen-4 (flat 1.25% curve fee with the creator tax
        pool-only, 5-second anti-snipe with the creator exempt)
-       + gen-5 (the current launch stack: same fee/routing model
-       as gen-4, plus token transfers locked until graduation).
-       The live refresh enumerates ALL FIVE factories and merges
-       their tokens; new launches go to gen-5 only
-       (launchFactory) because the FeeVault / Treasury /
-       FeeDestinations factory pointers now name gen-5 — a
+       + gen-5 (same fee/routing model as gen-4, plus token
+       transfers locked until graduation) + gen-7 (the current
+       launch stack: flat 1% curve fee split 70% creator / 30%
+       platform, the creator tax charged on curve AND pool trades,
+       a locked reward-asset choice for Buyback/Holders tokens,
+       and graduation onto the claim pair stack below). There is
+       no gen-6 factory on-chain. The live refresh enumerates ALL
+       factories and merges their tokens; new launches go to
+       gen-7 only (launchFactory) because the FeeVault / Treasury /
+       FeeDestinations factory pointers now name gen-7 — a
        createToken on an older factory would revert at its
        launch-fee credit. */
     factories:[
@@ -3466,21 +3522,26 @@ var SAKURA_WEB3_CONFIG={
       {address:'0x17E313b8fd29c3fa3232DBc911C4AE29A781c228',generation:2},
       {address:'0x044f6104908A7bd1f6cdA3B4D9b89a6660b8c979',generation:3},
       {address:'0x5bf3c0cDEBecA2EFCE4000dA218A74A4D8b681b7',generation:4},
-      {address:'0x8C16a448A66030524aB1FF55e6025F94F5451c29',generation:5}
+      {address:'0x8C16a448A66030524aB1FF55e6025F94F5451c29',generation:5},
+      {address:'0xE4caad609dF38a248eCcF4fFD70b27f092942b26',generation:7}
     ],
-    launchFactory:'0x8C16a448A66030524aB1FF55e6025F94F5451c29',
+    launchFactory:'0xE4caad609dF38a248eCcF4fFD70b27f092942b26',
     feeVault:'0x0d4E211Aa2D99F609A92c0F5dcf305819bc910E8',
-    /* SakuraFeeDestinations on Loop — where gen-4/gen-5 creator
-       fees routed away from the fee wallet land: a holder-rewards
-       pot and a buyback pot per token, distribution rounds, and
-       the lifetime paid-to-holders / buyback-spent / burned totals.
-       Read-only here; the token detail page reads it for gen-4
-       and gen-5 tokens (Holder Rewards and Buyback & Burn panels). */
-    feeDestinations:'0xc29e38562A33DdaBfc0f70B7Db4e7B6E1f627B05',
+    /* SakuraFeeDestinations on Loop — where creator fees routed
+       away from the fee wallet land: a holder-rewards pot and a
+       buyback pot per token, distribution rounds, and the lifetime
+       paid-to-holders / buyback-spent / burned totals. Read-only
+       here. TWO deployments exist: feeDestinations is the gen-7
+       contract (read for generation-7 tokens) and
+       feeDestinationsLegacy is the previous contract (read for
+       generations 1–5). Every read routes by the token's factory
+       generation — see feeDestContractForToken. */
+    feeDestinations:'0x4ac391f23F970364F5f0353cFf43f063E00f6B7e',
+    feeDestinationsLegacy:'0xc29e38562A33DdaBfc0f70B7Db4e7B6E1f627B05',
     /* SakuraLens aggregator on Loop (deployments/loop-lens.json) —
        the site's ONLY registry read path. One getState() call
        returns the config state plus every token's full curve /
-       pair state from ALL FIVE factories, so the whole page renders
+       pair state from ALL factories, so the whole page renders
        from a single live eth_call. There is no embedded chain
        data anywhere in this page. */
     lens:'0x2cB804b3a9cefb8Ca9611630231cE18c8F9dBd6b',
@@ -3492,9 +3553,21 @@ var SAKURA_WEB3_CONFIG={
     /* SakuraLpLocker on Loop (deployments/loop.json) — holds every
        graduated pair's LP tokens forever; tagged in Holders lists. */
     lpLocker:'0xE9B13E23cb6574634b298c69e96164E0c02050e2',
-    config:'0xabe84a29f89D4804E85FD2653dbA1bD871Faf616',
+    /* SakuraConfig for the gen-7 launch stack: curve fee 100 bps
+       (1%), creator share 7000 (70%). Pair whitelist / graduation
+       thresholds are read live from this contract. */
+    config:'0x410707b0AC5A9C78F198c0f1e99cf9fc7FCE7369',
     treasury:'0x18414C88De61f6600A4Bc0Df9f4e0a3Aeb5929b5',
-    /* Sakura's Uniswap V2 forks on Loop — THREE vintages coexist.
+    /* Sakura's Uniswap V2 forks on Loop — FOUR vintages coexist.
+       v2FactoryClaim / v2RouterClaim are the CLAIM fork (the
+       gen-7 graduation target): its pairs skim the 0.3% pool fee
+       0.10 to LPs as a separately claimable balance (claimable
+       anytime; it does not compound in the pool) / 0.05 creator /
+       0.15 platform, plus the token's locked creator tax, with
+       EVERY fee settled in the pair asset. claimDex is its
+       fee-split adapter and lpClaimLocker holds its graduated
+       pairs' LP positions forever, like lpLocker does for the
+       legacy stack.
        v2FactoryCorrected / v2RouterCorrected are the CORRECTED
        fork (the gen-4 and gen-5 graduation target): its pairs skim the
        0.3% pool fee 0.10 pool / 0.05 creator / 0.15 platform,
@@ -3516,6 +3589,10 @@ var SAKURA_WEB3_CONFIG={
     v2Router:'0x6FaCB6E8056386e99AeC60e8D743FFec2E41D7Ec',
     v2FactoryLegacy:'0x01C2aBe539197Af3a4A70Dab3F6B12c170f95D6D',
     v2RouterLegacy:'0x97c5990C11f59329a004922f490D7f60f83E0ef9',
+    v2FactoryClaim:'0xb9696898Ff377D7dfCbFd9C9270972814173176b',
+    v2RouterClaim:'0xcB589238585c007e2B71ad104DA622057485b323',
+    claimDex:'0x77F971f3E9d26376b7E60b7E68D8719bEf186f4E',
+    lpClaimLocker:'0x0E7096FCa95e6C4ce6921dF7cb29B841C3d12B10',
     graduationDex:'0x5e093E31C88277ae53CF0ec5067efB499d125753',
     wloop:'0x4Fc02eBf3B31F74ccb1866CAdB98f2ABE9296eE7',
     /* TestAssetPeg on Loop — the on-chain LOOP price of every
@@ -3558,8 +3635,8 @@ var SAKURA_WEB3_CONFIG={
       'function tokensByCreatorCount(address) view returns (uint256)',
       'function curveOf(address) view returns (address)',
       'function creatorOf(address) view returns (address)',
-      'function createToken(string,string,string,address,uint256,uint8,uint256) payable returns (address,address)',
-      'event TokenCreated(address indexed creator, address indexed token, address indexed curve, address pairAsset, uint256 creatorFeeBps, uint8 feeDestination)'
+      'function createToken(string,string,string,address,uint256,uint8,uint256,address) payable returns (address,address)',
+      'event TokenCreated(address indexed creator, address indexed token, address indexed curve, address pairAsset, uint256 creatorFeeBps, uint8 feeDestination, address rewardAsset)'
     ],
     curve:[
       'function buy(uint256,uint256) payable returns (uint256)',
@@ -3680,7 +3757,9 @@ var SAKURA_WEB3_CONFIG={
 };
 var W3C=SAKURA_WEB3_CONFIG;
 /* ===== Multi-vintage V2 routing =====================================
-   Three Uniswap V2 vintages coexist on Loop: the CORRECTED fork
+   Four Uniswap V2 vintages coexist on Loop: the CLAIM fork
+   (W3C.contracts.v2FactoryClaim / v2RouterClaim — the gen-7
+   graduation target, LP fees claimable anytime), the CORRECTED fork
    (W3C.contracts.v2FactoryCorrected / v2RouterCorrected — the
    gen-4 and gen-5 graduation target, every fee settled in LOOP), the
    fee-split fork (v2Factory / v2Router) and the LEGACY plain fork
@@ -3699,11 +3778,12 @@ function generationForFactoryAddr(addr){
   var a=String(addr).toLowerCase();
   var list=(W3C.contracts.factories||[]);
   for(var i=0;i<list.length;i++){var f=list[i];var fa=(typeof f==='string'?f:(f.address||f.addr));if(fa&&String(fa).toLowerCase()===a)return (f&&typeof f==='object'&&f.generation!=null)?f.generation:null}
-  if(W3C.contracts.launchFactory&&a===String(W3C.contracts.launchFactory).toLowerCase())return 5;
+  if(W3C.contracts.launchFactory&&a===String(W3C.contracts.launchFactory).toLowerCase())return 7;
   if(a===String(W3C.contracts.factory).toLowerCase())return 1;
   return null;
 }
 function v2RouterForFactory(f){
+  if(f&&W3C.contracts.v2FactoryClaim&&String(f).toLowerCase()===String(W3C.contracts.v2FactoryClaim).toLowerCase())return W3C.contracts.v2RouterClaim;
   if(f&&W3C.contracts.v2FactoryCorrected&&String(f).toLowerCase()===String(W3C.contracts.v2FactoryCorrected).toLowerCase())return W3C.contracts.v2RouterCorrected;
   if(f&&W3C.contracts.v2FactoryLegacy&&String(f).toLowerCase()===String(W3C.contracts.v2FactoryLegacy).toLowerCase())return W3C.contracts.v2RouterLegacy;
   return W3C.contracts.v2Router;
@@ -3711,6 +3791,7 @@ function v2RouterForFactory(f){
 function v2VintageForFactory(f){
   if(!f)return null;
   var a=String(f).toLowerCase();
+  if(W3C.contracts.v2FactoryClaim&&a===String(W3C.contracts.v2FactoryClaim).toLowerCase())return 'claim';
   if(W3C.contracts.v2FactoryCorrected&&a===String(W3C.contracts.v2FactoryCorrected).toLowerCase())return 'corrected';
   if(W3C.contracts.v2FactoryLegacy&&a===String(W3C.contracts.v2FactoryLegacy).toLowerCase())return 'legacy';
   if(a===String(W3C.contracts.v2Factory).toLowerCase())return 'feesplit';
@@ -3728,10 +3809,22 @@ function v2VintageForFactory(f){
    generation — never from one global fee text. */
 function isGen4Token(t){return !!t&&(t.factoryGeneration===4||t.factoryGeneration===5)}
 function isGen5Token(t){return !!t&&t.factoryGeneration===5}
+function isGen7Token(t){return !!t&&t.factoryGeneration===7}
+/* Tokens that get the fee panels on the detail page: gen-4 and
+   gen-5 (legacy FeeDestinations) plus gen-7 (the gen-7
+   FeeDestinations, routed per token by feeDestContractForToken). */
+function isFeePanelToken(t){return isGen4Token(t)||isGen7Token(t)}
 /* Gen-5 tokens cannot move wallet-to-wallet until their curve
    has migrated (graduation unlocks transfers on-chain). */
 function isTransferLocked(t){return isGen5Token(t)&&!t.graduated&&!t.migrated}
-function taxOnCurveBps(t){return isGen4Token(t)?0:((t&&t.taxBps)||0)}
+/* The creator tax on CURVE trades: gen-4/gen-5 curves never
+   charge it (pool phase only); gen-7 curves charge it in both
+   phases; legacy generations charge it as they always have. */
+function taxOnCurveBps(t){
+  if(!t)return 0;
+  if(isGen7Token(t))return t.taxBps||0;
+  return isGen4Token(t)?0:(t.taxBps||0);
+}
 /* Display symbol for a FeeVault asset: native LOOP, WLOOP by its
    wrapped name, a Sakura token by its own symbol — never dropped. */
 function feeAssetSymbol(asset){
@@ -3742,14 +3835,19 @@ function feeAssetSymbol(asset){
   if(typeof LIVE_BY_ADDR!=='undefined'&&LIVE_BY_ADDR[a])return LIVE_BY_ADDR[a].symbol;
   return 'tokens';
 }
-function isFeeSplitToken(t){return !!t&&t.pairVintage!=='corrected'&&(t.pairVintage==='feesplit'||t.feeConfigured===true)}
+function isFeeSplitToken(t){return !!t&&t.pairVintage!=='corrected'&&t.pairVintage!=='claim'&&(t.pairVintage==='feesplit'||t.feeConfigured===true)}
 function isCorrectedToken(t){return !!t&&t.pairVintage==='corrected'}
+function isClaimToken(t){return !!t&&t.pairVintage==='claim'}
 function gradFeeLine(t){
   /* The settlement asset is the token's pair asset: LOOP for
      native pairs (the original copy, unchanged), the pair asset
      itself for ERC20 pairs — on the corrected stack every pool
      fee settles in the pair asset. */
   var sym=pairInfoForToken(t).sym;
+  if(isClaimToken(t)){
+    var taxK=(t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0;
+    return '0.3% in '+sym+' \u2014 0.10% to LPs (claimable anytime) \u00b7 0.05% creator \u00b7 0.15% platform \u2014 plus '+(taxK/100)+'% creator tax, all settled in '+sym;
+  }
   if(isCorrectedToken(t)){
     var taxC=(t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0;
     return '0.3% in '+sym+' \u2014 0.10% stays in the pool \u00b7 0.05% creator \u00b7 0.15% platform \u2014 plus '+(taxC/100)+'% creator tax, all settled in '+sym;
@@ -4017,7 +4115,7 @@ function refreshDetection(){
   return LIVE_CAPABLE;
 }
 var LEGAL_LINKS='By connecting, you agree to the <a href="#" data-act="wallet-legal" data-msg="Terms of Use coming soon">Terms of Use</a> and <a href="#" data-act="wallet-legal" data-msg="Privacy Policy coming soon">Privacy Policy</a>.';
-var readProvider=null,factoryRO=null,factoryROs=[],vaultRO=null,feeDestRO=null,configRO=null,v2FactoryRO=null,v2RouterRO=null,v2FactoryLegacyRO=null,lensRO=null,bannerRO=null,pegRO=null;
+var readProvider=null,factoryRO=null,factoryROs=[],vaultRO=null,feeDestRO=null,feeDestLegacyRO=null,configRO=null,v2FactoryRO=null,v2RouterRO=null,v2FactoryLegacyRO=null,lensRO=null,bannerRO=null,pegRO=null;
 var liveAccount=null,liveConnected=false,liveChainOk=false,liveBalanceWei=null;
 /* Short-TTL cache of the reads the continuous live loop already
    performs — native LOOP balance, the open token's balance, the
@@ -4631,6 +4729,7 @@ function setReadProvider(url){
   factoryROs=(W3C.contracts.factories&&W3C.contracts.factories.length?W3C.contracts.factories:[{address:W3C.contracts.factory,generation:1}]).map(function(f){var fa=(typeof f==='string'?f:(f.address||f.addr));var fg=(f&&typeof f==='object'&&f.generation!=null)?f.generation:generationForFactoryAddr(fa);return {addr:fa,generation:fg,c:new ethers.Contract(fa,W3C.abi.factory,readProvider)}});
   vaultRO=new ethers.Contract(W3C.contracts.feeVault,W3C.abi.feeVault,readProvider);
   feeDestRO=new ethers.Contract(W3C.contracts.feeDestinations,W3C.abi.feeDestinations,readProvider);
+  feeDestLegacyRO=new ethers.Contract(W3C.contracts.feeDestinationsLegacy,W3C.abi.feeDestinations,readProvider);
   configRO=new ethers.Contract(W3C.contracts.config,W3C.abi.config,readProvider);
   v2FactoryRO=new ethers.Contract(W3C.contracts.v2Factory,W3C.abi.v2Factory,readProvider);
   v2FactoryLegacyRO=new ethers.Contract(W3C.contracts.v2FactoryLegacy,W3C.abi.v2Factory,readProvider);
@@ -5141,7 +5240,7 @@ var BS_PROTOCOL=null;
 function bsProtocolAddrs(){
   if(BS_PROTOCOL)return BS_PROTOCOL;
   var s={}, c=W3C.contracts||{};
-  ['feeVault','feeDestinations','treasury','lpLocker','factory','launchFactory','v2Factory','v2Router','v2FactoryCorrected','v2RouterCorrected','v2FactoryLegacy','v2RouterLegacy','graduationDex','config','lens','wloop'].forEach(function(k){if(c[k])s[String(c[k]).toLowerCase()]=1});
+  ['feeVault','feeDestinations','feeDestinationsLegacy','treasury','lpLocker','lpClaimLocker','claimDex','factory','launchFactory','v2Factory','v2Router','v2FactoryCorrected','v2RouterCorrected','v2FactoryLegacy','v2RouterLegacy','v2FactoryClaim','v2RouterClaim','graduationDex','config','lens','wloop'].forEach(function(k){if(c[k])s[String(c[k]).toLowerCase()]=1});
   (c.factories||[]).forEach(function(f){var a=(typeof f==='string'?f:(f.address||f.addr));if(a)s[String(a).toLowerCase()]=1});
   s[ZERO_ADDR]=1;
   BS_PROTOCOL=s;
@@ -7211,7 +7310,9 @@ function paintLiveDetail(t){
   addExplorerLink(el('dAddrPool'),(t.graduated&&t.pairAddr)?t.pairAddr:t.curve);
   el('dLaunched').textContent=fmtDateTime(t.launchTs);
   el('dTaxRow').style.display='flex';
-  el('dStatTax').textContent=isGen4Token(t)
+  el('dStatTax').textContent=isGen7Token(t)
+    ? 'Creator tax '+(t.taxBps/100)+'% · curve + pool · locked at launch'
+    : isGen4Token(t)
     ? 'Creator tax '+(t.taxBps/100)+'% · pool phase only · locked at launch'
     : 'Creator tax '+(t.taxBps/100)+'% · locked at launch';
   el('dAbout').textContent=(meta&&meta.desc)?meta.desc:'Launched on Sakura. Price, reserves, and trades are read live from its contracts.';
@@ -7270,16 +7371,20 @@ function g4NextRoundText(c,t){
 }
 function renderGen4Panels(t){
   var wrap=el('dGen4Panels'); if(!wrap)return;
-  if(!t||detailMode!=='live'||!isGen4Token(t)){wrap.style.display='none';return}
+  if(!t||detailMode!=='live'||!isFeePanelToken(t)){wrap.style.display='none';return}
   wrap.style.display='block';
   /* Fee facts from THIS token's snapshotted Lens values: the curve
      fee and its creator/platform split are computed per token. */
   var feeBps=t.tradingFeeBps||0, shareBps=t.creatorShareBps||0;
   var creatorBps=Math.round(feeBps*shareBps/10000), platBps=feeBps-creatorBps;
   setG4('dG4CurveFee','Curve fee '+(feeBps/100)+'% — '+(creatorBps/100)+'% to the creator · '+(platBps/100)+'% to the platform.');
-  setG4('dG4TaxLine','Creator tax '+(t.taxBps/100)+'% — charged in the pool phase only, never on the curve.');
+  setG4('dG4TaxLine',isGen7Token(t)
+    ? 'Creator tax '+(t.taxBps/100)+'% — charged on curve and pool trades.'
+    : 'Creator tax '+(t.taxBps/100)+'% — charged in the pool phase only, never on the curve.');
   setG4('dG4PoolFee',t.graduated
     ? 'Pool fee: '+gradFeeLine(t)+'.'
+    : isGen7Token(t)
+    ? 'After graduation, pool swaps pay 0.3% — 0.10% to LPs (claimable anytime) · 0.05% to the creator · 0.15% to the platform — plus the '+(t.taxBps/100)+'% creator tax, every fee settled in '+pairInfoForToken(t).sym+'.'
     : 'After graduation, pool swaps pay 0.3% — 0.10% stays in the pool · 0.05% to the creator · 0.15% to the platform — plus the '+(t.taxBps/100)+'% creator tax, every fee settled in '+pairInfoForToken(t).sym+'.');
   setG4('dG4DestLine','Creator fees go to: '+(t.feeDestination===1?'Buyback & burn':(t.feeDestination===2?'Holders':'the creator’s fee wallet'))+'.');
   var c=G4_PANEL_CACHE[String(t.address).toLowerCase()];
@@ -7304,8 +7409,17 @@ function renderGen4Panels(t){
     setG4('dG4BuybackPot',c&&c.buybackPot!=null?fmtPairAmt(t,c.buybackPot)+' waiting in the buyback pot':'…');
   }
 }
+/* FeeDestinations reads route by the token's factory generation:
+   generation 7 reads the gen-7 contract (feeDestRO), every older
+   generation reads the legacy contract (feeDestLegacyRO). */
+function feeDestContractForToken(t){
+  if(!t)return feeDestLegacyRO;
+  return t.factoryGeneration===7?feeDestRO:feeDestLegacyRO;
+}
 async function loadGen4Panels(t){
-  if(!t||!isGen4Token(t)||!readProvider||!feeDestRO)return;
+  if(!t||!isFeePanelToken(t)||!readProvider)return;
+  var feeDestC=feeDestContractForToken(t);
+  if(!feeDestC)return;
   var key=String(t.address).toLowerCase();
   if(G4_PANEL_INFLIGHT[key])return;
   if(G4_PANEL_AT[key]&&Date.now()-G4_PANEL_AT[key]<30000){renderGen4Panels(t);return}
@@ -7319,16 +7433,16 @@ async function loadGen4Panels(t){
     var rec=await rd(curveContract(t.curve).feeRecipient());
     if(rec)c.feeRecipient=rec; else c.feeRecipientFailed=true;
     if(t.feeDestination===2){
-      var hp=await rd(feeDestRO.holdersPot(t.address,asset)); if(hp!=null)c.holdersPot=hp;
-      var tp=await rd(feeDestRO.totalPaidToHolders(t.address,asset)); if(tp!=null)c.totalPaid=tp;
-      var lr=await rd(feeDestRO.lastRoundStartedAt(t.address,asset)); if(lr!=null)c.lastRound=Number(lr);
-      var iv=await rd(feeDestRO.minRoundInterval()); if(iv!=null)c.interval=Number(iv);
-      var mp=await rd(feeDestRO.minHoldersPot()); if(mp!=null)c.minPot=mp;
+      var hp=await rd(feeDestC.holdersPot(t.address,asset)); if(hp!=null)c.holdersPot=hp;
+      var tp=await rd(feeDestC.totalPaidToHolders(t.address,asset)); if(tp!=null)c.totalPaid=tp;
+      var lr=await rd(feeDestC.lastRoundStartedAt(t.address,asset)); if(lr!=null)c.lastRound=Number(lr);
+      var iv=await rd(feeDestC.minRoundInterval()); if(iv!=null)c.interval=Number(iv);
+      var mp=await rd(feeDestC.minHoldersPot()); if(mp!=null)c.minPot=mp;
     }
     if(t.feeDestination===1){
-      var bpot=await rd(feeDestRO.buybackPot(t.address,asset)); if(bpot!=null)c.buybackPot=bpot;
-      var sp=await rd(feeDestRO.totalBuybackSpent(t.address,asset)); if(sp!=null)c.spent=sp;
-      var tb=await rd(feeDestRO.totalBurned(t.address));
+      var bpot=await rd(feeDestC.buybackPot(t.address,asset)); if(bpot!=null)c.buybackPot=bpot;
+      var sp=await rd(feeDestC.totalBuybackSpent(t.address,asset)); if(sp!=null)c.spent=sp;
+      var tb=await rd(feeDestC.totalBurned(t.address));
       var dead=await rd(tokenContract(t.address).balanceOf(DEAD_ADDR));
       /* Burned = what actually sits at the dead address; the
          contract's lifetime totalBurned counter is the fallback. */
@@ -7472,7 +7586,9 @@ function paintLiveTradePanel(){
   syncSlipUI();
   var note=el('tradeNote');
   if(note)note.textContent=grad
-    ? (isCorrectedToken(t)
+    ? (isClaimToken(t)
+      ? 'Graduated \u2014 trading on its Uniswap V2 pool. Each swap pays 0.3% in total: 0.10% to LPs (claimable anytime), 0.05% to the creator, 0.15% to the platform \u2014 plus a '+(((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0)/100)+'% creator tax. Every fee is settled in '+tpInfo.sym+'. LP fees are claimable anytime \u2014 they do not compound in the pool. LP locked permanently.'
+      : isCorrectedToken(t)
       ? 'Graduated \u2014 trading on its Uniswap V2 pool. Each swap pays 0.3% in total: 0.10% stays in the pool, 0.05% to the creator, 0.15% to the platform \u2014 plus a '+(((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0)/100)+'% creator tax to the creator. Every fee is settled in '+tpInfo.sym+' in both directions \u2014 on sells, the fees come out of your '+tpInfo.sym+' proceeds. LP locked permanently.'
       : isFeeSplitToken(t)
       ? 'Graduated \u2014 trading on its Uniswap V2 pool. Each swap pays 0.3%: 0.20% stays in the pool, 0.05% to the creator, 0.05% to the platform \u2014 plus a '+(((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0)/100)+'% creator tax to the creator. LP locked permanently.'
@@ -7539,7 +7655,7 @@ function liveCalc(){
        signing time; this is the honest preview of it. */
     try{
       if(!t.pairRes){el('tradeReceive').textContent='—';el('tradeFee').textContent=gradFeeLine(t);return}
-      var corr=isCorrectedToken(t);
+      var corr=isCorrectedToken(t)||isClaimToken(t);
       var taxBps=corr?((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0):((isFeeSplitToken(t)&&t.pairFeeTaxBps)?t.pairFeeTaxBps:0);
       if(side==='buy'){
         var estT=0n;
@@ -7858,7 +7974,7 @@ async function doLiveTrade(){
              Lens read — and say so in the panel. */
           if(!t.pairRes)throw new Error('the V2 pair for this token could not be resolved');
           var inB=weiIn2;
-          if(isCorrectedToken(t)){
+          if(isCorrectedToken(t)||isClaimToken(t)){
             var taxB=(t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0;
             var inEffB=inB*BigInt(10000-20-taxB)/10000n;
             var inFeeBC=inEffB*999n;
@@ -7912,7 +8028,7 @@ async function doLiveTrade(){
         if(quotedSell==null){
           if(!t.pairRes)throw new Error('the V2 pair for this token could not be resolved');
           var inS=amtWei2;
-          if(isCorrectedToken(t)){
+          if(isCorrectedToken(t)||isClaimToken(t)){
             var taxS=(t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0;
             var inFeeSC=inS*999n;
             var grossS=inFeeSC*t.pairRes.loop/(t.pairRes.token*1000n+inFeeSC);
@@ -8743,12 +8859,17 @@ async function liveCreate(){
     var bp=new ethers.BrowserProvider(walletProvider());
     var metadataURI=JSON.stringify({name:name,symbol:ticker,description:desc});
     var destIdx=feeDest==='buyback'?1:(feeDest==='holders'?2:0);
+    /* Gen-7 createToken's 8th argument: the locked reward asset
+       for Buyback & Burn / Holders launches — the wizard's Reward
+       asset selection, or the zero address (LOOP) for the default
+       and for fee-wallet launches, whose selector stays hidden. */
+    var rewardAddr=(feeDest!=='wallet'&&typeof selReward!=='undefined'&&selReward&&selReward.address)?selReward.address:ZERO_ADDR;
     var signer=await bp.getSigner();
-    /* Writes target the gen-5 launch factory ONLY
+    /* Writes target the gen-7 launch factory ONLY
        (W3C.contracts.launchFactory). The FeeVault / Treasury /
-       FeeDestinations factory pointers now name gen-5, so a
+       FeeDestinations factory pointers now name gen-7, so a
        createToken on an older factory reverts at its launch-fee
-       credit. All three fee destinations are live for gen-5
+       credit. All three fee destinations are live for gen-7
        launches: 0 = fee wallet, 1 = Buyback & burn, 2 = Holders. */
     var factory=new ethers.Contract(W3C.contracts.launchFactory,W3C.abi.factory,signer);
     var tx;
@@ -8789,7 +8910,7 @@ async function liveCreate(){
     }
     if(btn){btn.disabled=true;btn.textContent='Confirm in your wallet…'}
     armWalletHint('launch','launchWalletHint');
-    tx=await factory.createToken(name,ticker,metadataURI,ZERO_ADDR,BigInt(creatorTax*100),destIdx,openBuyWei,{value:launchValueWei(false,launchFee,openBuyWei)});
+    tx=await factory.createToken(name,ticker,metadataURI,ZERO_ADDR,BigInt(creatorTax*100),destIdx,openBuyWei,rewardAddr,{value:launchValueWei(false,launchFee,openBuyWei)});
     }else{
     /* ===== ERC20 pair launch =====================================
        The launch fee is always paid in LOOP: msg.value is the
@@ -8854,7 +8975,7 @@ async function liveCreate(){
     }
     if(btn){btn.disabled=true;btn.textContent='Confirm in your wallet…'}
     armWalletHint('launch','launchWalletHint');
-    tx=await factory.createToken(name,ticker,metadataURI,selPair.address,BigInt(creatorTax*100),destIdx,openBuyPair,{value:launchValueWei(true,launchFee,openBuyPair)});
+    tx=await factory.createToken(name,ticker,metadataURI,selPair.address,BigInt(creatorTax*100),destIdx,openBuyPair,rewardAddr,{value:launchValueWei(true,launchFee,openBuyPair)});
     }
     clearWalletHint('launch','launchWalletHint');
     toastTx('Transaction pending…',tx.hash);
