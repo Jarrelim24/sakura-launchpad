@@ -282,7 +282,9 @@ button,a,[data-act],select,input,textarea,label{touch-action:manipulation}
 .trades td{padding:8px 6px;border-top:1px solid var(--line);font-weight:600}
 .trade-tx{font-size:11px;font-weight:700;color:var(--faint);text-decoration:none;white-space:nowrap}
 .trade-tx:hover{color:var(--pink);text-decoration:underline}
-.fee-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line);font-weight:600;font-size:14.5px}
+.fee-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-weight:600;font-size:14.5px}
+.fee-row>*:first-child{flex:1 1 auto;min-width:0}
+.fee-row>*:last-child{flex:0 1 auto;min-width:0;text-align:right}
 .fee-token-row{display:flex;align-items:center;gap:13px;padding:15px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .fee-token-row:last-child{border-bottom:0}
 button:disabled{cursor:not-allowed}
@@ -667,7 +669,8 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .seg2 button{border:0;background:transparent;border-radius:999px;padding:7px 13px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;min-height:34px;transition:.15s}
 .seg2 button.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 7px rgba(25,18,24,.12);font-weight:800}
 .chart-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 6px 4px;margin-top:12px}
-.d-grid{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;margin-top:18px}
+.d-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start;margin-top:18px}
+.d-grid>*{min-width:0}
 .d-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
 .d-stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
 .d-stat small{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;display:block}
@@ -691,7 +694,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .trader-cell .cav{width:21px;height:21px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:#fff;flex:none}
 .sticky-trade{display:none}
 @media(max-width:900px){
-  .d-grid{grid-template-columns:1fr}
+  .d-grid{grid-template-columns:minmax(0,1fr)}
   .d-stats{grid-template-columns:1fr 1fr}
   .d-mcap{text-align:left}
   body.in-detail .bottomnav{display:none}
@@ -748,6 +751,14 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 .chart-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-weight:700;padding:24px;font-size:14px;line-height:1.55}
 .d-grid{margin-top:0}
 .d-grid .panel{margin-top:14px}
+/* Detail overflow hardening: nothing inside the trade panel (or a
+   long unbroken token name in the header) may force the detail view
+   wider than the viewport — rows wrap, groups wrap, tracks shrink. */
+#tradePanel{min-width:0;max-width:100%}
+#tradePanel .slip-group{flex-wrap:wrap;justify-content:flex-end}
+.quick>*{min-width:0}
+#tradeBtn{max-width:100%}
+.d-name>span:first-child{min-width:0;overflow-wrap:anywhere}
 .tabs-panel .d-tabs{margin-top:0}
 .th-head{display:flex;align-items:center;gap:10px;margin:16px 0 0}
 .th-head h4{font-size:16.5px;margin:0}
@@ -1186,7 +1197,7 @@ button.qrow{cursor:pointer}
 .bcard-bot .bcard-spark{margin-left:auto;flex:none}
 .bcard-quiet{color:var(--faint);font-weight:600;font-size:13px}
 /* Detail: internally scrolling Trades / Holders panels + compact rows */
-.panel-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.panel-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;max-width:100%}
 .panel-scroll::-webkit-scrollbar{width:6px}
 .panel-scroll::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px}
 .trades-scroll{max-height:440px;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -4395,7 +4406,8 @@ var IPFS_DISCOVERY={
   '0x0135d8e27496f7a220ec509a02895be94b3c41f1':'bafkreid4qjal3k5yqrzay5dxhsnntctqv7arvfuesnwuk2cczhmta77z5y',
   '0x7d4de6b03aa3cf105a369a529794d536aef8a5e0':'bafkreicitirhxvlcvtgssknoxtaozvxxtfmzc5sjt2kz3lpzjbpkwzimte',
   '0x8a758b0c238428ae4dd83ec0809d6e3d9d74ad92':'bafkreiassebl2qv3c3oqdlbchu4feu5z7ecocjyd6wrvehwdzoe7ob2k5y',
-  '0x7b0ac22018e9f148e099203020c07d17cd80bcbd':'QmdqTg4isftKbtHfXCmYBkHiQU2D65xvbezc6SGrFaTc6R'
+  '0x7b0ac22018e9f148e099203020c07d17cd80bcbd':'QmdqTg4isftKbtHfXCmYBkHiQU2D65xvbezc6SGrFaTc6R',
+  '0x9536f633c6d257fbb0a379586aec787b685b5d8b':'QmXWuvGX5XmFX9Sk2ewju1hybbgweDiS3vxCYdgtcFWt7h'
 };
 function ipfsPinName(addr){return 'sakura-token-'+String(addr||'').toLowerCase()}
 function ipfsGatewayUrl(cid){return W3C.ipfs.gateway+cid}
