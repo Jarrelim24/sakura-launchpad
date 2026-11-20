@@ -451,8 +451,40 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
 /* ===== Analytics (rebuilt): headline tiles, skeletons, chart ===== */
 .ana-head-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 @media(max-width:900px){.ana-head-grid{grid-template-columns:repeat(2,1fr)}}
-.ana-skel{display:inline-block;width:84px;max-width:72%;height:19px;border-radius:6px;background:var(--surface2);vertical-align:-3px;animation:anaPulse 1.5s ease-in-out infinite}
+.ana-skel{display:inline-block;width:84px;max-width:72%;height:19px;border-radius:6px;background:linear-gradient(100deg,var(--surface2) 40%,var(--line) 50%,var(--surface2) 60%);background-size:200% 100%;vertical-align:-3px;animation:anaShimmer 1.2s linear infinite}
+@keyframes anaShimmer{from{background-position:180% 0}to{background-position:-20% 0}}
 @keyframes anaPulse{0%,100%{opacity:.45}50%{opacity:1}}
+.ana-head-grid .stat-card{min-height:106px}
+.ana-head-grid .stat-card strong{font-size:24px;font-variant-numeric:tabular-nums}
+.ana-head-grid .stat-card small{display:flex;align-items:center;gap:2px}
+.ana-live{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--muted);vertical-align:middle;margin-left:10px}
+.ana-live .livedot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:none;animation:tcpulse 1.8s ease infinite}
+.ana-live.off .livedot{background:var(--faint);animation:none}
+.ana-help{position:relative;width:30px;height:30px;margin:-7px -5px -7px 0;border:0;background:none;color:var(--faint);font-size:11px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ana-help::after{content:"";position:absolute;inset:-7px}
+.ana-help span{width:16px;height:16px;border:1.5px solid var(--line2);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1}
+.ana-help:hover{color:var(--pink-dark)}
+#anaTip{position:fixed;z-index:220;max-width:min(300px,86vw);background:var(--ink);color:var(--bg);font-size:13px;font-weight:600;line-height:1.45;padding:10px 13px;border-radius:11px;box-shadow:var(--shadow-lg);opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s;pointer-events:none}
+#anaTip.show{opacity:1;transform:none}
+.ana-seg{display:flex;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
+.ana-seg button{border:0;background:transparent;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;color:var(--muted);cursor:pointer;min-height:44px;transition:background .2s,color .2s,transform .12s}
+.ana-seg button:hover{color:var(--ink)}
+.ana-seg button.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(25,18,24,.12)}
+.ana-seg button:active{transform:scale(.985)}
+.ana-chart-ctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#anaChart{position:relative;touch-action:pan-y}
+#anaChartTip{position:absolute;z-index:5;background:var(--ink);color:var(--bg);font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:9px;pointer-events:none;white-space:nowrap;transform:translate(-50%,-130%);display:none;font-variant-numeric:tabular-nums}
+#view-analytics .kv small{display:flex;align-items:center;flex-wrap:wrap;row-gap:0}
+#view-analytics .kv small .ana-help{margin:-7px -10px -7px -4px}
+.ana-up{color:var(--green)!important}
+.ana-down{color:var(--red)!important}
+#view-analytics .tc-tabs button{min-height:44px}
+#view-analytics .tc-tabs button:active{transform:scale(.985)}
+#view-analytics tbody tr.tc-row:active{opacity:.9}
+.ana-err{text-align:center;padding:38px 18px}
+.ana-err h3{font-size:19px;margin:0 0 8px}
+.ana-err p{color:var(--muted);font-weight:600;max-width:46ch;margin:0 auto 18px;font-size:14px}
+@media(prefers-reduced-motion: reduce){.ana-skel{animation:none}.ana-live .livedot{animation:none}#anaTip{transition:none}}
 .ana-sub{display:block;color:var(--faint);font-size:12px;font-weight:600;margin-top:3px}
 .ana-cfg{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
 .ana-cfg p{margin:4px 0;color:var(--muted);font-weight:600;font-size:13.5px}
@@ -813,6 +845,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:42px 0 36px;colo
   .bottomnav button svg{width:20px;height:20px}
   .bottomnav button.active{background:var(--pink-pale);color:var(--pink-dark)}
   body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  html{scroll-padding-bottom:calc(110px + env(safe-area-inset-bottom))}
   .toast{bottom:94px}
   .next-pages{grid-template-columns:1fr}
   .foot-cols{grid-template-columns:1fr 1fr;gap:24px}
@@ -1351,6 +1384,7 @@ button.qrow{cursor:pointer}
         <div class="fee-row"><span>↳ To the token creator (or its fee pot)</span><strong style="color:var(--pink-dark)">0.05% + creator tax</strong></div>
         <div class="fee-row"><span>↳ To the Sakura platform</span><strong>0.15%</strong></div>
         <p style="font-size:13.5px">New tokens graduate to the claim stack: each swap pays 0.3% — 0.10% to LPs (claimable anytime; it does not compound in the pool), 0.05% to the creator, 0.15% to the platform — plus the creator tax (0–3%, locked at launch), which is charged on curve and pool trades alike. For Buyback &amp; Burn and Holders tokens, the creator’s share and the tax go to the token’s fee pot instead — the creator receives 0. Claim creator fees in Profile. Older pairs keep their original models: corrected pairs split 0.10% pool / 0.05% creator / 0.15% platform, fee-split pairs 0.20% pool / 0.05% creator / 0.05% platform, and the oldest pairs keep the full 0.3% in the pool.</p>
+        <p style="font-size:13.5px">Where the fees go: the protocol’s 30% accrues to the Treasury. The creator’s share follows each token’s fee destination, locked at launch — fee-wallet tokens pay it, and the creator tax, to the creator; Buyback &amp; Burn and Holders tokens send it all to the token’s fee pot, and the creator receives 0.</p>
         <div class="fee-row"><span>Supply</span><strong>Fixed 1,000,000,000</strong></div>
         <div class="fee-row"><span>Network</span><strong>EVM</strong></div>
         <p style="font-size:13.5px">Built EVM-agnostic — the same contracts can deploy to Base, BNB Chain, and Ethereum.</p>
@@ -1614,38 +1648,49 @@ button.qrow{cursor:pointer}
   <div class="view" id="view-analytics">
   <div class="wrap view-top"><button class="btn btn-ghost" data-act="view" data-view="jelajahi">← Back to Launches</button></div>
   <section class="section"><div class="wrap">
-    <div class="sec-head" style="display:block"><h2 style="font-size:30px">Analytics</h2><p>Volume, traders, launches, and fees — all of it, live.</p></div>
+    <div class="sec-head" style="display:block"><h2 style="font-size:30px">Analytics<span class="ana-live" id="anaLive"><span class="livedot" aria-hidden="true"></span><span id="anaLiveText">Live on Loop</span></span></h2></div>
 
-    <div class="ana-head-grid" role="group" aria-label="Platform totals, all time, read live from Loop">
-      <div class="stat-card"><small>Total Volume</small><strong id="anaVolume"><span class="ana-skel"></span></strong><span id="anaVolumeSub">All time</span></div>
-      <div class="stat-card"><small>Tokens Launched</small><strong id="anaLaunches"><span class="ana-skel"></span></strong><span>All time</span></div>
-      <div class="stat-card"><small>Graduations</small><strong id="anaGraduations"><span class="ana-skel"></span></strong><span id="anaGradRate">All time</span></div>
-      <div class="stat-card"><small>Unique Traders</small><strong id="anaTraders"><span class="ana-skel"></span></strong><span id="anaTradersSub">All time</span></div>
+    <div class="panel ana-err" id="anaError" style="display:none;margin-bottom:16px">
+      <h3>Can’t reach Loop right now</h3>
+      <p>Live data is unavailable, so nothing is shown instead of stale numbers.</p>
+      <button type="button" class="btn btn-primary" data-act="ana-retry" style="min-height:48px;padding:12px 26px">Try again</button>
+    </div>
+
+    <div class="ana-head-grid" role="group" aria-label="Platform totals, read live from Loop">
+      <div class="stat-card"><small>Launches</small><strong id="anaLaunches"><span class="ana-skel"></span></strong><span id="anaLaunchesSub">All time</span></div>
+      <div class="stat-card"><small>Graduated <button type="button" class="ana-help" data-act="ana-tip" data-tip="graduated" aria-label="What Graduated means"><span aria-hidden="true">?</span></button></small><strong id="anaGraduations"><span class="ana-skel"></span></strong><span id="anaGradRate">of all launches</span></div>
+      <div class="stat-card"><small>Volume 24h <button type="button" class="ana-help" data-act="ana-tip" data-tip="volume24h" aria-label="What Volume 24h means"><span aria-hidden="true">?</span></button></small><strong id="anaVolume"><span class="ana-skel"></span></strong><span id="anaVolumeSub">Last 24 hours</span></div>
+      <div class="stat-card"><small>Traders 24h <button type="button" class="ana-help" data-act="ana-tip" data-tip="traders24h" aria-label="What Traders 24h means"><span aria-hidden="true">?</span></button></small><strong id="anaTraders"><span class="ana-skel"></span></strong><span id="anaTradersSub">0 all time</span></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:16px">
+      <div class="tc-head">
+        <h3 id="anaChartTitle">Volume</h3>
+        <span class="ana-count" id="anaChartPeak"></span>
+      </div>
+      <div class="ana-chart-ctrls" style="margin-bottom:10px">
+        <div class="ana-seg" role="tablist" aria-label="Chart time range">
+          <button type="button" data-act="ana-range" data-range="7d" role="tab" aria-selected="true" class="active">7D</button>
+          <button type="button" data-act="ana-range" data-range="30d" role="tab" aria-selected="false">30D</button>
+          <button type="button" data-act="ana-range" data-range="all" role="tab" aria-selected="false">All</button>
+        </div>
+        <div class="ana-seg" role="tablist" aria-label="Chart metric">
+          <button type="button" data-act="ana-metric" data-metric="vol" role="tab" aria-selected="true" class="active">Volume</button>
+          <button type="button" data-act="ana-metric" data-metric="launches" role="tab" aria-selected="false">Launches</button>
+        </div>
+      </div>
+      <div class="ana-chart" id="anaChart"><div id="anaChartTip" role="status"></div><div class="ana-chart-skel" aria-hidden="true"><i style="height:34%"></i><i style="height:52%"></i><i style="height:44%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:80%"></i><i style="height:62%"></i><i style="height:92%"></i><i style="height:70%"></i><i style="height:84%"></i><i style="height:56%"></i><i style="height:74%"></i><i style="height:48%"></i><i style="height:88%"></i><i style="height:64%"></i></div></div>
     </div>
 
     <div class="panel" style="margin-bottom:16px">
       <h3>Fees &amp; Revenue</h3>
       <div class="kv" style="margin:10px 0 4px">
-        <div><small>Protocol Revenue</small><strong id="anaProtoRev"><span class="ana-skel"></span></strong><span class="ana-sub" id="anaProtoRevSub">Incl. banner sales</span></div>
-        <div><small>Creator Fees Accrued</small><strong id="anaFeesCreators"><span class="ana-skel"></span></strong><span class="ana-sub" id="anaFeesCreatorsSub">Across all tokens</span></div>
+        <div><small>Protocol Revenue <button type="button" class="ana-help" data-act="ana-tip" data-tip="protocol" aria-label="What Protocol means"><span aria-hidden="true">?</span></button></small><strong id="anaProtoRev"><span class="ana-skel"></span></strong><span class="ana-sub" id="anaProtoRevSub">Incl. banner sales</span></div>
+        <div><small>Creator Fees Accrued <button type="button" class="ana-help" data-act="ana-tip" data-tip="creatorfees" aria-label="What Creator fees means"><span aria-hidden="true">?</span></button></small><strong id="anaFeesCreators"><span class="ana-skel"></span></strong><span class="ana-sub" id="anaFeesCreatorsSub">Across all tokens</span></div>
       </div>
-      <p style="margin:8px 0 6px">Every trade pays 1% — split automatically: <strong style="color:var(--ink)">70% to the creator, 30% to the protocol</strong>.</p>
-      <div class="split-bar" aria-hidden="true"><i style="width:70%;background:var(--pink)"></i><i style="width:30%;background:var(--gold)"></i></div>
-      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:13.5px"><span style="color:var(--pink-dark)">Creators · 70%</span><span style="color:var(--gold)">Protocol · 30%</span></div>
-      <p style="margin:10px 0 0;color:var(--muted);font-weight:600;font-size:13.5px">The protocol’s 30% accrues to the Treasury. Where the creator’s share goes follows each token’s fee destination, locked at launch: fee-wallet tokens pay it — and the creator tax — to the creator; Buyback &amp; Burn and Holders tokens send it all to the token’s fee pot, and the creator receives 0.</p>
-      <div class="ana-cfg">
-        <p>Launch fee · <strong id="anaCfgLaunchFee">…</strong></p>
-        <p>Trading fee · <strong id="anaCfgTradingFee">…</strong> on the curve</p>
-        <p>After graduation · <strong>0.3%</strong> per swap — 0.10% LPs (claimable) · 0.05% creator · 0.15% platform — plus the token’s creator tax (new tokens)</p>
-      </div>
-    </div>
-
-    <div class="panel" style="margin-bottom:16px">
-      <div class="tc-head">
-        <h3>Daily Volume</h3>
-        <span class="ana-count" id="anaChartNote">Last 30 days</span>
-      </div>
-      <div class="ana-chart" id="anaChart"><div class="ana-chart-skel" aria-hidden="true"><i style="height:34%"></i><i style="height:52%"></i><i style="height:44%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:80%"></i><i style="height:62%"></i><i style="height:92%"></i><i style="height:70%"></i><i style="height:84%"></i><i style="height:56%"></i><i style="height:74%"></i><i style="height:48%"></i><i style="height:88%"></i><i style="height:64%"></i></div></div>
+      <div class="split-bar" aria-hidden="true"><i id="anaSplitCreator" style="width:70%;background:var(--pink)"></i><i id="anaSplitProtocol" style="width:30%;background:var(--gold)"></i></div>
+      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:13.5px"><span style="color:var(--pink-dark)" id="anaSplitCreatorLabel">Creators · 70%</span><span style="color:var(--gold)" id="anaSplitProtocolLabel">Protocol · 30%</span></div>
+      <p style="margin:10px 0 0;color:var(--muted);font-weight:600;font-size:13.5px" id="anaFeeSummary">Curve fee 1% · 70% creators / 30% protocol — pool fee 0.3% + creator tax after graduation.</p>
     </div>
 
     <div class="panel">
@@ -1658,9 +1703,9 @@ button.qrow{cursor:pointer}
         </div>
       </div>
       <p class="tc-sub" id="anaTopSub">Loading live data from Loop…</p>
-      <div class="trades-wrap"><table class="ana-table" id="topCoinsTable"><thead><tr><th>#</th><th>Coin</th><th class="num">Price</th><th class="num">Market Cap</th><th class="num sorted" id="thVol"><button class="th-sort" data-act="tc-sort" data-key="vol" aria-label="Sort Top Coins by volume">Volume <span class="th-arrow" id="arrowVol">▼</span></button></th><th class="num" id="thTrades"><button class="th-sort" data-act="tc-sort" data-key="trades" aria-label="Sort Top Coins by number of trades">Trades <span class="th-arrow" id="arrowTrades"></span></button></th><th>Status</th></tr></thead><tbody id="topCoinsBody"></tbody></table></div>
+      <div class="trades-wrap"><table class="ana-table" id="topCoinsTable"><thead><tr><th>#</th><th>Coin</th><th class="num">Price</th><th class="num">Market Cap <button type="button" class="ana-help" data-act="ana-tip" data-tip="mcap" aria-label="What Market cap means"><span aria-hidden="true">?</span></button></th><th class="num sorted" id="thVol"><button class="th-sort" data-act="tc-sort" data-key="vol" aria-label="Sort Top Coins by volume">Volume <span class="th-arrow" id="arrowVol">▼</span></button></th><th class="num" id="thTrades"><button class="th-sort" data-act="tc-sort" data-key="trades" aria-label="Sort Top Coins by number of trades">Trades <span class="th-arrow" id="arrowTrades"></span></button></th><th>Status</th></tr></thead><tbody id="topCoinsBody"></tbody></table></div>
     </div>
-    <p class="updated-note" id="anaDataNote">Loading live data from Loop…</p>
+    <p class="updated-note" id="anaDataNote">Live · Read from Loop on-chain data</p>
   </div></section>
   </div><!-- /view-analytics -->
 
@@ -3421,6 +3466,10 @@ document.addEventListener('click',function(e){
     else if(act==='tc-period')setTcPeriod(el.getAttribute('data-period'));
     else if(act==='tc-sort')setTcSort(el.getAttribute('data-key'));
     else if(act==='ana-tab')setAnaTab(el.getAttribute('data-win'));
+    else if(act==='ana-range')setAnaRange(el.getAttribute('data-range'));
+    else if(act==='ana-metric')setAnaMetric(el.getAttribute('data-metric'));
+    else if(act==='ana-tip')toggleAnaTip(el);
+    else if(act==='ana-retry'){if(typeof loadLiveTokens==='function')loadLiveTokens();if(typeof anaOnView==='function')anaOnView()}
     else if(act==='tc-open')openTopCoin(el.getAttribute('data-ticker'));
     else if(act==='fav')toggleFav();
     else if(act==='chart-type')setChartType(el.getAttribute('data-ctype'));
@@ -3519,6 +3568,35 @@ function goToView(name,anchor){
 function setTcPeriod(p){/* period tabs removed — on-chain figures are all-time */}
 function setTcSort(key){if(typeof liveTcSort==='function')liveTcSort(key)}
 function setAnaTab(w){if(typeof liveAnaTab==='function')liveAnaTab(w)}
+function setAnaRange(r){if(typeof liveAnaRange==='function')liveAnaRange(r)}
+function setAnaMetric(m){if(typeof liveAnaMetric==='function')liveAnaMetric(m)}
+/* Analytics tooltips (blueprint 5.2): one sentence, tap to show,
+   tap again or tap elsewhere to hide. */
+var ANA_TIPS={
+  graduated:'A token graduates when its curve fills and trading moves to a liquidity pool.',
+  volume24h:'Total value traded in the last 24 hours, across all pair assets, in USD.',
+  traders24h:'Unique wallets that bought or sold in the last 24 hours.',
+  creatorfees:'The creator\u2019s share of trading fees, paid in each token\u2019s pair asset.',
+  protocol:'The protocol\u2019s share of trading fees, held by the Treasury.',
+  mcap:'Current price multiplied by the token\u2019s total supply.'
+};
+var anaTipBtn=null;
+function closeAnaTip(){var t=document.getElementById('anaTip');if(t)t.classList.remove('show');anaTipBtn=null}
+function toggleAnaTip(btn){
+  var key=btn.getAttribute('data-tip');
+  if(anaTipBtn===btn){closeAnaTip();return}
+  var t=document.getElementById('anaTip');
+  if(!t){t=document.createElement('div');t.id='anaTip';t.setAttribute('role','tooltip');document.body.appendChild(t)}
+  t.textContent=ANA_TIPS[key]||'';
+  var r=btn.getBoundingClientRect();
+  t.style.left='0px';t.style.top='0px';t.classList.add('show');
+  var tw=t.offsetWidth;
+  var x=Math.min(Math.max(8,r.left+r.width/2-tw/2),window.innerWidth-tw-8);
+  t.style.left=x+'px';t.style.top=(r.bottom+8)+'px';
+  anaTipBtn=btn;
+}
+document.addEventListener('click',function(e){if(anaTipBtn&&!e.target.closest('.ana-help'))closeAnaTip()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAnaTip()});
 function openTopCoin(ticker){/* rows now open through the live-token action */}
 
 renderFeatured();
@@ -6844,8 +6922,55 @@ var ANA_DONE={};
 var ANA_TREASURY_WEI=null, anaTreasuryAt=0, anaTreasuryBusy=false;
 var anaVaultAt=0, anaVaultBusy=false;
 var ANA_WIN={'24h':86400,'7d':604800,'all':Infinity};
-function liveTcSort(key){tcSortLive=key;renderLiveAnalytics()}
-function liveAnaTab(w){if(Object.prototype.hasOwnProperty.call(ANA_WIN,w)){anaTab=w;renderLiveAnalytics()}}
+function liveTcSort(key){tcSortLive=key;anaFadeNext=true;renderLiveAnalytics()}
+function liveAnaTab(w){if(Object.prototype.hasOwnProperty.call(ANA_WIN,w)){anaTab=w;anaFadeNext=true;renderLiveAnalytics()}}
+/* ----- Fase 1: chart controls, formatters, count-up ----------------
+   anaRange/anaMetric drive the area chart (blueprint 4.4). Numbers
+   follow blueprint 6.3 exactly: en-US, subscript tiny prices, USD
+   >= $10,000 without decimals, < $1 to the third significant digit. */
+var anaRange='7d', anaMetric='vol', anaFadeNext=false;
+var ANA_RM=false; try{ANA_RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+function liveAnaRange(r){if(r==='7d'||r==='30d'||r==='all'){anaRange=r;anaChartAnimate();renderLiveAnalytics()}}
+function liveAnaMetric(m){if(m==='vol'||m==='launches'){anaMetric=m;anaChartAnimate();renderLiveAnalytics()}}
+function anaFmtUsd(v){
+  if(v==null||isNaN(v))return '\u2026';
+  if(!(v>0))return '$0.00';
+  if(v>=10000)return '$'+Math.round(v).toLocaleString('en-US');
+  if(v>=1)return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if(v>=0.01)return '$'+trimNumStr(Number(v.toPrecision(3)).toFixed(4));
+  var exp=Number(v.toExponential(2).split('e')[1]);
+  if(-exp-1>=4)return fmtTinyPrice(v,'$');
+  return '$'+trimNumStr(Number(v.toPrecision(3)).toFixed(6));
+}
+function anaFmtPriceText(txt,mcapLoopN){
+  /* Top Coins price/mcap cells: reformat the FEED display strings
+     through the blueprint formatter whenever they are plain USD
+     figures, so tiny prices use the subscript form and no locale
+     mix (e.g. $0,0.276) can ever reach the page. */
+  var s=String(txt||'');
+  if(s.charAt(0)!=='$')return s;
+  var n=parseFloat(s.replace(/[^0-9.]/g,''));
+  if(isNaN(n))return s;
+  if(/K|M|B/.test(s)&&mcapLoopN!=null&&LOOP_USD)return anaFmtUsd(mcapLoopN*LOOP_USD);
+  return anaFmtUsd(n);
+}
+/* KPI count-up/down: 400ms ease-out from the last shown value.
+   Only ever called with FINAL figures (settled scans) — a metric
+   still scanning keeps its skeleton, never a partial number. */
+var ANA_KPI_PREV={};
+function anaSetNum(id,val,fmt){
+  var n=el(id); if(!n)return;
+  var prev=ANA_KPI_PREV[id];
+  ANA_KPI_PREV[id]=val;
+  if(prev==null||ANA_RM||prev===val){n.textContent=fmt(val);return}
+  var t0=performance.now();
+  (function step(t){
+    if(ANA_KPI_PREV[id]!==val)return;
+    var p=Math.min(1,(t-t0)/400), e=1-Math.pow(1-p,3);
+    n.textContent=fmt(prev+(val-prev)*e);
+    if(p<1)requestAnimationFrame(step);
+  })(t0);
+}
 function anaOnView(){anaKick();renderLiveAnalytics()}
 function anaOnLeave(){if(anaHistTimer){clearTimeout(anaHistTimer);anaHistTimer=null}}
 /* The page can boot straight into #analytics (the hash router in
@@ -6975,7 +7100,8 @@ function fmtLoopWei(wei){if(wei==null)return '\u2026';try{return fmtLoopAmt(Numb
    and revenue stay LOOP-first: they are protocol accounting.) */
 function anaVolDisp(v){return LOOP_USD?fmtUsdMcap(v*LOOP_USD):fmtLoopAmt(v)}
 function anaVolCell(v){
-  if(LOOP_USD)return fmtUsdMcap(v*LOOP_USD)+'<small class="tc-vol-sub">'+fmtLoopAmt(v)+'</small>';
+  /* Fase 1: one primary currency only — the LOOP second line is gone. */
+  if(LOOP_USD)return anaFmtUsd(v*LOOP_USD);
   return fmtLoopAmt(v);
 }
 function fmtInt(n){return Number(n).toLocaleString('en-US')}
@@ -7216,70 +7342,172 @@ async function anaLoadVaultFees(){
   anaVaultBusy=false;
   try{renderLiveAnalytics()}catch(e){}
 }
-/* ---------- Daily volume chart (last 30 days) --------------------- */
-function anaRenderChart(){
-  var box=el('anaChart'), note=el('anaChartNote');
-  if(!box)return;
+/* ---------- Area chart (blueprint 4.4) ------------------------------
+   Grafik area gradien pink, default 7D, metrik Volume | Launches.
+   Hari kosong = 0 dari data nyata; tidak ada titik yang dikarang.
+   The chart paints ONLY from a settled scan — while any token's
+   pass is unfinished it shows the skeleton, never partial bars. */
+var ANA_CHART_LAST=null, ANA_CHART_SEQ=0, ANA_CHART_ANIMATE=false;
+function anaChartAnimate(){ANA_CHART_ANIMATE=true}
+function anaChartFmtVal(v){
+  if(anaMetric==='launches')return fmtInt(Math.round(v));
+  return LOOP_USD?anaFmtUsd(v*LOOP_USD):fmtLoopAmt(v);
+}
+function anaChartBuckets(){
   var DAY=86400;
   var startD=new Date(); startD.setHours(0,0,0,0);
+  var todayStart=Math.floor(startD.getTime()/1000);
+  var n=anaRange==='7d'?7:30;
+  if(anaRange==='all'&&anaMetric==='launches'&&LIVE_TOKENS.length){
+    var earliest=Infinity;
+    LIVE_TOKENS.forEach(function(t){if(t.launchTs&&t.launchTs<earliest)earliest=t.launchTs});
+    if(earliest<Infinity)n=Math.min(90,Math.max(7,Math.floor((todayStart-earliest)/DAY)+1));
+  }
   var days=[];
-  for(var i=29;i>=0;i--){
-    var d0=new Date(startD.getTime()-i*DAY*1000);
-    days.push({start:Math.floor(d0.getTime()/1000),end:Math.floor(d0.getTime()/1000)+DAY,vol:0,label:MONTHS3[d0.getMonth()]+' '+d0.getDate()});
+  for(var i=n-1;i>=0;i--){
+    var st=todayStart-i*DAY;
+    var d0=new Date(st*1000);
+    days.push({start:st,end:st+DAY,val:0,label:MONTHS3[d0.getMonth()]+' '+d0.getDate(),full:MONTHS3[d0.getMonth()]+' '+d0.getDate()+', '+d0.getFullYear()});
   }
-  var settled=0, total=0;
-  LIVE_TOKENS.forEach(function(t){
-    var h=ANA_HIST[String(t.address).toLowerCase()];
-    if(!h)return;
-    settled++;
-    h.list.forEach(function(x){
-      if(x.ts<days[0].start||x.ts>=days[29].end)return;
-      for(var j=0;j<30;j++){if(x.ts>=days[j].start&&x.ts<days[j].end){days[j].vol+=x.loop;break}}
+  if(anaMetric==='launches'){
+    LIVE_TOKENS.forEach(function(t){
+      if(!t.launchTs)return;
+      for(var j=0;j<days.length;j++){if(t.launchTs>=days[j].start&&t.launchTs<days[j].end){days[j].val++;break}}
     });
+  }else{
+    LIVE_TOKENS.forEach(function(t){
+      var h=ANA_HIST[String(t.address).toLowerCase()];
+      if(!h)return;
+      h.list.forEach(function(x){
+        if(x.ts<days[0].start||x.ts>=days[days.length-1].end)return;
+        for(var j=0;j<days.length;j++){if(x.ts>=days[j].start&&x.ts<days[j].end){days[j].val+=x.loop;break}}
+      });
+    });
+  }
+  return days;
+}
+function anaChartDraw(box,days,vals){
+  var tip=el('anaChartTip');
+  var W=600,H=170,BASE=150,TOP=12;
+  var max=0; vals.forEach(function(v){if(v>max)max=v});
+  var n=days.length;
+  function X(i){return n===1?W/2:(i/(n-1))*W}
+  function Y(v){return max>0?BASE-(v/max)*(BASE-TOP):BASE}
+  var line='', area='';
+  vals.forEach(function(v,i){
+    var x=X(i).toFixed(1), y=Y(v).toFixed(1);
+    line+=(i===0?'M':'L')+x+','+y+' ';
   });
-  days.forEach(function(d){total+=d.vol});
-  /* "Complete" means every token's scan pass has finished (see
-     ANA_DONE) — not merely that some history object exists. The
-     header says "loading…" exactly while that is untrue, and the
-     empty state is a conclusion that may only be drawn once the
-     scan has actually completed. */
-  var complete=liveRegistryLoaded&&anaAllSettled();
-  /* Once bars have actually painted, the header reads simply
-     "Last 30 days" — the counting state belongs on the tiles,
-     not on a chart that is already showing real bars. The
-     loading marker only survives while nothing has painted yet
-     (skeleton) and the scan is still incomplete. */
-  var barsPainted=settled>0&&total>0;
-  if(note)note.textContent='Last 30 days'+(!barsPainted&&liveRegistryLoaded&&LIVE_TOKENS.length>0&&!complete?' · loading\u2026':'');
-  if(!settled){
-    var hs=[34,52,44,66,58,80,62,92,70,84,56,74,48,88,64];
-    box.innerHTML='<div class="ana-chart-skel" aria-hidden="true">'+hs.map(function(h){return '<i style="height:'+h+'%"></i>'}).join('')+'</div>';
-    return;
-  }
-  if(!(total>0)){
-    if(!complete){
-      var hs2=[34,52,44,66,58,80,62,92,70,84,56,74,48,88,64];
-      box.innerHTML='<div class="ana-chart-skel" aria-hidden="true">'+hs2.map(function(h){return '<i style="height:'+h+'%"></i>'}).join('')+'</div>';
-      return;
+  area=line+'L'+X(n-1).toFixed(1)+','+BASE+' L'+X(0).toFixed(1)+','+BASE+' Z';
+  var peak=el('anaChartPeak'); if(peak)peak.textContent=max>0?('Peak '+anaChartFmtVal(max)):'';
+  var idxs=[0,Math.floor(n/3),Math.floor(2*n/3),n-1].filter(function(v,i,a){return a.indexOf(v)===i});
+  box.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Daily '+(anaMetric==='launches'?'launches':'trading volume')+'. Peak '+anaChartFmtVal(max)+'.">'
+    +'<defs><linearGradient id="anaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--pink)" stop-opacity="0.12"/><stop offset="1" stop-color="var(--pink)" stop-opacity="0.12"/></linearGradient></defs>'
+    +'<path d="'+area+'" fill="url(#anaGrad)"/>'
+    +'<path id="anaChartLine" d="'+line+'" fill="none" stroke="var(--pink)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
+    +'<line id="anaCross" x1="0" y1="'+TOP+'" x2="0" y2="'+BASE+'" stroke="var(--line2)" stroke-width="1" opacity="0"/>'
+    +'<circle id="anaDot" r="4" fill="var(--pink)" stroke="var(--surface)" stroke-width="2" opacity="0"/>'
+    +'<line x1="0" y1="150.5" x2="'+W+'" y2="150.5" stroke="var(--line)" stroke-width="1"/></svg>'
+    +'<div class="ana-chart-axis">'+idxs.map(function(i){return '<span>'+days[i].label+'</span>'}).join('')+'</div>';
+  if(tip)box.appendChild(tip);
+  box.__anaDays=days; box.__anaVals=vals; box.__anaMax=max;
+  anaChartBind(box);
+}
+function anaChartBind(box){
+  if(box.__anaBound)return; box.__anaBound=true;
+  function move(e){
+    var days=box.__anaDays, vals=box.__anaVals; if(!days||!vals)return;
+    var r=box.getBoundingClientRect(); if(!r.width)return;
+    var px=(e.touches&&e.touches[0])?e.touches[0].clientX:e.clientX;
+    var frac=Math.min(1,Math.max(0,(px-r.left)/r.width));
+    var i=Math.round(frac*(days.length-1));
+    var svg=box.querySelector('svg'); if(!svg)return;
+    var W=600,BASE=150,TOP=12,max=box.__anaMax||0;
+    var x=days.length===1?W/2:(i/(days.length-1))*W;
+    var y=max>0?BASE-(vals[i]/max)*(BASE-TOP):BASE;
+    var cross=el('anaCross'), dot=el('anaDot'), tip=el('anaChartTip');
+    if(cross){cross.setAttribute('x1',x);cross.setAttribute('x2',x);cross.setAttribute('opacity','1')}
+    if(dot){dot.setAttribute('cx',x);dot.setAttribute('cy',y);dot.setAttribute('opacity','1')}
+    if(tip){
+      tip.style.display='block';
+      tip.style.left=((x/W)*100)+'%';
+      tip.style.top=((y/170)*r.height*0.88)+'px';
+      tip.textContent=days[i].full+' \u00b7 '+anaChartFmtVal(vals[i]);
     }
-    box.innerHTML='<div class="ana-chart-empty">No trading activity in this period yet</div>';
+  }
+  function leave(){
+    var cross=el('anaCross'), dot=el('anaDot'), tip=el('anaChartTip');
+    if(cross)cross.setAttribute('opacity','0');
+    if(dot)dot.setAttribute('opacity','0');
+    if(tip)tip.style.display='none';
+  }
+  box.addEventListener('pointermove',move);
+  box.addEventListener('pointerdown',move);
+  box.addEventListener('pointerleave',leave);
+  box.addEventListener('touchmove',move,{passive:true});
+  box.addEventListener('touchend',leave);
+}
+function anaRenderChart(){
+  var box=el('anaChart'); if(!box)return;
+  var title=el('anaChartTitle'); if(title)title.textContent=anaMetric==='launches'?'Launches':'Volume';
+  document.querySelectorAll('#view-analytics [data-act="ana-range"]').forEach(function(b){
+    var on=b.getAttribute('data-range')===anaRange;
+    b.classList.toggle('active',on); b.setAttribute('aria-selected',on?'true':'false');
+  });
+  document.querySelectorAll('#view-analytics [data-act="ana-metric"]').forEach(function(b){
+    var on=b.getAttribute('data-metric')===anaMetric;
+    b.classList.toggle('active',on); b.setAttribute('aria-selected',on?'true':'false');
+  });
+  var complete=liveRegistryLoaded&&(anaAllSettled()||!LIVE_TOKENS.length);
+  if(!complete){
+    var tip0=el('anaChartTip');
+    if(!box.querySelector('.ana-chart-skel')){
+      var hs=[34,52,44,66,58,80,62,92,70,84,56,74,48,88,64];
+      box.innerHTML='<div class="ana-chart-skel" aria-hidden="true">'+hs.map(function(h){return '<i style="height:'+h+'%"></i>'}).join('')+'</div>';
+      if(tip0)box.appendChild(tip0);
+    }
     return;
   }
-  var max=0, peakLabel='';
-  days.forEach(function(d){if(d.vol>max){max=d.vol;peakLabel=d.label}});
-  var BASE=150;
-  var rects=days.map(function(d,i){
-    var hgt=d.vol>0?Math.max(3,Math.round(d.vol/max*BASE)):0;
-    return '<rect x="'+(i*20+3)+'" y="'+(BASE-hgt)+'" width="14" height="'+hgt+'" rx="3" fill="var(--pink)" opacity="'+(i===29?'1':'0.72')+'"><title>'+d.label+' \u00b7 '+anaVolDisp(d.vol)+'</title></rect>';
-  }).join('');
-  box.innerHTML='<svg viewBox="0 0 600 170" role="img" aria-label="Daily trading volume, last 30 days. Peak day '+peakLabel+' at '+anaVolDisp(max)+'.">'
-    +'<line x1="0" y1="150.5" x2="600" y2="150.5" stroke="var(--line)" stroke-width="1"/>'+rects+'</svg>'
-    +'<div class="ana-chart-axis"><span>'+days[0].label+'</span><span>Peak '+anaVolDisp(max)+'</span><span>'+days[29].label+'</span></div>';
+  var days=anaChartBuckets();
+  var target=days.map(function(d){return d.val});
+  var total=0; target.forEach(function(v){total+=v});
+  if(anaMetric==='vol'&&!(total>0)){
+    var tip1=el('anaChartTip');
+    box.innerHTML='<div class="ana-chart-empty">No trades yet. Be the first to trade.</div>';
+    if(tip1)box.appendChild(tip1);
+    var pk=el('anaChartPeak'); if(pk)pk.textContent='';
+    ANA_CHART_LAST=target;
+    return;
+  }
+  var seq=++ANA_CHART_SEQ;
+  if(ANA_CHART_ANIMATE&&ANA_CHART_LAST&&!ANA_RM){
+    ANA_CHART_ANIMATE=false;
+    var from=ANA_CHART_LAST, n=target.length;
+    var resampled=target.map(function(_,i){
+      var pos=n===1?0:i/(n-1)*(from.length-1);
+      var lo=Math.floor(pos), hi=Math.min(from.length-1,lo+1);
+      return from[lo]+(from[hi]-from[lo])*(pos-lo);
+    });
+    var t0=performance.now();
+    (function step(t){
+      if(seq!==ANA_CHART_SEQ)return;
+      var p=Math.min(1,(t-t0)/500);
+      var e=1-Math.pow(1-p,3); /* cubic-bezier(0.22,1,0.36,1) approx: ease-out */
+      var disp=target.map(function(v,i){return resampled[i]+(v-resampled[i])*e});
+      anaChartDraw(box,days,disp);
+      if(p<1)requestAnimationFrame(step); else ANA_CHART_LAST=target;
+    })(t0);
+  }else{
+    ANA_CHART_ANIMATE=false;
+    anaChartDraw(box,days,target);
+    ANA_CHART_LAST=target;
+  }
 }
 /* ---------- Top Coins (real registry only) ------------------------ */
 function anaRenderTopCoins(){
   var box=el('topCoinsBody');
   if(!box)return;
+  if(anaFadeNext){anaFadeNext=false;if(!ANA_RM&&box.animate)box.animate([{opacity:0.25},{opacity:1}],{duration:200,easing:'ease-out'})}
   var secs=ANA_WIN[anaTab];
   document.querySelectorAll('#view-analytics .tc-tabs button').forEach(function(b){
     var on=b.getAttribute('data-win')===anaTab;
@@ -7314,12 +7542,12 @@ function anaRenderTopCoins(){
   if(sub)sub.textContent='Top '+top.length+' of '+fmtInt(FEED.length)+' tokens \u00b7 '+(anaTab==='24h'?'last 24 hours':anaTab==='7d'?'last 7 days':'all time')+' \u00b7 tap Volume or Trades to re-sort';
   box.innerHTML=top.map(function(r,i){
     var f=r.f, a=r.agg;
-    var status=f.grad?'<span class="ana-status-grad">Graduated</span>':(f.prog.toFixed(1)+'%');
+    var status=f.grad?'<span class="ana-status-grad">Graduated</span>':(Math.round(f.prog)+'%');
     return '<tr class="tc-row" data-act="live-token" data-addr="'+f.addr+'" tabindex="0" role="button" aria-label="Rank '+(i+1)+': '+escHtml(f.name)+'. Open token details">'
       +'<td data-label="#"><span class="rank-num">'+(i+1)+'</span></td>'
       +'<td data-label="Coin"><span class="coin-cell">'+feedAvatar(f)+'<span>'+escHtml(f.name)+' <small>$'+escHtml(f.ticker)+'</small></span></span></td>'
-      +'<td class="num" data-label="Price">'+f.priceText+'</td>'
-      +'<td class="num" data-label="Market Cap">'+f.mcapText+'</td>'
+      +'<td class="num" data-label="Price">'+anaFmtPriceText(f.priceText,null)+'</td>'
+      +'<td class="num" data-label="Market Cap">'+anaFmtPriceText(f.mcapText,f.mcapN)+'</td>'
       +'<td class="num" data-label="Volume">'+(a?anaVolCell(a.vol):'\u2026')+'</td>'
       +'<td class="num" data-label="Trades">'+(a?fmtInt(a.trades):'\u2026')+'</td>'
       +'<td data-label="Status">'+status+'</td></tr>';
@@ -7334,38 +7562,82 @@ function renderLiveAnalytics(){
   anaLoadTreasury();
   anaLoadVaultFees();
   function set(id,v){var n=el(id);if(n)n.textContent=v}
-  /* Registry figures — straight from the Lens payload. */
+  /* Live indicator + honest error state (blueprint 4.1 / 5.3):
+     the dot pulses only while reads succeed; a total failure with
+     no registry snapshot shows the honest panel + Try again. */
+  var liveBox=el('anaLive'), liveTxt=el('anaLiveText');
+  if(liveBox&&liveTxt){
+    var liveOk=liveLoadState==='ok';
+    liveTxt.textContent=liveOk?'Live on Loop':'Reconnecting\u2026';
+    liveBox.classList.toggle('off',!liveOk);
+  }
+  var errBox=el('anaError');
+  if(errBox)errBox.style.display=(liveLoadState==='error'&&!liveRegistryLoaded)?'block':'none';
+  /* KPI 1–2 — registry figures, straight from the Lens payload.
+     Final the moment the registry lands: the registry IS the
+     complete count, so these never wait on the trade scan. */
   if(liveRegistryLoaded){
-    var grads=0;
-    LIVE_TOKENS.forEach(function(t){if(t.graduated)grads++});
-    set('anaLaunches',fmtInt(LIVE_TOKENS.length));
-    set('anaGraduations',fmtInt(grads));
-    set('anaGradRate',LIVE_TOKENS.length?('\u00b7 '+(grads/LIVE_TOKENS.length*100).toFixed(1)+'% of launches'):'All time');
-    if(!LIVE_TOKENS.length){set('anaVolume',LOOP_USD?fmtUsdMcap(0):'0 LOOP');set('anaVolumeSub','All time');set('anaTraders','0')}
+    var grads=0, todayStart=Math.floor(new Date().setHours(0,0,0,0)/1000), launchedToday=0;
+    LIVE_TOKENS.forEach(function(t){if(t.graduated)grads++;if(t.launchTs&&t.launchTs>=todayStart)launchedToday++});
+    anaSetNum('anaLaunches',LIVE_TOKENS.length,function(v){return fmtInt(Math.round(v))});
+    set('anaLaunchesSub',launchedToday>0?('+'+fmtInt(launchedToday)+' today'):'All time');
+    var gradPct=LIVE_TOKENS.length?Math.round(grads/LIVE_TOKENS.length*100):0;
+    (function(){
+      var n=el('anaGraduations'); if(!n)return;
+      var prev=ANA_KPI_PREV.anaGraduations; ANA_KPI_PREV.anaGraduations=grads;
+      function paint(v){n.textContent=fmtInt(Math.round(v))+' \u00b7 '+gradPct+'%'}
+      if(prev==null||ANA_RM||prev===grads){paint(grads);return}
+      var t0=performance.now();
+      (function step(t){if(ANA_KPI_PREV.anaGraduations!==grads)return;var p=Math.min(1,(t-t0)/400),e=1-Math.pow(1-p,3);paint(prev+(grads-prev)*e);if(p<1)requestAnimationFrame(step)})(t0);
+    })();
+    set('anaGradRate','of all launches');
+    if(!LIVE_TOKENS.length){set('anaVolume','$0.00');set('anaVolumeSub','Last 24 hours');set('anaTraders','0');set('anaTradersSub','0 all time')}
   }
+  /* Fees summary line — the ONLY fee text left on this page
+     (blueprint 4.5 lapis 1). Percentages are read from the live
+     SakuraConfig payload (LENS_CONFIG), never hardcoded anew:
+     curve fee + creator share come from config; the 0.3% pool
+     fee is the gen-7 model figure the site already publishes. */
   if(LENS_CONFIG){
-    set('anaCfgLaunchFee',fmtLoopWei(LENS_CONFIG.launchFee));
-    set('anaCfgTradingFee',(LENS_CONFIG.tradingFeeBps/100)+'%');
+    var cfgA=LENS_CONFIG.tradingFeeBps/100, cfgB=LENS_CONFIG.creatorShareBps/100, cfgC=100-cfgB;
+    set('anaFeeSummary','Curve fee '+cfgA+'% \u00b7 '+cfgB+'% creators / '+cfgC+'% protocol \u2014 pool fee 0.3% + creator tax after graduation.');
+    var sb1=el('anaSplitCreator'), sb2=el('anaSplitProtocol');
+    if(sb1)sb1.style.width=cfgB+'%';
+    if(sb2)sb2.style.width=cfgC+'%';
+    set('anaSplitCreatorLabel','Creators \u00b7 '+cfgB+'%');
+    set('anaSplitProtocolLabel','Protocol \u00b7 '+cfgC+'%');
   }
-  /* Trade totals — PROGRESSIVE: recomputed from every history
-     that has landed so far and repainted as each token's scan
-     completes, instead of waiting for the full set. While the
-     engine is still counting, the sub-labels say so (with the
-     scan count); once every pass has finished they settle back
-     to the plain all-time labels and the figures are final. */
-  var anyHist=false, totVol=0, union={}, scannedN=0;
-  LIVE_TOKENS.forEach(function(t){
-    var k=String(t.address).toLowerCase();
-    if(ANA_HIST[k])scannedN++;
-    var a=anaAgg(k,Infinity);
-    if(a){anyHist=true;totVol+=a.vol;Object.keys(a.traders).forEach(function(x){union[x]=1})}
-  });
-  if(anyHist){
-    var doneAll=anaAllSettled();
-    set('anaVolume',LOOP_USD?fmtUsdMcap(totVol*LOOP_USD):fmtLoopAmt(totVol));
-    set('anaVolumeSub',doneAll?((LOOP_USD?fmtLoopAmt(totVol)+' \u00b7 ':'')+'All time'):('Counting\u2026 \u00b7 '+scannedN+' of '+LIVE_TOKENS.length+' tokens scanned'));
-    set('anaTraders',fmtInt(Object.keys(union).length));
-    set('anaTradersSub',doneAll?'All time':('Counting\u2026 \u00b7 '+scannedN+' of '+LIVE_TOKENS.length+' tokens scanned'));
+  /* KPI 3–4 — 24h windows over the trade histories. FINAL-ONLY
+     (blueprint 6.4 rule 1): while any token's scan pass is still
+     unfinished these tiles keep their skeleton (first visit) or
+     their last settled figure (refresh) — a partial total is
+     never painted, and no counting status is ever shown. */
+  if(liveRegistryLoaded&&LIVE_TOKENS.length&&anaAllSettled()){
+    var nowS=Math.floor(Date.now()/1000), vol24=0, volPrev=0, traders24={}, tradersAll={};
+    LIVE_TOKENS.forEach(function(t){
+      var h=ANA_HIST[String(t.address).toLowerCase()];
+      if(!h)return;
+      h.list.forEach(function(x){
+        tradersAll[x.trader]=1;
+        var age=nowS-x.ts;
+        if(age<=86400){vol24+=x.loop;traders24[x.trader]=1}
+        else if(age<=172800){volPrev+=x.loop}
+      });
+    });
+    anaSetNum('anaVolume',LOOP_USD?vol24*LOOP_USD:vol24,function(v){return LOOP_USD?anaFmtUsd(v):fmtLoopAmt(v)});
+    var vSub=el('anaVolumeSub');
+    if(vSub){
+      if(volPrev>0){
+        var dPct=(vol24-volPrev)/volPrev*100;
+        vSub.textContent=(dPct>=0?'\u25b2 ':'\u25bc ')+Math.abs(dPct).toFixed(1)+'% vs yesterday';
+        vSub.className=dPct>=0?'ana-up':'ana-down';
+      }else{
+        vSub.textContent='Last 24 hours';
+        vSub.className='';
+      }
+    }
+    anaSetNum('anaTraders',Object.keys(traders24).length,function(v){return fmtInt(Math.round(v))});
+    set('anaTradersSub',fmtInt(Object.keys(tradersAll).length)+' all time');
   }
   /* Fees & revenue. */
   if(ANA_TREASURY_WEI!=null){
@@ -7376,21 +7648,19 @@ function renderLiveAnalytics(){
   }
   if(ANALYTICS.feesAccruedWei!=null||(ANALYTICS.feesByAsset&&ANALYTICS.feesByAsset.length)){
     set('anaFeesCreators',fmtLoopWei(ANALYTICS.feesAccruedWei||0n));
-    var others=(ANALYTICS.feesByAsset||[]).filter(function(r){return String(r.asset).toLowerCase()!==ZERO_ADDR&&r.amount>0n});
-    /* One short line: the LOOP total is the tile value, and the
-       sub-line only COUNTS the token-denominated assets — no raw
-       per-asset amounts, no token lists wrapping down the tile. */
-    set('anaFeesCreatorsSub',others.length?('Plus token-denominated fees in '+others.length+' asset'+(others.length===1?'':'s')):'Across all tokens');
+    /* Fase 1: the old token-denominated count line is deleted
+       (blueprint Bagian 3) — the multi-asset breakdown itself
+       is Fase 2. */
+    set('anaFeesCreatorsSub','Across all tokens');
   }
   anaRenderChart();
   anaRenderTopCoins();
+  /* The Analytics footer is one fixed line (blueprint 5.1).
+     Connection state is carried by the header Live indicator and,
+     on total failure, the honest error panel above — never by
+     rewriting this line. */
   var note=el('anaDataNote');
-  if(note){
-    if(liveLoadState==='ok')note.textContent='Live \u00b7 read from Loop on-chain data';
-    else if(liveLoadState==='stale')note.textContent='Connection interrupted \u2014 showing the last values that loaded. Retrying\u2026';
-    else if(liveLoadState==='error')note.textContent='Live data couldn\u2019t be reached \u2014 retrying automatically.';
-    else note.textContent='Loading live data from Loop\u2026';
-  }
+  if(note)note.textContent='Live \u00b7 Read from Loop on-chain data';
 }
 /* ================= Live token detail ================= */
 function resetDetailChrome(){
