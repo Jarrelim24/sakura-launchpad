@@ -5477,8 +5477,10 @@ async function bsFetchTradesPage(t,useNext){
    xStocks) settle entirely in the pair asset, so their quote leg
    is that asset's transfer. Cached per tx hash + leg asset, so
    different pair assets never share a cached leg; lookups run at
-   most 8 at a time. Null means "no such leg exists" — the cell
-   then stays blank by design, never invented. */
+   most 8 at a time. Null means no leg was found in the page the
+   index returned — the cell then stays blank by design, never
+   invented, and the lookup retries on later passes instead of
+   caching the blank forever (see bsLoopAmount). */
 function bsPickQuoteLeg(items,cps,asset){
   var legs=[];
   (items||[]).forEach(function(it){
@@ -5496,15 +5498,31 @@ function bsPickQuoteLeg(items,cps,asset){
 function bsPickLoopLeg(items,cps){
   return bsPickQuoteLeg(items,cps,BS_WLOOP);
 }
+/* A null outcome — the fetch failed (network error, abort, HTTP
+   error) OR the fetch succeeded but its page did not (yet)
+   contain the leg — is RETRYABLE, not final: a fresh
+   transaction's index page can lag, and one transient failure
+   must not poison the lookup for the rest of the session.
+   Entries track attempts; a done-but-null entry is re-queued by
+   later callers (the detail refresh re-runs the resolver every
+   cycle) up to BS_LEG_MAX_ATTEMPTS per session, after which the
+   blank stands as final. A found leg stays cached permanently,
+   exactly as before, and concurrent callers still share one
+   in-flight promise through the same 8-wide queue. */
+var BS_LEG_MAX_ATTEMPTS=6;
 function bsLoopAmount(txHash,cps,legAsset){
   var asset=legAsset?String(legAsset).toLowerCase():BS_WLOOP;
   var h=String(txHash||'').toLowerCase();
   var ck=h+'|'+asset;
   var c=BS_LOOP_BY_TX[ck];
-  if(c&&c.done)return Promise.resolve(c.value);
   if(c&&c.promise)return c.promise;
-  var p=new Promise(function(res){BS_LOOP_QUEUE.push({hash:h,key:ck,asset:asset,cps:cps,res:res});bsLoopPump()});
-  BS_LOOP_BY_TX[ck]={done:false,promise:p,value:null};
+  if(c&&c.done){
+    if(c.value!=null)return Promise.resolve(c.value);
+    if((c.attempts||0)>=BS_LEG_MAX_ATTEMPTS)return Promise.resolve(null);
+  }
+  var attempts=((c&&c.attempts)||0)+1;
+  var p=new Promise(function(res){BS_LOOP_QUEUE.push({hash:h,key:ck,asset:asset,cps:cps,res:res,attempts:attempts});bsLoopPump()});
+  BS_LOOP_BY_TX[ck]={done:false,promise:p,value:null,attempts:attempts};
   return p;
 }
 function bsLoopPump(){
@@ -5546,9 +5564,88 @@ function bsLoopPump(){
           v=best;
         }catch(e){}
       }
-      BS_LOOP_BY_TX[job.key]={done:true,promise:null,value:v};
+      BS_LOOP_BY_TX[job.key]={done:true,promise:null,value:v,attempts:job.attempts||1};
       job.res(v);
     })().then(function(){BS_LOOP_INFLIGHT--;bsLoopPump()},function(){BS_LOOP_INFLIGHT--;bsLoopPump()});
+  }
+}
+/* ---------- Trade-event fallback (ERC20-paired curve trades) ----
+   An ERC20-paired curve trade settles entirely in the pair asset,
+   so when the explorer's transfers page for its transaction lags
+   or fails, the quote leg can stay unresolvable even though the
+   trade is final on-chain. The curve's own Trade event in the
+   transaction receipt is the exact record of that same trade, so
+   it is the fallback source: read the receipt through the page's
+   read provider and parse it with the curve ABI, the same pattern
+   insertOwnTrade uses for the user's own trades. Receipts are
+   cached per transaction (parsed once into a side|tokenAmount →
+   pairAmount map shared by every row of the tx) and, like the leg
+   lookups, a failed or event-less read is attempt-bounded rather
+   than permanently cached; a receipt that DID yield Trade events
+   is final — receipts never change. Buys and sells both match. */
+var BS_TRADE_EV_BY_TX={};
+function bsPickTradeEvent(map,side,tokenAmount){
+  if(!map)return null;
+  var v=map[(side?'buy':'sell')+'|'+String(tokenAmount)];
+  return v!=null?v:null;
+}
+function bsTradeEventAmount(t,txHash,side,tokenAmount){
+  var h=String(txHash||'').toLowerCase();
+  var c=BS_TRADE_EV_BY_TX[h];
+  if(c&&c.promise)return c.promise.then(function(m){return bsPickTradeEvent(m,side,tokenAmount)});
+  if(c&&c.done){
+    if(c.map)return Promise.resolve(bsPickTradeEvent(c.map,side,tokenAmount));
+    if((c.attempts||0)>=BS_LEG_MAX_ATTEMPTS)return Promise.resolve(null);
+  }
+  var attempts=((c&&c.attempts)||0)+1;
+  var entry={done:false,promise:null,map:null,attempts:attempts};
+  BS_TRADE_EV_BY_TX[h]=entry;
+  entry.promise=(async function(){
+    await Promise.resolve();
+    var map=null;
+    try{
+      if(typeof ethers!=='undefined'&&readProvider&&t.curve){
+        var rcpt=await readProvider.getTransactionReceipt(h);
+        if(rcpt&&rcpt.logs){
+          var iface=new ethers.Interface(W3C.abi.curve);
+          var curve=String(t.curve).toLowerCase();
+          var m={};
+          for(var i=0;i<rcpt.logs.length;i++){
+            var lg=rcpt.logs[i];
+            if(String(lg.address||'').toLowerCase()!==curve)continue;
+            try{
+              var parsed=iface.parseLog(lg);
+              if(!parsed||parsed.name!=='Trade')continue;
+              var kk=(parsed.args.isBuy?'buy':'sell')+'|'+String(parsed.args.tokenAmount);
+              if(m[kk]==null)m[kk]=parsed.args.pairAmount;
+            }catch(e){}
+          }
+          if(Object.keys(m).length)map=m;
+        }
+      }
+    }catch(e){map=null}
+    entry.done=true; entry.map=map; entry.promise=null;
+    return map;
+  })();
+  return entry.promise.then(function(m){return bsPickTradeEvent(m,side,tokenAmount)});
+}
+/* One shared fill for a resolved quote amount, from whichever
+   source produced it (the transfer leg or the Trade-event
+   fallback): the store update, the derived execution price, the
+   in-place cell update and the chart repaint live in exactly one
+   place so the two paths can never diverge. A row already priced
+   is never overwritten. */
+function bsFillRowAmount(t,k,e,v,info){
+  if(v==null||!e||e.args.pairAmount!=null)return;
+  e.args.pairAmount=v;
+  if(e.args.tokenAmount>0n)e.args.spotPriceAfter=v*(10n**BigInt(t.decimals))/e.args.tokenAmount;
+  if(bsIsOpen(t)){
+    var row=document.querySelector('#dTradesBody tr[data-tkey="'+k+'"]');
+    if(row){
+      var pc=row.querySelector('[data-pair]'); if(pc)pc.textContent=info.native?fmtEth(v):fmtUnitsSmart(v,info.dec);
+      var pr=row.querySelector('[data-price]'); if(pr&&e.args.spotPriceAfter!=null)pr.textContent=fmtSpotTinyFor(t,e.args.spotPriceAfter);
+    }
+    paintChartFromStore(t);
   }
 }
 /* Fill quote amounts (and the derived execution price) into store
@@ -5559,7 +5656,11 @@ function bsLoopPump(){
    trades settle entirely in that asset. pairAmount lands in
    pair-asset smallest units and spotPriceAfter in pair-asset
    units per whole token — the convention buildTradeRow,
-   fmtSpotTinyFor and chartPricedTrades already expect. */
+   fmtSpotTinyFor and chartPricedTrades already expect. When the
+   leg settles null for a row of a non-graduated, ERC20-paired
+   token, the row falls back to the curve's Trade event (see
+   bsTradeEventAmount) — the transfer leg stays the primary
+   source and only an unpriced row is ever filled. */
 function bsResolveLoopAmounts(t){
   var key=String(t.address).toLowerCase();
   var cps=[];
@@ -5572,17 +5673,11 @@ function bsResolveLoopAmounts(t){
     var e=store.map[k];
     if(!e||e.args.pairAmount!=null||!e.transactionHash)return;
     bsLoopAmount(e.transactionHash,cps,legAsset).then(function(v){
-      if(v==null)return;
-      e.args.pairAmount=v;
-      if(e.args.tokenAmount>0n)e.args.spotPriceAfter=v*(10n**BigInt(t.decimals))/e.args.tokenAmount;
-      if(bsIsOpen(t)){
-        var row=document.querySelector('#dTradesBody tr[data-tkey="'+k+'"]');
-        if(row){
-          var pc=row.querySelector('[data-pair]'); if(pc)pc.textContent=info.native?fmtEth(v):fmtUnitsSmart(v,info.dec);
-          var pr=row.querySelector('[data-price]'); if(pr&&e.args.spotPriceAfter!=null)pr.textContent=fmtSpotTinyFor(t,e.args.spotPriceAfter);
-        }
-        paintChartFromStore(t);
-      }
+      if(v!=null){bsFillRowAmount(t,k,e,v,info);return}
+      if(info.native||t.graduated||!t.curve)return;
+      bsTradeEventAmount(t,e.transactionHash,e.args.isBuy,e.args.tokenAmount).then(function(pa){
+        if(pa!=null)bsFillRowAmount(t,k,e,pa,info);
+      });
     });
   });
 }
