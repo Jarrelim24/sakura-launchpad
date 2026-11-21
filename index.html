@@ -460,7 +460,7 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:20px 0 22px;colo
 .ana-live{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--muted);vertical-align:middle;margin-left:10px}
 .ana-live .livedot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:none;animation:tcpulse 1.8s ease infinite}
 .ana-live.off .livedot{background:var(--faint);animation:none}
-.ana-help{position:relative;width:30px;height:30px;margin:-7px -5px -7px 0;border:0;background:none;color:var(--faint);font-size:11px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ana-help{position:relative;width:44px;height:44px;margin:-14px -12px -14px -7px;border:0;background:none;color:var(--faint);font-size:11px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .ana-help::after{content:"";position:absolute;inset:-7px}
 .ana-help span{width:16px;height:16px;border:1.5px solid var(--line2);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;line-height:1}
 .ana-help:hover{color:var(--pink-dark)}
@@ -5378,7 +5378,8 @@ var IPFS_DISCOVERY={
   '0x8a758b0c238428ae4dd83ec0809d6e3d9d74ad92':'bafkreiassebl2qv3c3oqdlbchu4feu5z7ecocjyd6wrvehwdzoe7ob2k5y',
   '0x7b0ac22018e9f148e099203020c07d17cd80bcbd':'QmdqTg4isftKbtHfXCmYBkHiQU2D65xvbezc6SGrFaTc6R',
   '0x9536f633c6d257fbb0a379586aec787b685b5d8b':'QmXWuvGX5XmFX9Sk2ewju1hybbgweDiS3vxCYdgtcFWt7h',
-  '0x59e247bad7f6b07f3f9ed72551bf50729133756c':'QmWUuViv2W1zRSzaUFsv5mGH7v2VGukpY6M8ZPLtQA5pqd'
+  '0x59e247bad7f6b07f3f9ed72551bf50729133756c':'QmWUuViv2W1zRSzaUFsv5mGH7v2VGukpY6M8ZPLtQA5pqd',
+  '0x65888b0a30af63a23d86b2bca8cd5786f96fa858':'QmPLj3pw5sVYM1Pk1BHuPY9Asu5Auv5sVXcYqYpxk9LK25'
 };
 function ipfsPinName(addr){return 'sakura-token-'+String(addr||'').toLowerCase()}
 function ipfsGatewayUrl(cid){return W3C.ipfs.gateway+cid}
@@ -7930,6 +7931,7 @@ var ANA_HIST={}, ANA_HIST_AT={}, ANA_HIST_INFLIGHT={}, anaHistTimer=null;
    still counts as scanned: one bad read can no longer hold the
    page's totals and chart header hostage forever. */
 var ANA_DONE={};
+var ANA_COVERED={};
 var ANA_TREASURY_WEI=null, anaTreasuryAt=0, anaTreasuryBusy=false;
 var anaVaultAt=0, anaVaultBusy=false;
 /* ----- Fase 2 fee snapshots (blueprint 4.5 / 6.4) ------------------
@@ -8155,6 +8157,7 @@ function anaCacheLoad(){
       var at=t.at||d.savedAt||Date.now();
       ANA_HIST[k]={list:t.list,keys:t.keys||{},complete:true,at:at,cached:true};
       ANA_DONE[k]=at;
+      ANA_COVERED[k]=at;
       ANA_HIST_AT[k]=at;
     });
     if(d.feesWei!=null){try{ANALYTICS.feesAccruedWei=BigInt(d.feesWei)}catch(e){}}
@@ -8339,7 +8342,7 @@ async function anaFetchHistoryRun(t,key){
   /* A completed pass is exactly what the persistent cache keeps:
      the next visit paints these totals as settled and only scans
      for what is new. */
-  if(ANA_HIST[key]&&ANA_HIST[key].complete)anaCacheSaveSoon();
+  if(ANA_HIST[key]&&ANA_HIST[key].complete){ANA_COVERED[key]=Date.now();anaCacheSaveSoon()}
 }
 function anaAgg(key,secs){
   var h=ANA_HIST[key];
@@ -8360,6 +8363,16 @@ function anaAllSettled(){
      is stamped until passes finish, so the counting state shows
      exactly while the engine is still discovering history. */
   return LIVE_TOKENS.length>0&&LIVE_TOKENS.every(function(t){var k=String(t.address).toLowerCase();return !!ANA_DONE[k]});
+}
+/* Covered = the token's history rests on at least one COMPLETED
+   pass (a full live scan, or the persisted cache of one). A failed
+   pass is unknown history, not zero history, so it never stamps
+   coverage — aggregate figures gate on coverage, not settled-ness,
+   so a partial total can never publish (blueprint 6.4 rule 1).
+   Once covered a token stays covered: later passes only add on
+   top of the completed history already counted. */
+function anaAllCovered(){
+  return LIVE_TOKENS.length>0 && LIVE_TOKENS.every(function(t){ return !!ANA_COVERED[String(t.address).toLowerCase()]; });
 }
 /* ---------- Protocol revenue: the Treasury's accrued balance ------ */
 async function anaLoadTreasury(){
@@ -9004,7 +9017,7 @@ function anaRenderChart(){
     var on=b.getAttribute('data-metric')===anaMetric;
     b.classList.toggle('active',on); b.setAttribute('aria-selected',on?'true':'false');
   });
-  var complete=liveRegistryLoaded&&(anaAllSettled()||!LIVE_TOKENS.length);
+  var complete=liveRegistryLoaded&&(anaAllCovered()||!LIVE_TOKENS.length);
   if(!complete){
     var tip0=el('anaChartTip');
     if(!box.querySelector('.ana-chart-skel')){
@@ -9142,7 +9155,7 @@ function anaRenderStrip(){
   /* Your trades — this wallet's trades in the last 24h across all
      tokens; final only when every history has settled (the same
      gate as KPI 3–4). Never interactive. */
-  if(anaAllSettled()){
+  if(anaAllCovered()){
     var nowS=Math.floor(Date.now()/1000), tc=0;
     Object.keys(ANA_HIST).forEach(function(k){
       var h=ANA_HIST[k]; if(!h||!h.list)return;
@@ -9737,7 +9750,7 @@ function renderLiveAnalytics(){
      unfinished these tiles keep their skeleton (first visit) or
      their last settled figure (refresh) — a partial total is
      never painted, and no counting status is ever shown. */
-  if(liveRegistryLoaded&&LIVE_TOKENS.length&&anaAllSettled()){
+  if(liveRegistryLoaded&&LIVE_TOKENS.length&&anaAllCovered()){
     var nowS=Math.floor(Date.now()/1000), vol24=0, volPrev=0, traders24={}, tradersAll={};
     LIVE_TOKENS.forEach(function(t){
       var h=ANA_HIST[String(t.address).toLowerCase()];
