@@ -2308,13 +2308,20 @@ button.qrow{cursor:pointer}
           <div class="field"><label>Duration</label>
             <div id="promoTiers"><div class="tier-cards"><div class="tier-card loading">Loading prices…</div></div></div>
           </div>
+          <div class="field"><label>Pay with</label>
+            <div class="tier-cards" id="promoPayAssets" role="radiogroup" aria-label="Payment asset">
+              <button type="button" class="tier-card sel" role="radio" aria-checked="true" data-act="promote-asset" data-asset="LOOP"><span class="tier-dur">LOOP</span></button>
+              <button type="button" class="tier-card" role="radio" aria-checked="false" data-act="promote-asset" data-asset="tUSDC"><span class="tier-dur">tUSDC</span></button>
+              <button type="button" class="tier-card" role="radio" aria-checked="false" data-act="promote-asset" data-asset="tUSDT"><span class="tier-dur">tUSDT</span></button>
+            </div>
+          </div>
           <div class="fee-row"><span style="color:var(--muted)">Starts</span><strong id="promoStart">…</strong></div>
           <div class="fee-row"><span style="color:var(--muted)">Your position</span><strong id="promoPos">…</strong></div>
           <p class="trade-error" id="promoError" role="alert"></p>
-          <div class="wm-connecting" id="promoBusy"><div class="spinner"></div><p style="font-weight:800;margin:0">Sending to your wallet…</p><p style="color:var(--muted);font-size:13px;margin:4px 0 0">Confirm the transaction in your wallet app.</p></div>
+          <div class="wm-connecting" id="promoBusy"><div class="spinner"></div><p style="font-weight:800;margin:0" id="promoBusyTitle">Sending to your wallet…</p><p style="color:var(--muted);font-size:13px;margin:4px 0 0" id="promoBusySub">Confirm the transaction in your wallet app.</p></div>
           <p class="wallet-hint" id="promoWalletHint">If the confirmation doesn’t appear, tap your wallet icon.</p>
           <button class="btn btn-primary" id="promoPayBtn" data-act="promote-pay" style="width:100%;margin-top:14px;padding:14px">Buy banner</button>
-          <p class="wm-foot">Paid in LOOP. Banners run in purchase order.</p>
+          <p class="wm-foot">Pay in LOOP, tUSDC or tUSDT. Banners run in purchase order.</p>
         </div>
         <div id="promoDone" style="display:none"></div>
       </section>
@@ -4300,11 +4307,13 @@ var SAKURA_WEB3_CONFIG={
        from a single live eth_call. There is no embedded chain
        data anywhere in this page. */
     lens:'0x2cB804b3a9cefb8Ca9611630231cE18c8F9dBd6b',
-    /* SakuraBannerAds on Loop — the paid hero banner. Creators buy
-       a timed slot (tiers read live from the contract, priced in
-       LOOP); banners run in purchase order and the hero slot falls
-       back to Sakura's house banner when none is active. */
-    bannerAds:'0xFbbfc3a9b78881aF996Ca890826596513002487a',
+    /* SakuraBannerAdsV2 on Loop — the paid hero banner. Creators
+       buy a timed slot (tiers read live from the contract, priced
+       in USD); the buyer pays that USD amount in LOOP at the
+       contract's live quote, or exactly in tUSDC / tUSDT. Banners
+       run in purchase order and the hero slot falls back to
+       Sakura's house banner when none is active. */
+    bannerAds:'0x2Be8AFc752359C8c56cdB64c7Da259791ece17F2',
     /* SakuraLpLocker on Loop (deployments/loop.json) — holds every
        graduated pair's LP tokens forever; tagged in Holders lists. */
     lpLocker:'0xE9B13E23cb6574634b298c69e96164E0c02050e2',
@@ -4479,14 +4488,18 @@ var SAKURA_WEB3_CONFIG={
       'function getClaimable(address vault, address creator, address[] assets) view returns (uint256[])'
     ],
     bannerAds:[
-      'function buyBanner(uint256 tierIndex, address token, string imageURI, string tagline) payable returns (uint256)',
-      'function activeBanner() view returns (bool found, uint256 id, address token, string imageURI, string tagline, address payer, uint256 start, uint256 end)',
-      'function nextBanner() view returns (bool found, uint256 id, address token, string imageURI, string tagline, address payer, uint256 start, uint256 end)',
-      'function previewStart() view returns (uint256)',
-      'function tiers(uint256) view returns (uint256 durationSeconds, uint256 priceWei, bool active)',
+      'function tiers(uint256) view returns (uint256 durationSeconds, uint256 priceUsdX18, bool active)',
       'function tierCount() view returns (uint256)',
+      'function quoteNative(uint256 tierIndex) view returns (uint256)',
+      'function quoteERC20(uint256 tierIndex, address payAsset) view returns (uint256)',
+      'function buyBanner(uint256 tierIndex, address token, string imageURI, string tagline) payable returns (uint256)',
+      'function buyBannerERC20(uint256 tierIndex, address token, string imageURI, string tagline, address payAsset) returns (uint256)',
+      'function activeBanner() view returns (bool found, uint256 id, address token, string imageURI, string tagline, address curve, uint256 start, uint256 end)',
+      'function nextBanner() view returns (bool found, uint256 id, address token, string imageURI, string tagline, address curve, uint256 start, uint256 end)',
+      'function previewStart() view returns (uint256)',
       'function isSakuraToken(address) view returns (bool)',
       'function bannerCount() view returns (uint256)',
+      'function queueTail() view returns (uint256)',
       'function banners(uint256) view returns (address payer, address token, string imageURI, string tagline, uint256 start, uint256 end, bool removed)',
       'event BannerPurchased(uint256 indexed id, address indexed payer, address indexed token, uint256 tierIndex, uint256 priceWei, uint256 start, uint256 end)'
     ],
@@ -11375,9 +11388,9 @@ function profFullRetry(){
   ['fees','claimed','holdings','activity','volume','attrib'].forEach(function(sec){PROF.sec[sec]='idle';PROF.secAt[sec]=0});
   if(liveConnected)renderLiveProfile();
 }
-/* ================= Banner ads (SakuraBannerAds) =================
+/* ================= Banner ads (SakuraBannerAdsV2) =================
    The promoted-banner carousel below the hero banner is driven by
-   the SakuraBannerAds contract and carries PAID banners only: the
+   the SakuraBannerAdsV2 contract and carries PAID banners only: the
    active paid banner (when one is live), the next queued banner
    (when one is waiting), and the banner queued behind it. While
    none exists, the whole promo
@@ -11601,7 +11614,7 @@ async function refreshBanner(){
   try{
     var b=await bannerRead('Active banner read',function(c){return c.activeBanner()});
     if(b&&b[0]){
-      BANNER.active={id:String(b[1]),token:b[2],imageURI:b[3],tagline:b[4],payer:b[5],start:Number(b[6]),end:Number(b[7])};
+      BANNER.active={id:String(b[1]),token:b[2],imageURI:b[3],tagline:b[4],curve:b[5],start:Number(b[6]),end:Number(b[7])};
     }else{
       BANNER.active=null;
     }
@@ -11609,7 +11622,7 @@ async function refreshBanner(){
   try{
     var nx=await bannerRead('Next banner read',function(c){return c.nextBanner()});
     if(nx&&nx[0]){
-      BANNER.next={id:String(nx[1]),token:nx[2],imageURI:nx[3],tagline:nx[4],payer:nx[5],start:Number(nx[6]),end:Number(nx[7])};
+      BANNER.next={id:String(nx[1]),token:nx[2],imageURI:nx[3],tagline:nx[4],curve:nx[5],start:Number(nx[6]),end:Number(nx[7])};
     }else{
       BANNER.next=null;
     }
@@ -11667,7 +11680,7 @@ paintBannerSlot();
    form. Tiers are cached after the first successful read for the
    rest of the session; the queue and preview start ride the site's
    live refresh cycle via refreshPromoteData(). */
-var PROMOTE_PAGE={token:null,custom:{},tiers:null,tiersError:false,tiersBusy:false,selIndex:null,previewStart:0,startLoaded:false,startBusy:false,banners:null,queueError:false,queueBusy:false,queueSig:'',busy:false,done:false,imgTouched:false,imgAuto:'',loadedOnce:false,addrSeq:0,pendingSelect:null};
+var PROMOTE_PAGE={token:null,custom:{},tiers:null,tiersError:false,tiersBusy:false,selIndex:null,payAsset:'LOOP',quotes:{},quotesBusy:false,previewStart:0,startLoaded:false,startBusy:false,banners:null,queueError:false,queueBusy:false,queueSig:'',busy:false,done:false,imgTouched:false,imgAuto:'',loadedOnce:false,addrSeq:0,pendingSelect:null};
 function knownIpfsUri(addr){
   var b=loadTokenImageBinding(addr);
   if(b&&b.cid)return 'ipfs://'+b.cid;
@@ -11679,6 +11692,95 @@ function fmtTierDuration(sec){
   if(sec%86400===0){var d=sec/86400;return d+' day'+(d===1?'':'s')}
   if(sec%3600===0){var h=sec/3600;return h+' hour'+(h===1?'':'s')}
   var m=Math.round(sec/60);return m+' minute'+(m===1?'':'s');
+}
+/* ---- payment assets (SakuraBannerAdsV2) ----
+   A banner tier is priced in USD (priceUsdX18 on-chain). The buyer
+   pays that USD amount in one of three assets: LOOP, converted at
+   the contract's live quoteNative(), or tUSDC / tUSDT at the exact
+   quoteERC20() amount. The stablecoin addresses + decimals resolve
+   from the site's pair-asset registry — never duplicated here. */
+var PROMO_PAY_KEYS=['LOOP','tUSDC','tUSDT'];
+function promoPayAsset(){
+  var key=PROMOTE_PAGE.payAsset||'LOOP';
+  if(key!=='LOOP'){
+    var list=W3C.pairAssets||[];
+    for(var i=0;i<list.length;i++){if(list[i].symbol===key)return {key:key,symbol:list[i].symbol,address:list[i].address,decimals:list[i].decimals}}
+  }
+  return {key:'LOOP',symbol:'LOOP',address:null,decimals:18};
+}
+function fmtUsdX18(v){
+  try{return trimNumStr(unitsToDecimalStr(v,18))}catch(e){return '0'}
+}
+function fmtAssetAmt(v,dec){
+  try{return trimNumStr(unitsToDecimalStr(v,dec))}catch(e){return '0'}
+}
+/* The cached quote for one tier under the SELECTED payment asset
+   (null until loadPromoteQuotes lands). */
+function promoQuoteFor(x){
+  var q=PROMOTE_PAGE.quotes[promoPayAsset().key+':'+x.index];
+  return q==null?null:q;
+}
+/* Tier-card price line: the tier's USD price first, plus the
+   selected asset's quote once known — a LOOP estimate for LOOP,
+   the exact stable amount for tUSDC / tUSDT. */
+function tierPriceText(x){
+  var usd='$'+fmtUsdX18(x.priceUsd);
+  var pa=promoPayAsset(), q=promoQuoteFor(x);
+  if(q==null)return usd;
+  if(!pa.address)return usd+' · ≈ '+fmtEth(q)+' LOOP';
+  return usd+' · '+fmtAssetAmt(q,pa.decimals)+' '+pa.symbol;
+}
+/* Pay-button total: "≈ X LOOP ($Y)" for LOOP; the exact stable
+   amount with its USD price for tUSDC / tUSDT. */
+function promoTotalText(x){
+  var usd='$'+fmtUsdX18(x.priceUsd);
+  var pa=promoPayAsset(), q=promoQuoteFor(x);
+  if(q==null)return usd;
+  if(!pa.address)return '≈ '+fmtEth(q)+' LOOP ('+usd+')';
+  return fmtAssetAmt(q,pa.decimals)+' '+pa.symbol+' ('+usd+')';
+}
+/* Quotes for every on-sale tier under the selected asset, fetched
+   as one hedged batch. LOOP quotes move with the peg, so the live
+   refresh cycle invalidates them (see refreshPromoteData) and this
+   refetches; a failed read just leaves the USD price on the cards. */
+async function loadPromoteQuotes(){
+  if(PROMOTE_PAGE.quotesBusy)return;
+  if(!PROMOTE_PAGE.tiers||!PROMOTE_PAGE.tiers.length)return;
+  var pa=promoPayAsset();
+  var missing=PROMOTE_PAGE.tiers.some(function(x){return PROMOTE_PAGE.quotes[pa.key+':'+x.index]==null});
+  if(!missing)return;
+  PROMOTE_PAGE.quotesBusy=true;
+  try{
+    var tiers=PROMOTE_PAGE.tiers;
+    var qs=await bannerCall('Banner price quotes',async function(c){
+      var ps=tiers.map(function(x){return pa.address?c.quoteERC20(x.index,pa.address):c.quoteNative(x.index)});
+      return await Promise.all(ps);
+    },2);
+    tiers.forEach(function(x,i){PROMOTE_PAGE.quotes[pa.key+':'+x.index]=qs[i]});
+  }catch(e){/* quotes stay unset — prices fall back to the USD figure */}
+  PROMOTE_PAGE.quotesBusy=false;
+  renderPromoTiers(); syncPromoPay();
+}
+function renderPromoPayAssets(){
+  var box=el('promoPayAssets'); if(!box)return;
+  var btns=box.querySelectorAll('[data-asset]');
+  for(var i=0;i<btns.length;i++){
+    var on=btns[i].getAttribute('data-asset')===promoPayAsset().key;
+    btns[i].classList.toggle('sel',on);
+    btns[i].setAttribute('aria-checked',on?'true':'false');
+  }
+}
+function selectPromoPayAsset(key){
+  if(PROMO_PAY_KEYS.indexOf(key)<0)return;
+  if(PROMOTE_PAGE.payAsset===key)return;
+  PROMOTE_PAGE.payAsset=key;
+  renderPromoPayAssets(); renderPromoTiers(); syncPromoPay();
+  loadPromoteQuotes();
+}
+function setPromoBusy(title,sub){
+  var t=el('promoBusyTitle'),s=el('promoBusySub');
+  if(t)t.textContent=title;
+  if(s)s.textContent=sub;
 }
 /* One hedged banner read with its own retry + backoff. fn receives
    the attempt's banner contract (captured synchronously per attempt
@@ -11733,7 +11835,7 @@ function renderPromoteWallet(){
   if(liveConnected&&liveAccount){
     box.innerHTML='<div class="promo-wallet"><span class="promo-wdot" aria-hidden="true"></span><div class="promo-wallet-txt"><strong>Wallet connected</strong><span>'+truncAddr(liveAccount)+(liveChainOk?' · Loop':' · wrong network — switch to Loop to pay')+'</span></div></div>';
   }else{
-    box.innerHTML='<div class="promo-wallet off"><div class="promo-wallet-txt"><strong>Connect your wallet</strong><span>You pay in LOOP from your wallet — nothing is charged until you confirm.</span></div><button type="button" class="btn btn-primary" data-act="promote-connect" style="flex:none">Connect wallet</button></div>';
+    box.innerHTML='<div class="promo-wallet off"><div class="promo-wallet-txt"><strong>Connect your wallet</strong><span>You pay from your wallet in LOOP, tUSDC or tUSDT — nothing is charged until you confirm.</span></div><button type="button" class="btn btn-primary" data-act="promote-connect" style="flex:none">Connect wallet</button></div>';
   }
 }
 /* ---- (b) token picker ---- */
@@ -11875,7 +11977,7 @@ function renderPromoTiers(){
   if(!PROMOTE_PAGE.tiers.length){box.innerHTML='<p class="hint">No banner durations are on sale right now.</p>';return}
   box.innerHTML='<div class="tier-cards" role="radiogroup" aria-label="Banner duration">'+PROMOTE_PAGE.tiers.map(function(x){
     var sel=x.index===PROMOTE_PAGE.selIndex;
-    return '<button type="button" class="tier-card'+(sel?' sel':'')+'" role="radio" aria-checked="'+(sel?'true':'false')+'" data-act="promote-tier" data-idx="'+x.index+'"><span class="tier-dur">'+fmtTierDuration(x.duration)+'</span><span class="tier-price">'+fmtEth(x.price)+' LOOP</span></button>';
+    return '<button type="button" class="tier-card'+(sel?' sel':'')+'" role="radio" aria-checked="'+(sel?'true':'false')+'" data-act="promote-tier" data-idx="'+x.index+'"><span class="tier-dur">'+fmtTierDuration(x.duration)+'</span><span class="tier-price">'+tierPriceText(x)+'</span></button>';
   }).join('')+'</div>';
 }
 async function loadPromoteTiers(force){
@@ -11888,7 +11990,7 @@ async function loadPromoteTiers(force){
       var ps=[]; for(var i=0;i<n;i++)ps.push(c.tiers(i));
       var raw=await Promise.all(ps);
       var out=[];
-      raw.forEach(function(tr,i){if(tr[2])out.push({index:i,duration:Number(tr[0]),price:tr[1]})});
+      raw.forEach(function(tr,i){if(tr[2])out.push({index:i,duration:Number(tr[0]),priceUsd:tr[1]})});
       return out;
     },3);
     PROMOTE_PAGE.tiers=tiers;
@@ -11898,6 +12000,7 @@ async function loadPromoteTiers(force){
   }
   PROMOTE_PAGE.tiersBusy=false;
   renderPromoTiers(); syncPromoPay();
+  loadPromoteQuotes();
 }
 /* ---- queue: bannerCount + banners(i), FIFO ---- */
 function promoQueueRow(b,label,cls){
@@ -11981,6 +12084,9 @@ function refreshPromoteData(){
   if(!active&&PROMOTE_PAGE.loadedOnce)return;
   if(!window.ethers||!bannerRO)return;
   loadPromoteTiers(false);
+  /* Quotes track the live peg — drop the selected asset's cached
+     quotes each cycle so loadPromoteQuotes refetches them. */
+  if(PROMOTE_PAGE.tiers){var _pa=promoPayAsset();PROMOTE_PAGE.tiers.forEach(function(x){delete PROMOTE_PAGE.quotes[_pa.key+':'+x.index]});loadPromoteQuotes()}
   loadPromoteStart();
   loadPromoteQueue(false);
   maybePrefillPromoImg(false);
@@ -11995,7 +12101,7 @@ function syncPromoPay(){
   if(PROMOTE_PAGE.busy){btn.disabled=true;return}
   btn.disabled=false;
   if(!liveConnected)btn.textContent='Connect wallet to pay';
-  else if(t)btn.textContent='Buy banner · '+fmtEth(t.price)+' LOOP';
+  else if(t)btn.textContent='Buy banner · '+promoTotalText(t);
   else btn.textContent='Buy banner';
 }
 async function buyPromoteBanner(){
@@ -12017,11 +12123,29 @@ async function buyPromoteBanner(){
   PROMOTE_PAGE.busy=true; syncPromoPay();
   el('promoPayBtn').style.display='none';
   el('promoBusy').classList.add('show');
+  setPromoBusy('Checking the price…','Reading the live quote — nothing is sent yet.');
+  var pa=promoPayAsset();
   try{
+    /* Fresh quote at purchase time — the same quote functions the
+       tier cards and pay button display, re-read now so the amount
+       sent is the amount the contract requires right now. */
+    var quote=null;
+    try{quote=await bannerCall('Banner price quote',function(c){return pa.address?c.quoteERC20(tier.index,pa.address):c.quoteNative(tier.index)},2)}catch(e){}
+    if(quote==null){
+      PROMOTE_PAGE.busy=false;
+      el('promoBusy').classList.remove('show');
+      var ppbQ=el('promoPayBtn'); ppbQ.style.display='block'; ppbQ.classList.remove('cta-working');
+      syncPromoPay();
+      setPromoError('Couldn\'t fetch the current banner price — the Loop read didn\'t respond, so nothing was sent. Try again.');
+      return;
+    }
+    var paidTxt=!pa.address
+      ? '≈ '+fmtEth(quote)+' LOOP ($'+fmtUsdX18(tier.priceUsd)+')'
+      : fmtAssetAmt(quote,pa.decimals)+' '+pa.symbol+' ($'+fmtUsdX18(tier.priceUsd)+')';
     /* Balance pre-flight BEFORE any wallet prompt: the connected
-       account must cover the banner price + gas, read hedged. A
-       failed read is reported as a failed check, never guessed
-       as insufficient. */
+       account must cover the payment + gas, read hedged. A failed
+       read is reported as a failed check, never guessed as
+       insufficient. */
     var pBal=null;
     if(liveBalanceWei!=null&&cacheFresh(liveCache.balAt))pBal=liveBalanceWei;
     else{
@@ -12030,14 +12154,36 @@ async function buyPromoteBanner(){
       if(pBal!=null){liveBalanceWei=pBal;liveCache.balAt=Date.now()}
     }
     var pGas=await estimateGasCostWei(300000);
-    if(pBal==null||pBal<tier.price+pGas){
-      PROMOTE_PAGE.busy=false;
-      el('promoBusy').classList.remove('show');
-      var ppb0=el('promoPayBtn'); ppb0.style.display='block'; ppb0.classList.remove('cta-working');
-      syncPromoPay();
-      if(pBal==null)setPromoError('Couldn\'t check your LOOP balance — the Loop read didn\'t respond, so nothing was sent. Try again.');
-      else setPromoError('You need ≈ '+fmtEth(tier.price+pGas)+' LOOP — banner '+fmtEth(tier.price)+' + gas ≈ '+fmtEth(pGas)+'. You have '+fmtEth(pBal)+' LOOP.');
-      return;
+    /* LOOP pays quote × 1.01: the 1% buffer covers peg movement
+       between the quote and mining, and the contract refunds any
+       excess in the same transaction. */
+    var sendValue=pa.address?0n:(quote*101n/100n);
+    if(!pa.address){
+      if(pBal==null||pBal<sendValue+pGas){
+        PROMOTE_PAGE.busy=false;
+        el('promoBusy').classList.remove('show');
+        var ppb0=el('promoPayBtn'); ppb0.style.display='block'; ppb0.classList.remove('cta-working');
+        syncPromoPay();
+        if(pBal==null)setPromoError('Couldn\'t check your LOOP balance — the Loop read didn\'t respond, so nothing was sent. Try again.');
+        else setPromoError('You need ≈ '+fmtEth(sendValue+pGas)+' LOOP — banner ≈ '+fmtEth(quote)+' + gas ≈ '+fmtEth(pGas)+'. You have '+fmtEth(pBal)+' LOOP.');
+        return;
+      }
+    }else{
+      /* Stablecoin: the wallet must hold the exact quoted amount
+         of the asset, plus a little LOOP for gas. */
+      var sBal=null;
+      try{sBal=await withReadFailover('Banner payment balance',20000,function(){return tokenContract(pa.address).balanceOf(liveAccount)})}catch(e){}
+      if(sBal==null||sBal<quote||pBal==null||pBal<pGas){
+        PROMOTE_PAGE.busy=false;
+        el('promoBusy').classList.remove('show');
+        var ppb1=el('promoPayBtn'); ppb1.style.display='block'; ppb1.classList.remove('cta-working');
+        syncPromoPay();
+        if(sBal==null)setPromoError('Couldn\'t check your '+pa.symbol+' balance — the Loop read didn\'t respond, so nothing was sent. Try again.');
+        else if(sBal<quote)setPromoError('You need '+fmtAssetAmt(quote,pa.decimals)+' '+pa.symbol+' for this banner. You have '+fmtAssetAmt(sBal,pa.decimals)+' '+pa.symbol+'.');
+        else if(pBal==null)setPromoError('Couldn\'t check your LOOP balance for gas — the Loop read didn\'t respond, so nothing was sent. Try again.');
+        else setPromoError('You need a little LOOP for gas (≈ '+fmtEth(pGas)+'). You have '+fmtEth(pBal)+' LOOP.');
+        return;
+      }
     }
     /* Fresh queue read: the scheduled start is previewStart() at
        purchase time; the end is that start plus the tier duration. */
@@ -12048,9 +12194,31 @@ async function buyPromoteBanner(){
     var bp=new ethers.BrowserProvider(walletProvider());
     var signer=await bp.getSigner();
     var ads=new ethers.Contract(W3C.contracts.bannerAds,W3C.abi.bannerAds,signer);
-    armWalletHint('promo','promoWalletHint');
-    var tx=await ads.buyBanner(tier.index,token,imageURI,tagline,{value:tier.price});
-    clearWalletHint('promo','promoWalletHint');
+    var tx;
+    if(!pa.address){
+      setPromoBusy('Buying banner…','Confirm the purchase in your wallet app.');
+      armWalletHint('promo','promoWalletHint');
+      tx=await ads.buyBanner(tier.index,token,imageURI,tagline,{value:sendValue});
+      clearWalletHint('promo','promoWalletHint');
+    }else{
+      /* ERC20 path: when the ads contract's allowance is below the
+         quoted amount, approve exactly that amount first and wait
+         for it (its own wallet confirmation), then buyBannerERC20. */
+      var payTok=tokenContract(pa.address,signer);
+      var allow=await payTok.allowance(liveAccount,W3C.contracts.bannerAds);
+      if(allow<quote){
+        setPromoBusy('Approving '+pa.symbol+'…','Confirm the approval in your wallet app — step 1 of 2.');
+        armWalletHint('promo','promoWalletHint');
+        var aTx=await payTok.approve(W3C.contracts.bannerAds,quote);
+        clearWalletHint('promo','promoWalletHint');
+        toastTx('Approving '+pa.symbol+' for the banner…',aTx.hash);
+        await aTx.wait();
+      }
+      setPromoBusy('Buying banner…',allow<quote?'Confirm the purchase in your wallet app — step 2 of 2.':'Confirm the purchase in your wallet app.');
+      armWalletHint('promo','promoWalletHint');
+      tx=await ads.buyBannerERC20(tier.index,token,imageURI,tagline,pa.address);
+      clearWalletHint('promo','promoWalletHint');
+    }
     toastTx('Banner purchase pending…',tx.hash);
     var receipt=await tx.wait();
     /* The exact booked window + id come from the BannerPurchased event. */
@@ -12083,7 +12251,7 @@ async function buyPromoteBanner(){
       +'<div class="fee-row"><span style="color:var(--muted)">Starts</span><strong>'+(newStart<=nowS?'Now':fmtDateTime(newStart))+'</strong></div>'
       +'<div class="fee-row"><span style="color:var(--muted)">Ends</span><strong>'+fmtDateTime(newEnd)+'</strong></div>'
       +'<div class="fee-row"><span style="color:var(--muted)">Position</span><strong>'+posTxt+'</strong></div>'
-      +'<div class="fee-row"><span style="color:var(--muted)">Paid</span><strong>'+fmtEth(tier.price)+' LOOP</strong></div>'
+      +'<div class="fee-row"><span style="color:var(--muted)">Paid</span><strong>'+paidTxt+'</strong></div>'
       +'<button type="button" class="btn btn-primary" data-act="promote-again" style="width:100%;margin-top:14px;padding:13px">Buy another banner</button>';
     PROMOTE_PAGE.done=true;
     toastTx('Banner booked for '+(info.symbol?'$'+info.symbol:info.name),tx.hash);
@@ -12114,6 +12282,7 @@ function openPromotePage(preselect){
   renderPromoSelected();
   renderPromoPreview();
   renderPromoTiers();
+  renderPromoPayAssets();
   renderPromoQueue();
   renderPromoSummary();
   syncPromoPay();
@@ -12543,6 +12712,7 @@ async function bootLiveData(){
     else if(act==='promote-token')selectPromoteToken(b.getAttribute('data-addr'));
     else if(act==='promote-clear'){PROMOTE_PAGE.token=null;PROMOTE_PAGE.addrSeq++;var _ps=el('promoSearch');if(_ps)_ps.classList.remove('invalid');var _ph=el('promoSearchHint');if(_ph){_ph.textContent='Pick any token launched on Sakura — or paste its 0x address.';_ph.style.color=''}renderPromoSelected();renderPromoPreview();syncPromoPay()}
     else if(act==='promote-tier'){var pti=parseInt(b.getAttribute('data-idx'),10);if(!isNaN(pti)){PROMOTE_PAGE.selIndex=pti;renderPromoTiers();syncPromoPay()}}
+    else if(act==='promote-asset')selectPromoPayAsset(b.getAttribute('data-asset'));
     else if(act==='promote-pay')buyPromoteBanner();
     else if(act==='promote-retry-tiers')loadPromoteTiers(true);
     else if(act==='promote-retry-queue')loadPromoteQueue(true);
