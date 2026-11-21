@@ -744,6 +744,7 @@ button.pf-item:active{transform:scale(.985);opacity:.85}
 .d-socials a{width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;transition:border-color .15s,color .15s,transform .15s}
 .d-socials a:hover{border-color:var(--pink);color:var(--pink-dark)}
 .d-socials a:active{transform:scale(.96)}
+.d-socials .soc-off{width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--surface);color:var(--faint);display:inline-flex;align-items:center;justify-content:center;opacity:.5;cursor:not-allowed}
 .d-socials svg{width:19px;height:19px;display:block}
 .rail-empty{color:var(--muted);font-weight:700;font-size:14px;padding:20px 6px;margin:0}
 .copy-mini{width:30px;height:30px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;min-height:30px}
@@ -2154,7 +2155,7 @@ body.in-promote{padding-bottom:96px}
             <button type="button" class="ca-chip" id="dCaChip" data-act="copy-contract" aria-label="Copy token contract address"><span class="ca-tag">CA</span><span id="dAddrToken">—</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
             <button type="button" class="promote-btn" data-act="promote" aria-label="Promote this token with a banner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l5 4V6l-5 4H4Z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></svg>Promote</button>
           </div>
-          <div class="d-socials" id="dSocials" style="display:none"></div>
+          <div class="d-socials" id="dSocials"></div>
         </div>
       </div>
     </section>
@@ -2606,8 +2607,10 @@ function avatarStyle(t){return t.img?'background:var(--surface2)':artBg(t)}
 function petals(p){var n=Math.round(p/20),s="";for(var i=0;i<5;i++)s+='<span class="petal '+(i<n?'on':'')+'"></span>';return s}
 /* ===== Token social links (Website / X / Telegram) ==================
    Buyers vet a project through these links, so they render as real
-   buttons on the token page — one per link the creator actually
-   provided; a missing link renders NO button (never a dead one). */
+   buttons on the token page. The row is ALWAYS shown with exactly
+   three slots (X, Telegram, Website): a link the creator actually
+   provided renders as a live anchor; a missing link renders a
+   dimmed, non-interactive slot that goes nowhere. */
 var SOCIAL_ICONS={
  website:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.9 5.7 3.9 9s-1.4 6.4-3.9 9c-2.5-2.6-3.9-5.7-3.9-9S9.5 5.6 12 3Z"/></svg>',
  x:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 1.2h3.7l-8.1 9.2L24 22.8h-7.5l-5.8-7.6-6.7 7.6H.3l8.6-9.9L0 1.2h7.7l5.3 6.9 5.9-6.9Zm-1.3 19.5h2L6.5 3.3H4.3l13.3 17.4Z"/></svg>',
@@ -2618,13 +2621,21 @@ function paintSocials(box,socials){
   var s=socials||{}, html='';
   /* Defense in depth: only https:// values may ever become a live
      href, whatever store they came from — a poisoned stored value
-     (e.g. a javascript: URL) renders no anchor at all. */
+     (e.g. a javascript: URL) renders no anchor at all. The row is
+     always rendered with exactly three slots in X, Telegram,
+     Website order; a slot without a valid https:// link renders
+     as a dimmed, non-interactive span (no href, no handler, no
+     navigation) matching the disabled-option language used for
+     the Promote Video option (opacity .5, not-allowed cursor). */
   var xv=escHtml(s.x||''), tgv=escHtml(s.telegram||''), wv=escHtml(s.website||'');
   if(/^https:\/\//i.test(xv))html+='<a href="'+xv+'" target="_blank" rel="noopener noreferrer" aria-label="Token on X (opens in a new tab)" title="X (Twitter)">'+SOCIAL_ICONS.x+'</a>';
+  else html+='<span class="soc-off" aria-disabled="true" title="No X link">'+SOCIAL_ICONS.x+'</span>';
   if(/^https:\/\//i.test(tgv))html+='<a href="'+tgv+'" target="_blank" rel="noopener noreferrer" aria-label="Token on Telegram (opens in a new tab)" title="Telegram">'+SOCIAL_ICONS.telegram+'</a>';
+  else html+='<span class="soc-off" aria-disabled="true" title="No Telegram link">'+SOCIAL_ICONS.telegram+'</span>';
   if(/^https:\/\//i.test(wv))html+='<a href="'+wv+'" target="_blank" rel="noopener noreferrer" aria-label="Token website (opens in a new tab)" title="Website">'+SOCIAL_ICONS.website+'</a>';
+  else html+='<span class="soc-off" aria-disabled="true" title="No website link">'+SOCIAL_ICONS.website+'</span>';
   box.innerHTML=html;
-  box.style.display=html?'flex':'none';
+  box.style.display='flex';
 }
 function showSocialError(msg){
   var e=document.getElementById('socialError'); if(!e)return;
@@ -8584,7 +8595,7 @@ function resetDetailChrome(){
   var slr=el('tradeSlipRow'); if(slr)slr.style.display='none';
   var tn=el('tradeNote'); if(tn)tn.textContent='The price climbs as people buy. Sell back into the curve any time before graduation.';
   var cb=el('dChangeBig'); if(cb)cb.style.color='';
-  var ds=el('dSocials'); if(ds){ds.innerHTML='';ds.style.display='none'}
+  var ds=el('dSocials'); if(ds){paintSocials(ds,null)}
   var g4=el('dGen4Panels'); if(g4)g4.style.display='none';
   var sp=el('dSlipPop'); if(sp)sp.hidden=true;
   var ft=el('dFeeTip'); if(ft)ft.hidden=true;
