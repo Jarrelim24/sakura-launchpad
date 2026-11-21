@@ -8602,6 +8602,23 @@ async function anaLoadPots(){
   }
   var dest=LIVE_TOKENS.filter(function(t){return t.feeDestination===1||t.feeDestination===2});
   if(!dest.length){
+    if(!liveRegistryLoaded){
+      /* The registry has not completed a single read yet, so an
+         empty enumeration is not a chain fact: destination tokens
+         may exist that this pass cannot see (the Lens read is
+         still outstanding, or failing while the vault's
+         Blockscout scan succeeds on its own). Do NOT stamp DONE
+         or settle success on an unloaded registry — that
+         manufactured completion is what let a vault-only Creators
+         total publish as final on 21 Nov while the pots held
+         real flow. Leave the pass unsettled instead: the render
+         watchdog bounds it like any other fee pass (90s deadline
+         + grace, from the run stamp below) and forces the honest
+         failure state if the registry never arrives, and the
+         next live cycle re-invokes this pass once it has. */
+      if(!ANA_FEE_ST.pots.runAt)ANA_FEE_ST.pots.runAt=Date.now();
+      return;
+    }
     if(!ANA_POTS_DONE){ANA_POTS={flow:{},potNow:{}};ANA_POTS_DONE=true;anaPotsAt=Date.now()}
     ANA_FEE_ST.pots.settled=true; ANA_FEE_ST.pots.failed=false;
     return;
@@ -8702,8 +8719,7 @@ function anaRelAgo(ts){
    (when dest tokens exist) a completed pots pass — never partial. */
 function anaCreatorsRaw(){
   if(!ANA_VAULT_DONE)return null;
-  var hasDest=LIVE_TOKENS.some(function(t){return t.feeDestination===1||t.feeDestination===2});
-  if(hasDest&&!ANA_POTS_DONE)return null;
+  if(anaPotsRequired()&&!ANA_POTS_DONE)return null;
   var map={}, order=[];
   (ANALYTICS.feesByAsset||[]).forEach(function(r){
     var a=String(r.asset).toLowerCase();
@@ -8780,6 +8796,16 @@ function anaFeeSkelHtml(){
 function anaFeeFailHtml(){
   return '<div class="ana-fee-fail"><h4>Can\u2019t reach Loop right now</h4><p>Live data is unavailable, so nothing is shown instead of stale numbers.</p><button type="button" class="btn btn-primary" data-act="ana-fee-retry" style="min-height:48px;padding:12px 26px">Try again</button></div>';
 }
+/* Whether the Creators group's final state depends on the pots
+   pass: true when destination tokens exist in the registry — and
+   also while the registry has not completed a single read, when
+   their existence is simply unknown. An unloaded registry is not
+   proof that no destination tokens exist. Shared by the merge
+   gate and the blocker list so the two can never drift. */
+function anaPotsRequired(){
+  if(!liveRegistryLoaded)return true;
+  return LIVE_TOKENS.some(function(t){return t.feeDestination===1||t.feeDestination===2});
+}
 /* The passes a group's final state depends on (blueprint 6.4:
    the Creators total may not publish — or fail — without the
    pots pass whenever fee-destination tokens exist). Shared by
@@ -8787,7 +8813,7 @@ function anaFeeFailHtml(){
 function anaFeeBlockers(group){
   if(group==='protocol')return ['treasury'];
   var b=['vault'];
-  if(LIVE_TOKENS.some(function(t){return t.feeDestination===1||t.feeDestination===2}))b.push('pots');
+  if(anaPotsRequired())b.push('pots');
   return b;
 }
 function anaFeeGroupFailed(group){
