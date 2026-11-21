@@ -2616,9 +2616,13 @@ var SOCIAL_ICONS={
 function paintSocials(box,socials){
   if(!box)return;
   var s=socials||{}, html='';
-  if(s.website)html+='<a href="'+escHtml(s.website)+'" target="_blank" rel="noopener" aria-label="Token website (opens in a new tab)" title="Website">'+SOCIAL_ICONS.website+'</a>';
-  if(s.x)html+='<a href="'+escHtml(s.x)+'" target="_blank" rel="noopener" aria-label="Token on X (opens in a new tab)" title="X (Twitter)">'+SOCIAL_ICONS.x+'</a>';
-  if(s.telegram)html+='<a href="'+escHtml(s.telegram)+'" target="_blank" rel="noopener" aria-label="Token on Telegram (opens in a new tab)" title="Telegram">'+SOCIAL_ICONS.telegram+'</a>';
+  /* Defense in depth: only https:// values may ever become a live
+     href, whatever store they came from — a poisoned stored value
+     (e.g. a javascript: URL) renders no anchor at all. */
+  var xv=escHtml(s.x||''), tgv=escHtml(s.telegram||''), wv=escHtml(s.website||'');
+  if(/^https:\/\//i.test(xv))html+='<a href="'+xv+'" target="_blank" rel="noopener noreferrer" aria-label="Token on X (opens in a new tab)" title="X (Twitter)">'+SOCIAL_ICONS.x+'</a>';
+  if(/^https:\/\//i.test(tgv))html+='<a href="'+tgv+'" target="_blank" rel="noopener noreferrer" aria-label="Token on Telegram (opens in a new tab)" title="Telegram">'+SOCIAL_ICONS.telegram+'</a>';
+  if(/^https:\/\//i.test(wv))html+='<a href="'+wv+'" target="_blank" rel="noopener noreferrer" aria-label="Token website (opens in a new tab)" title="Website">'+SOCIAL_ICONS.website+'</a>';
   box.innerHTML=html;
   box.style.display=html?'flex':'none';
 }
@@ -5090,6 +5094,65 @@ function saveTokenSocials(addr,socials){
     m[String(addr).toLowerCase()]={website:socials.website||'',x:socials.x||'',telegram:socials.telegram||''};
     localStorage.setItem(SOCIAL_STORE_KEY,JSON.stringify(m));
   }catch(e){}
+}
+/* ===== On-chain socials (token metadataURI) ========================
+   Tokens launched with socials carry them inside the metadata JSON
+   stored on-chain (see liveCreate): {name, symbol, description,
+   socials:{website, x, telegram}}. Every visitor can read them back
+   via the token's public metadataURI() — no contract change, and
+   nothing is invented for tokens whose metadata has no socials key
+   (all tokens launched before this channel existed). Every candidate
+   value is re-run through the Create form's own normalizers and must
+   end up an https:// URL before it can render. Results are cached
+   per address for the session; concurrent calls share one promise. */
+var CHAIN_SOCIALS_CACHE={};
+function sanitizeChainSocials(raw){
+  if(!raw||typeof raw!=='object')return null;
+  var out={};
+  var w=normWebsite(raw.website||'');
+  if(!w.error&&w.url&&/^https:\/\//i.test(w.url))out.website=w.url;
+  var x=normSocialHandle(raw.x||raw.twitter||'','https://x.com/','X');
+  if(!x.error&&x.url&&/^https:\/\//i.test(x.url))out.x=x.url;
+  var tg=normSocialHandle(raw.telegram||'','https://t.me/','Telegram');
+  if(!tg.error&&tg.url&&/^https:\/\//i.test(tg.url))out.telegram=tg.url;
+  return (out.website||out.x||out.telegram)?out:null;
+}
+function socialsFromMetadataObj(obj){
+  if(!obj||typeof obj!=='object')return null;
+  if(obj.socials&&typeof obj.socials==='object'){
+    var s=sanitizeChainSocials(obj.socials);
+    if(s)return s;
+  }
+  if(obj.website||obj.x||obj.twitter||obj.telegram)return sanitizeChainSocials(obj);
+  return null;
+}
+function parseChainSocialsString(str){
+  if(typeof str!=='string')return Promise.resolve(null);
+  var s=str.trim();
+  if(!s)return Promise.resolve(null);
+  if(s.charAt(0)==='{'){
+    try{return Promise.resolve(socialsFromMetadataObj(JSON.parse(s)))}catch(e){return Promise.resolve(null)}
+  }
+  var url=null;
+  if(s.indexOf('ipfs://')===0)url=W3C.ipfs.gateway+s.slice(7);
+  else if(/^https:\/\//i.test(s))url=s;
+  if(!url)return Promise.resolve(null);
+  return fetch(url).then(function(r){return r.ok?r.json():null}).then(function(j){return socialsFromMetadataObj(j)}).catch(function(){return null});
+}
+function fetchChainSocials(address){
+  var key=String(address||'').toLowerCase();
+  if(!key)return Promise.resolve(null);
+  if(CHAIN_SOCIALS_CACHE[key])return CHAIN_SOCIALS_CACHE[key];
+  var p=(async function(){
+    try{
+      if(!readProvider||typeof ethers==='undefined')return null;
+      var tok=new ethers.Contract(address,W3C.abi.token,readProvider);
+      var uri=await tok.metadataURI();
+      return await parseChainSocialsString(uri);
+    }catch(e){return null}
+  })();
+  CHAIN_SOCIALS_CACHE[key]=p;
+  return p;
 }
 /* ===== Token images: local uploads + IPFS + resolution ==========
    Resolution order for a token's image: (1) metadata bound in code
@@ -8754,6 +8817,28 @@ function paintLiveDetail(t){
   var dDetP=el('dDetPair'); if(dDetP)dDetP.textContent=pInfo.sym+' · '+(pInfo.name||pInfo.sym);
   paintAbout(t,meta);
   paintSocials(el('dSocials'),loadTokenSocials(t.address));
+  /* On-chain socials repaint: the synchronous paint above covers
+     TOKEN_META / this browser's local store instantly; the token's
+     on-chain metadata is then read so links show for EVERY visitor.
+     Per field, on-chain values win and the local store fills gaps.
+     A TOKEN_META entry with a 'socials' property (even null) wins
+     outright — the chain fetch must never override it. The result
+     is discarded if the reader has since opened another token. */
+  (function(socAddr){
+    var m0=tokenMeta(socAddr);
+    if(m0&&'socials' in m0)return;
+    fetchChainSocials(socAddr).then(function(chain){
+      if(!chain)return;
+      if(detailMode!=='live'||!currentLive||String(currentLive.address).toLowerCase()!==String(socAddr).toLowerCase())return;
+      if(DETAIL_OPEN_TOKEN!==String(socAddr).toLowerCase())return;
+      var local=loadTokenSocials(socAddr)||{};
+      paintSocials(el('dSocials'),{
+        website:chain.website||local.website||'',
+        x:chain.x||local.x||'',
+        telegram:chain.telegram||local.telegram||''
+      });
+    });
+  })(t.address);
   el('stTicker').textContent='$'+t.symbol;
   el('stPrice').textContent=pInfo.native?fmtSpotDisp(t.spotPrice):(fmtPriceNum(Number(unitsToDecimalStr(t.spotPrice,pInfo.dec)))+' '+pInfo.sym);
   var df=el('dFees'); if(df)df.style.display='none';
@@ -10348,7 +10433,20 @@ async function liveCreate(){
        missing. The fee amount itself is unchanged either way. */
     var launchFee=(LENS_CONFIG&&LENS_CONFIG.launchFee!=null&&liveReadAgeMs()<=CACHE_TTL)?LENS_CONFIG.launchFee:await configRO.launchFee();
     var bp=new ethers.BrowserProvider(walletProvider());
-    var metadataURI=JSON.stringify({name:name,symbol:ticker,description:desc});
+    /* Socials ride the on-chain metadata JSON when the creator
+       provided any, so every visitor's browser can read them back
+       from the token's metadataURI() — the localStorage save below
+       stays as a same-browser fallback. No socials → the JSON is
+       exactly {name, symbol, description}, as before. */
+    var metaObj={name:name,symbol:ticker,description:desc};
+    if(soc.socials){
+      var ms={};
+      if(soc.socials.website)ms.website=soc.socials.website;
+      if(soc.socials.x)ms.x=soc.socials.x;
+      if(soc.socials.telegram)ms.telegram=soc.socials.telegram;
+      if(ms.website||ms.x||ms.telegram)metaObj.socials=ms;
+    }
+    var metadataURI=JSON.stringify(metaObj);
     var destIdx=feeDest==='buyback'?1:(feeDest==='holders'?2:0);
     /* Gen-7 createToken's 8th argument: the locked reward asset
        for Buyback & Burn / Holders launches — the wizard's Reward
