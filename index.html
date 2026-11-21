@@ -8108,7 +8108,7 @@ function anaPublishFees(wei,byAsset,completePass){
    figure in it came from a completed live scan, and any storage
    failure (quota, private mode) simply falls back to a full
    first-visit scan. */
-var ANA_CACHE_KEY='sakura.anaScan.v1';
+var ANA_CACHE_KEY='sakura.anaScan.v2';
 var anaCacheSaveTimer=null;
 function anaCacheSaveSoon(){
   if(anaCacheSaveTimer)return;
@@ -8117,7 +8117,7 @@ function anaCacheSaveSoon(){
 function anaCacheSaveNow(){
   try{
     var stored={};
-    try{var raw0=localStorage.getItem(ANA_CACHE_KEY);if(raw0){var pd=JSON.parse(raw0);if(pd&&pd.v===1&&pd.tokens)stored=pd.tokens}}catch(e){}
+    try{var raw0=localStorage.getItem(ANA_CACHE_KEY);if(raw0){var pd=JSON.parse(raw0);if(pd&&pd.v===2&&pd.tokens)stored=pd.tokens}}catch(e){}
     var entries=[];
     Object.keys(ANA_HIST).forEach(function(k){
       var h=ANA_HIST[k];
@@ -8132,7 +8132,7 @@ function anaCacheSaveNow(){
        quota, the largest histories are dropped first and simply
        rescan next visit. */
     entries.sort(function(a,b){return a[1].list.length-b[1].list.length});
-    var data={v:1,savedAt:Date.now(),tokens:{},
+    var data={v:2,savedAt:Date.now(),tokens:{},
       feesWei:ANALYTICS.feesAccruedWei!=null?ANALYTICS.feesAccruedWei.toString():null,
       feesByAsset:(ANALYTICS.feesByAsset||[]).map(function(r){return {asset:r.asset,amount:String(r.amount),symbol:r.symbol,decimals:r.decimals}})};
     while(true){
@@ -8148,7 +8148,7 @@ function anaCacheLoad(){
     var raw=localStorage.getItem(ANA_CACHE_KEY);
     if(!raw)return;
     var d=JSON.parse(raw);
-    if(!d||d.v!==1)return;
+    if(!d||d.v!==2)return;
     Object.keys(d.tokens||{}).forEach(function(k){
       var t=d.tokens[k];
       if(!t||!Array.isArray(t.list))return;
@@ -8284,15 +8284,17 @@ async function anaFetchHistoryRun(t,key){
       /* Leg lookups resolve in small batches with a yield point
          between them, so a Lens read starting mid-page is never
          stuck behind a whole page of transaction lookups. */
+      var legInfo=pairInfoForToken(t);
+      var legAsset=legInfo.native?BS_WLOOP:String(legInfo.addr).toLowerCase();
       var legs=[];
       for(var li=0;li<fresh.length;li+=8){
         if(!await anaYieldPoint())throw ANA_ABORT;
-        var part=await Promise.all(fresh.slice(li,li+8).map(function(e){return bsLoopAmount(e.transactionHash,cps)}));
+        var part=await Promise.all(fresh.slice(li,li+8).map(function(e){return bsLoopAmount(e.transactionHash,cps,legAsset)}));
         for(var lj=0;lj<part.length;lj++)legs.push(part[lj]);
       }
       fresh.forEach(function(e,i){
         var loop=0, leg=legs[i];
-        if(leg!=null){try{loop=Number(unitsToDecimalStr(leg,18))}catch(err){loop=0}}
+        if(leg!=null){try{var loopWei=pairToLoopWei(t,leg);if(loopWei!=null)loop=Number(unitsToDecimalStr(loopWei,18))}catch(err){loop=0}}
         trades.push({ts:e.ts,loop:loop,trader:String(e.args.trader).toLowerCase()});
       });
       pages++;
@@ -9180,6 +9182,7 @@ async function anaActTick(){
   try{
     anaActTxLoad(); anaActGradLoad();
     await anaActCollectTrades();
+    ANA_ACT.updatedAt=Date.now();
     await anaActCollectLaunches();
     await anaActCollectGrads();
     ANA_ACT.updatedAt=Date.now();
