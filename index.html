@@ -478,9 +478,6 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:20px 0 22px;colo
 #view-analytics .kv small .ana-help{margin:-7px -10px -7px -4px}
 .ana-up{color:var(--green)!important}
 .ana-down{color:var(--red)!important}
-#view-analytics .tc-tabs button{min-height:44px}
-#view-analytics .tc-tabs button:active{transform:scale(.985)}
-#view-analytics tbody tr.tc-row:active{opacity:.9}
 .ana-err{text-align:center;padding:38px 18px}
 .ana-err h3{font-size:19px;margin:0 0 8px}
 .ana-err p{color:var(--muted);font-weight:600;max-width:46ch;margin:0 auto 18px;font-size:14px}
@@ -542,41 +539,72 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:20px 0 22px;colo
 /* ===== Top Coins: interactive ranking ===== */
 .tc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
 .tc-head h3{margin:0}
-.tc-tabs{display:flex;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
-.tc-tabs button{border:0;background:transparent;border-radius:999px;padding:8px 16px;font-weight:800;font-size:13.5px;color:var(--muted);cursor:pointer;min-height:38px;transition:background .18s,color .18s,box-shadow .18s}
-.tc-tabs button:hover{color:var(--ink)}
-.tc-tabs button.active{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(25,18,24,.12)}
-.tc-sub{margin:0 0 6px;color:var(--muted);font-size:13.5px;font-weight:600}
 .tc-live{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 6px}
 .tc-live .livedot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none;animation:tcpulse 1.8s ease infinite}
 @keyframes tcpulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 35%, transparent)}50%{box-shadow:0 0 0 5px transparent}}
-.th-sort{border:0;background:none;padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px;min-height:32px}
-.th-sort .th-arrow{font-size:10px;color:var(--faint)}
-.ana-table th.sorted .th-sort,.ana-table th.sorted .th-sort .th-arrow{color:var(--pink-dark)}
-.ana-table tbody tr.tc-row{cursor:pointer}
-.ana-table tbody tr.tc-row:hover{background:var(--surface2)}
 .rank-num{font-weight:800}
 .rank-delta{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;padding:2px 6px;border-radius:999px;vertical-align:middle}
 .rank-delta.up{background:color-mix(in srgb,var(--green) 15%, transparent);color:var(--green)}
 .rank-delta.down{background:color-mix(in srgb,var(--red) 13%, transparent);color:var(--red)}
-@media(max-width:900px){
-  #topCoinsTable{display:block;width:100%}
-  #topCoinsTable thead{display:block}
-  #topCoinsTable thead tr{display:flex;width:100%;background:none;border:0;border-radius:0;margin:0;padding:0 6px;box-sizing:border-box}
-  #topCoinsTable th{display:block;padding:6px 4px;font-size:10.5px;overflow:hidden;text-align:left}
-  #topCoinsTable th:nth-child(1){flex:0 0 9%}
-  #topCoinsTable th:nth-child(2){flex:1 1 auto}
-  #topCoinsTable th:nth-child(3){display:none}
-  #topCoinsTable th:nth-child(4){display:none}
-  #topCoinsTable th:nth-child(5){flex:0 0 27%;text-align:right}
-  #topCoinsTable th:nth-child(6){flex:0 0 21%;text-align:right}
-  #topCoinsTable th:nth-child(7){display:none}
-  #topCoinsTable th .th-sort{min-height:28px}
-  #topCoinsTable tbody{display:block;width:100%}
-  #topCoinsTable tbody tr{display:block;width:100%;box-sizing:border-box}
-  #topCoinsTable td{width:100%;box-sizing:border-box}
-}
 @media(prefers-reduced-motion: reduce){.tc-live .livedot{animation:none}}
+/* ===== Analytics Fase 3: personal strip, Live Activity, Top Coins list ===== */
+.ana-strip-label{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.ana-strip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.ana-strip-fig{min-height:62px;border-radius:10px}
+.ana-strip-fig small{color:var(--muted);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;display:block}
+.ana-strip-fig strong{font-size:24px;display:block;margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.15}
+.ana-strip-fig.tap{cursor:pointer}
+.ana-strip-fig.tap:active{transform:scale(.985);opacity:.9}
+@media(max-width:560px){.ana-strip-fig strong{font-size:19px}}
+.ana-act-row{display:flex;align-items:center;gap:11px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;min-height:44px;border-radius:8px}
+.ana-act-row:first-child{border-top:0}
+.ana-act-row:active{transform:scale(.985);opacity:.9}
+.ana-badge{flex:none;font-size:10.5px;font-weight:800;letter-spacing:.04em;padding:4px 8px;border-radius:999px;text-align:center}
+.ana-badge.buy{background:color-mix(in srgb,var(--green) 16%, transparent);color:var(--green)}
+.ana-badge.sell{background:color-mix(in srgb,var(--red) 14%, transparent);color:var(--red)}
+.ana-badge.launch{background:color-mix(in srgb,#ff5c8a 16%, transparent);color:#ff5c8a}
+.ana-badge.grad{background:color-mix(in srgb,var(--gold) 16%, transparent);color:var(--gold)}
+.ana-act-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ana-act-name{font-weight:800;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ana-act-name small{color:var(--faint);font-weight:700}
+.ana-act-sub{display:flex;gap:10px;color:var(--muted);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden}
+.ana-act-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+.ana-act-time{color:var(--faint);font-size:11.5px;font-weight:600}
+.ana-act-exp{color:var(--pink-dark);font-size:12px;font-weight:700;text-decoration:none;min-height:24px;display:inline-flex;align-items:center}
+.ana-act-empty{color:var(--muted);font-weight:600;margin:6px 0 2px}
+.ana-act-skelrows{display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.tc2-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:11px 4px;cursor:pointer;font:inherit;color:inherit;min-height:44px;border-radius:8px}
+.tc2-row:first-child{border-top:0}
+.tc2-row:active{transform:scale(.985);opacity:.9}
+.tc2-rank{color:var(--faint);font-size:11px;font-weight:700;width:16px;flex:none;text-align:center}
+.tc2-ava{width:36px;height:36px;border-radius:11px;font-size:15px;flex:none}
+.tc2-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.tc2-name{font-weight:800;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc2-name small{color:var(--faint);font-weight:700}
+.tc2-sub{display:flex;gap:12px;color:var(--muted);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tc2-val{color:var(--ink);font-weight:700}
+.tc2-status{display:flex;align-items:center;gap:8px;min-height:14px}
+.tc2-bar{flex:0 0 74px;height:5px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.tc2-bar i{display:block;height:100%;background:#ff5c8a;border-radius:99px}
+.tc2-bar i.grad{background:var(--green)}
+.tc2-prog{color:var(--muted);font-size:11px;font-weight:600}
+.tc2-grad{color:var(--green);font-size:11px;font-weight:800}
+.tc2-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none;min-width:62px}
+.tc2-chg{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.tc2-chg.up{color:var(--green)}
+.tc2-chg.down{color:var(--red)}
+.tc2-desk{display:none}
+@media(min-width:1024px){
+  .tc2-desk{display:flex;flex-direction:column;gap:2px;flex:0 0 104px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:13px;min-width:0}
+  .tc2-desk small{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .tc2-desk span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+#topCoinsBody{position:relative}
+.tc2-empty{color:var(--muted);font-weight:600;margin:6px 0 2px}
+.tc2-skelrows{display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.tc2-viewall{background:none;border:0;color:var(--pink-dark);font-weight:800;font-size:13.5px;padding:10px 4px;min-height:44px;cursor:pointer;font-family:inherit}
+.tc2-viewall:active{transform:scale(.985);opacity:.9}
+@media(prefers-reduced-motion: reduce){.ana-strip-fig.tap:active,.ana-act-row:active,.tc2-row:active,.tc2-viewall:active{transform:none}}
 /* ===== Logo upload ===== */
 .logo-pick{display:flex;align-items:center;gap:11px;margin-top:9px}
 .logo-pick img{width:46px;height:46px;border-radius:12px;object-fit:cover;border:1px solid var(--line2);background:var(--surface2)}
@@ -2110,6 +2138,15 @@ body.in-promote{padding-bottom:96px}
       <button type="button" class="btn btn-primary" data-act="ana-retry" style="min-height:48px;padding:12px 26px">Try again</button>
     </div>
 
+    <div class="panel" id="anaStrip" style="display:none;margin-bottom:16px">
+      <div class="ana-strip-label">Your overview</div>
+      <div class="ana-strip-grid">
+        <div class="ana-strip-fig" id="anaStripTokens"><small>Your tokens</small><strong id="anaStripTokensVal"><span class="ana-skel"></span></strong></div>
+        <div class="ana-strip-fig" id="anaStripFees"><small>Claimable fees</small><strong id="anaStripFeesVal"><span class="ana-skel"></span></strong></div>
+        <div class="ana-strip-fig" id="anaStripTrades"><small>Your trades</small><strong id="anaStripTradesVal"><span class="ana-skel"></span></strong></div>
+      </div>
+    </div>
+
     <div class="ana-head-grid" role="group" aria-label="Platform totals, read live from Loop">
       <div class="stat-card"><small>Launches</small><strong id="anaLaunches"><span class="ana-skel"></span></strong><span id="anaLaunchesSub">All time</span></div>
       <div class="stat-card"><small>Graduated <button type="button" class="ana-help" data-act="ana-tip" data-tip="graduated" aria-label="What Graduated means"><span aria-hidden="true">?</span></button></small><strong id="anaGraduations"><span class="ana-skel"></span></strong><span id="anaGradRate">of all launches</span></div>
@@ -2150,17 +2187,31 @@ body.in-promote{padding-bottom:96px}
       <p class="ana-fee-updated" id="anaFeeUpdated"></p>
     </div>
 
+    <div class="panel" id="anaActPanel" style="margin-bottom:16px">
+      <div class="tc-head">
+        <h3>Live Activity<span class="ana-live" id="anaActLive"><span class="livedot" aria-hidden="true"></span><span id="anaActLiveText">Live on Loop</span></span></h3>
+      </div>
+      <div id="anaActBody"></div>
+      <p class="ana-fee-updated" id="anaActUpdated"></p>
+    </div>
+
     <div class="panel">
       <div class="tc-head">
-        <h3>Top Coins</h3>
-        <div class="tc-tabs" role="tablist" aria-label="Top Coins time window">
-          <button type="button" data-act="ana-tab" data-win="24h" role="tab" aria-selected="true" class="active">24H</button>
-          <button type="button" data-act="ana-tab" data-win="7d" role="tab" aria-selected="false">7D</button>
-          <button type="button" data-act="ana-tab" data-win="all" role="tab" aria-selected="false">All Time</button>
+        <h3>Top Coins <button type="button" class="ana-help" data-act="ana-tip" data-tip="mcap" aria-label="What Market cap means"><span aria-hidden="true">?</span></button></h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="ana-seg" role="tablist" aria-label="Top Coins time window">
+            <button type="button" data-act="ana-tab" data-win="24h" role="tab" aria-selected="true" class="active">24H</button>
+            <button type="button" data-act="ana-tab" data-win="7d" role="tab" aria-selected="false">7D</button>
+            <button type="button" data-act="ana-tab" data-win="all" role="tab" aria-selected="false">All Time</button>
+          </div>
+          <div class="ana-seg" role="tablist" aria-label="Top Coins sort">
+            <button type="button" data-act="ana-tc-sort" data-key="vol" role="tab" aria-selected="true" class="active">Volume</button>
+            <button type="button" data-act="ana-tc-sort" data-key="mcap" role="tab" aria-selected="false">Market Cap</button>
+          </div>
         </div>
       </div>
-      <p class="tc-sub" id="anaTopSub">Loading live data from Loop…</p>
-      <div class="trades-wrap"><table class="ana-table" id="topCoinsTable"><thead><tr><th>#</th><th>Coin</th><th class="num">Price</th><th class="num">Market Cap <button type="button" class="ana-help" data-act="ana-tip" data-tip="mcap" aria-label="What Market cap means"><span aria-hidden="true">?</span></button></th><th class="num sorted" id="thVol"><button class="th-sort" data-act="tc-sort" data-key="vol" aria-label="Sort Top Coins by volume">Volume <span class="th-arrow" id="arrowVol">▼</span></button></th><th class="num" id="thTrades"><button class="th-sort" data-act="tc-sort" data-key="trades" aria-label="Sort Top Coins by number of trades">Trades <span class="th-arrow" id="arrowTrades"></span></button></th><th>Status</th></tr></thead><tbody id="topCoinsBody"></tbody></table></div>
+      <div id="topCoinsBody"></div>
+      <button type="button" class="tc2-viewall" data-act="ana-view-all">View all tokens</button>
     </div>
     <p class="updated-note" id="anaDataNote">Live · Read from Loop on-chain data</p>
   </div></section>
@@ -4225,6 +4276,7 @@ document.addEventListener('click',function(e){
     else if(act==='tc-period')setTcPeriod(el.getAttribute('data-period'));
     else if(act==='tc-sort')setTcSort(el.getAttribute('data-key'));
     else if(act==='ana-tab')setAnaTab(el.getAttribute('data-win'));
+    else if(act==='ana-tc-sort')setAnaTcSort(el.getAttribute('data-key'));
     else if(act==='ana-range')setAnaRange(el.getAttribute('data-range'));
     else if(act==='ana-metric')setAnaMetric(el.getAttribute('data-metric'));
     else if(act==='ana-fee-tab')setAnaFeeTab(el.getAttribute('data-group'));
@@ -4339,6 +4391,7 @@ function goToView(name,anchor){
 function setTcPeriod(p){/* period tabs removed — on-chain figures are all-time */}
 function setTcSort(key){if(typeof liveTcSort==='function')liveTcSort(key)}
 function setAnaTab(w){if(typeof liveAnaTab==='function')liveAnaTab(w)}
+function setAnaTcSort(k){if(typeof liveAnaTcSort==='function')liveAnaTcSort(k)}
 function setAnaRange(r){if(typeof liveAnaRange==='function')liveAnaRange(r)}
 function setAnaMetric(m){if(typeof liveAnaMetric==='function')liveAnaMetric(m)}
 function setAnaFeeTab(g){if(typeof liveAnaFeeTab==='function')liveAnaFeeTab(g)}
@@ -4618,7 +4671,8 @@ var SAKURA_WEB3_CONFIG={
       'function feeRecipient() view returns (address)',
       'function pairAsset() view returns (address)',
       'function launchTimestamp() view returns (uint256)',
-      'event Trade(address indexed trader, bool indexed isBuy, uint256 pairAmount, uint256 tokenAmount, uint256 spotPriceAfter)'
+      'event Trade(address indexed trader, bool indexed isBuy, uint256 pairAmount, uint256 tokenAmount, uint256 spotPriceAfter)',
+      'event Graduate(address indexed pool, uint256 tokenAmount, uint256 pairAmount)'
     ],
     token:[
       'function name() view returns (string)',
@@ -7989,8 +8043,8 @@ function anaSetNum(id,val,fmt){
     if(p<1)requestAnimationFrame(step);
   })(t0);
 }
-function anaOnView(){anaFeeViewAt=Date.now();anaFeeWatchdogArm();anaKick();renderLiveAnalytics()}
-function anaOnLeave(){if(anaHistTimer){clearTimeout(anaHistTimer);anaHistTimer=null}}
+function anaOnView(){anaFeeViewAt=Date.now();anaFeeWatchdogArm();anaKick();renderLiveAnalytics();anaPhase3Timers()}
+function anaOnLeave(){if(anaHistTimer){clearTimeout(anaHistTimer);anaHistTimer=null}anaPhase3TimersStop()}
 /* The page can boot straight into #analytics (the hash router in
    the UI layer runs before this layer exists): adopt the visit.
    The registry-load render cycle re-kicks once the Lens payload
@@ -8993,56 +9047,644 @@ function anaRenderChart(){
     ANA_CHART_LAST=target;
   }
 }
+/* ================= Analytics Fase 3: strip, activity, Top Coins series =====
+   Blueprint 4.2 / 4.6 / 4.7. Everything here reads through the
+   ONE existing pipeline: the Lens registry (LIVE_TOKENS), the
+   Blockscout transfer index (bsFetchJson / bsTradeEvents /
+   bsLoopAmount), the Profile fee snapshot (PROF.snap.fees) and
+   the shared formatters. No section invents a number: a figure
+   whose source cannot support it is omitted, never approximated. */
+/* ----- cadence timers (blueprint 6.5): activity 15s, times 60s -- */
+var anaActTimer=null, anaTimeTimer=null;
+function anaPhase3Timers(){
+  if(anaActTimer)return;
+  anaActTimer=setInterval(function(){if(!document.hidden)anaActTick()},15000);
+  anaTimeTimer=setInterval(function(){if(!document.hidden){anaActPaintTimes();try{anaRenderStrip()}catch(e){}}},60000);
+  setTimeout(function(){if(anaViewOpen()&&!document.hidden)anaActTick()},800);
+}
+function anaPhase3TimersStop(){
+  if(anaActTimer){clearInterval(anaActTimer);anaActTimer=null}
+  if(anaTimeTimer){clearInterval(anaTimeTimer);anaTimeTimer=null}
+}
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&anaViewOpen())anaActTick()});
+/* ----- shared small formatters (blueprint 6.3) ---------------------
+   anaActRel: the Activity relative-time rule — the seconds form
+   is NOT used: under a minute reads "1m ago", then minutes, hours,
+   days up to 7 days, then a short date (MONTHS3 + day, no year).
+   anaRelAgo above is a different rule and stays untouched (the
+   Fees "Updated …" line depends on it). anaAddr63: 0x + 4 … 4 —
+   truncAddr (0x+4…5) belongs to other pages and is not changed. */
+function anaActRel(ts){
+  var s=Math.max(0,Math.floor(Date.now()/1000)-ts);
+  var m=Math.floor(s/60); if(m<1)m=1;
+  if(m<60)return m+'m ago';
+  var h=Math.floor(m/60); if(h<24)return h+'h ago';
+  var d=Math.floor(h/24); if(d<=7)return d+'d ago';
+  var dt=new Date(ts*1000);
+  return MONTHS3[dt.getMonth()]+' '+dt.getDate();
+}
+function anaAddr63(a){return a?a.slice(0,6)+'…'+a.slice(-4):''}
+/* ================= Personal strip (blueprint 4.2) =================
+   Rendered ONLY while a wallet is connected; with no wallet the
+   panel is display:none and holds no placeholder content. Every
+   figure is guarded by the account it belongs to: the token count
+   and the trade count filter on the connected account, and the
+   claimable figure consumes PROF.snap.fees — the Profile claim
+   snapshot itself, aligned via profReset + profKick exactly like
+   renderLiveProfile does — never a recomputation. */
+var ANA_STRIP_LAST={tok:'',fee:'',feeTap:null,trd:''};
+var anaStripRearmAt=0;
+function anaRenderStrip(){
+  var panel=el('anaStrip'); if(!panel)return;
+  if(!liveConnected||!liveAccount){
+    if(panel.style.display!=='none')panel.style.display='none';
+    ANA_STRIP_LAST={tok:'',fee:'',feeTap:null,trd:''};
+    return;
+  }
+  if(panel.style.display!=='block')panel.style.display='block';
+  var acct=String(liveAccount).toLowerCase();
+  /* Your tokens — final as soon as the registry lands (the same
+     finality as KPI 1–2). The figure always navigates to Profile ›
+     My Tokens. */
+  var tokFig=el('anaStripTokens');
+  if(tokFig&&!tokFig.getAttribute('data-act')){tokFig.setAttribute('data-act','ana-strip-tokens');tokFig.classList.add('tap')}
+  if(liveRegistryLoaded){
+    var cnt=0;
+    LIVE_TOKENS.forEach(function(t){if(t.creator&&String(t.creator).toLowerCase()===acct)cnt++});
+    if(ANA_STRIP_LAST.tok!==String(cnt)){ANA_STRIP_LAST.tok=String(cnt);var tn=el('anaStripTokensVal');if(tn)tn.textContent=fmtInt(cnt)}
+  }else if(ANA_STRIP_LAST.tok!=='skel'){ANA_STRIP_LAST.tok='skel';var tn2=el('anaStripTokensVal');if(tn2)tn2.innerHTML='<span class="ana-skel"></span>'}
+  /* Claimable fees — align the Profile store to this account,
+     then consume its snapshot with Profile's own display rule. A
+     failed fees pass keeps the skeleton; the strip re-arms it at
+     most once per 30s and shows no failure copy of its own (the
+     failure panel lives in Profile). */
+  var feeFig=el('anaStripFees'), feeVal=el('anaStripFeesVal');
+  if(typeof PROF!=='undefined'&&PROF){
+    if(PROF.acct!==acct)profReset(liveAccount);
+    var secFees=PROF.sec?PROF.sec.fees:null;
+    if(secFees==='idle'||secFees==='ok')profKick('fees',20000);
+    else if(secFees==='err'&&Date.now()-anaStripRearmAt>30000){anaStripRearmAt=Date.now();PROF.sec.fees='idle';profKick('fees',0)}
+    var fees=(PROF.acct===acct&&PROF.snap)?PROF.snap.fees:null;
+    if(fees){
+      var disp=fees.totalUsd!=null?anaFmtUsd(fees.totalUsd):((fees.rows&&fees.rows.length)?(fmtEth(fees.totalLoopWei)+' LOOP'):'$0.00');
+      if(ANA_STRIP_LAST.fee!==disp){ANA_STRIP_LAST.fee=disp;if(feeVal)feeVal.textContent=disp}
+      var tap=!!fees.anyClaim;
+      if(ANA_STRIP_LAST.feeTap!==tap){
+        ANA_STRIP_LAST.feeTap=tap;
+        if(feeFig){if(tap){feeFig.setAttribute('data-act','ana-strip-fees');feeFig.classList.add('tap')}else{feeFig.removeAttribute('data-act');feeFig.classList.remove('tap')}}
+      }
+    }else{
+      if(ANA_STRIP_LAST.fee!=='skel'){ANA_STRIP_LAST.fee='skel';ANA_STRIP_LAST.feeTap=null;if(feeVal)feeVal.innerHTML='<span class="ana-skel"></span>';if(feeFig){feeFig.removeAttribute('data-act');feeFig.classList.remove('tap')}}
+    }
+  }
+  /* Your trades — this wallet's trades in the last 24h across all
+     tokens; final only when every history has settled (the same
+     gate as KPI 3–4). Never interactive. */
+  if(anaAllSettled()){
+    var nowS=Math.floor(Date.now()/1000), tc=0;
+    Object.keys(ANA_HIST).forEach(function(k){
+      var h=ANA_HIST[k]; if(!h||!h.list)return;
+      h.list.forEach(function(x){if(x.trader===acct&&nowS-x.ts<=86400)tc++});
+    });
+    if(ANA_STRIP_LAST.trd!==String(tc)){ANA_STRIP_LAST.trd=String(tc);var rn=el('anaStripTradesVal');if(rn)rn.textContent=fmtInt(tc)}
+  }else if(ANA_STRIP_LAST.trd!=='skel'){ANA_STRIP_LAST.trd='skel';var rn2=el('anaStripTradesVal');if(rn2)rn2.innerHTML='<span class="ana-skel"></span>'}
+}
+/* ================= Live Activity (blueprint 4.6) =================
+   One store, three sources, all through the site's existing read
+   pipeline: trades rotate over the registry's most recently
+   active tokens via the Blockscout transfers index (classified by
+   bsTradeEvents, pair legs resolved by bsLoopAmount — an event
+   whose leg never resolves renders WITHOUT an amount rather than
+   with an invented one); launches derive from registry launchTs
+   with their creation transaction resolved once (factory
+   TokenCreated scan, Blockscout creation hash as fallback) and
+   cached forever; graduations read each graduated curve's
+   Graduate event once and cache it forever — a curve whose event
+   cannot be read simply produces no GRADUATED row. */
+var ANA_ACT={store:{},rot:0,busy:false,updatedAt:0,sig:'',rendered:false,launchTx:{},txLoaded:false,launchScanDone:{},launchBsTried:{},grad:{},gradLoaded:false,gradTries:{}};
+var ANA_ACT_LS_TX='sakura.anaLaunchTx.v1', ANA_ACT_LS_GRAD='sakura.anaGrad.v1';
+function anaActTxLoad(){
+  if(ANA_ACT.txLoaded)return; ANA_ACT.txLoaded=true;
+  try{var raw=localStorage.getItem(ANA_ACT_LS_TX);if(raw){var o=JSON.parse(raw);if(o&&typeof o==='object')ANA_ACT.launchTx=o}}catch(e){}
+}
+function anaActTxSave(){try{localStorage.setItem(ANA_ACT_LS_TX,JSON.stringify(ANA_ACT.launchTx))}catch(e){}}
+function anaActGradLoad(){
+  if(ANA_ACT.gradLoaded)return; ANA_ACT.gradLoaded=true;
+  try{var raw=localStorage.getItem(ANA_ACT_LS_GRAD);if(raw){var o=JSON.parse(raw);if(o&&typeof o==='object')ANA_ACT.grad=o}}catch(e){}
+}
+function anaActGradSave(){try{localStorage.setItem(ANA_ACT_LS_GRAD,JSON.stringify(ANA_ACT.grad))}catch(e){}}
+async function anaActTick(){
+  if(ANA_ACT.busy||!anaViewOpen()||document.hidden)return;
+  if(!liveRegistryLoaded)return;
+  ANA_ACT.busy=true;
+  try{
+    anaActTxLoad(); anaActGradLoad();
+    await anaActCollectTrades();
+    await anaActCollectLaunches();
+    await anaActCollectGrads();
+    ANA_ACT.updatedAt=Date.now();
+  }catch(e){}
+  ANA_ACT.busy=false;
+  try{anaRenderActivity()}catch(e){}
+  try{anaRenderStrip()}catch(e){}
+}
+async function anaActCollectTrades(){
+  var toks=LIVE_TOKENS.slice().sort(function(a,b){
+    var ka=String(a.address).toLowerCase(), kb=String(b.address).toLowerCase();
+    var la=(TOKEN_SUMMARIES[ka]&&TOKEN_SUMMARIES[ka].lastTs)||a.launchTs||0;
+    var lb=(TOKEN_SUMMARIES[kb]&&TOKEN_SUMMARIES[kb].lastTs)||b.launchTs||0;
+    return lb-la;
+  });
+  if(!toks.length)return;
+  var n=Math.min(8,toks.length), start=ANA_ACT.rot%toks.length, batch=[];
+  for(var i=0;i<n;i++)batch.push(toks[(start+i)%toks.length]);
+  ANA_ACT.rot=(start+n)%toks.length;
+  var pending=[];
+  function queueLeg(key,t,tx){
+    var info=pairInfoForToken(t);
+    var cps=[]; if(t.curve)cps.push(String(t.curve).toLowerCase()); if(t.pairAddr)cps.push(String(t.pairAddr).toLowerCase());
+    pending.push({key:key,tx:tx,cps:cps,legAsset:info.native?BS_WLOOP:String(info.addr).toLowerCase(),info:info});
+  }
+  for(var bi=0;bi<batch.length;bi++){
+    if(!await anaYieldPoint())return;
+    var t=batch[bi], d=null;
+    try{d=await bsFetchJson('/tokens/'+t.address+'/transfers')}catch(e){d=null}
+    if(!d)continue;
+    bsTradeEvents(t,(d&&d.items)||[]).forEach(function(e){
+      if(e.ts==null||!e.transactionHash)return;
+      var key='t|'+String(e.transactionHash).toLowerCase()+'|'+String(e.index)+'|'+String(e.args.trader);
+      var ex=ANA_ACT.store[key];
+      if(ex){if(ex.amountTxt==null&&!ex.legDead)queueLeg(key,t,e.transactionHash);return}
+      ANA_ACT.store[key]={kind:e.args.isBuy?'buy':'sell',addr:t.address,name:t.name,ticker:t.symbol,trader:String(e.args.trader),amountTxt:null,ts:e.ts,tx:e.transactionHash,key:key,legTries:0,legDead:false};
+      queueLeg(key,t,e.transactionHash);
+    });
+  }
+  /* Legs that failed on earlier ticks retry here — bsLoopAmount's
+     own attempt-bounded cache decides when a leg is truly absent;
+     after 12 tries the event keeps rendering without an amount. */
+  var queued={}; pending.forEach(function(p){queued[p.key]=1});
+  Object.keys(ANA_ACT.store).forEach(function(k){
+    var ev=ANA_ACT.store[k];
+    if((ev.kind==='buy'||ev.kind==='sell')&&ev.amountTxt==null&&!ev.legDead&&!queued[k]){
+      var t=LIVE_BY_ADDR[String(ev.addr).toLowerCase()];
+      if(t)queueLeg(k,t,ev.tx);
+    }
+  });
+  for(var li=0;li<pending.length;li+=8){
+    if(!await anaYieldPoint())return;
+    var part=pending.slice(li,li+8);
+    var legs=await Promise.all(part.map(function(p){return bsLoopAmount(p.tx,p.cps,p.legAsset)}));
+    part.forEach(function(p,ix){
+      var ev=ANA_ACT.store[p.key]; if(!ev)return;
+      var leg=legs[ix];
+      if(leg!=null){try{ev.amountTxt=p.info.native?(fmtEth(leg)+' LOOP'):(fmtUnitsSmart(leg,p.info.dec)+' '+p.info.sym)}catch(e){}}
+      else{ev.legTries=(ev.legTries||0)+1;if(ev.legTries>=12)ev.legDead=true}
+    });
+  }
+  /* Prune: at most ~80 trade events, newest kept. Launches and
+     graduations are derived/cached per token, never pruned. */
+  var trades=Object.keys(ANA_ACT.store).map(function(k){return ANA_ACT.store[k]}).filter(function(e){return e.kind==='buy'||e.kind==='sell'});
+  if(trades.length>80){
+    trades.sort(function(a,b){return b.ts-a.ts});
+    trades.slice(80).forEach(function(e){delete ANA_ACT.store[e.key]});
+  }
+}
+async function anaActCollectLaunches(){
+  anaActTxLoad();
+  /* One unfiltered TokenCreated scan per factory (ever) maps every
+     token to its launch transaction; results are immutable and
+     cached in localStorage. */
+  var facs=(W3C.contracts.factories||[]).map(function(f){return typeof f==='string'?f:(f.address||f.addr)}).filter(Boolean);
+  var nextFac=null;
+  for(var fi=0;fi<facs.length;fi++){if(!ANA_ACT.launchScanDone[String(facs[fi]).toLowerCase()]){nextFac=facs[fi];break}}
+  if(nextFac&&typeof window.ethers!=='undefined'&&typeof readProvider!=='undefined'&&readProvider){
+    try{
+      var fac=new ethers.Contract(nextFac,W3C.abi.factory,readProvider);
+      var evs=await queryChunked(fac,fac.filters.TokenCreated(),function(){var c=new ethers.Contract(nextFac,W3C.abi.factory,readProvider);return [c,c.filters.TokenCreated()]});
+      (evs||[]).forEach(function(e){if(e.args&&e.args.token)ANA_ACT.launchTx[String(e.args.token).toLowerCase()]=e.transactionHash});
+      ANA_ACT.launchScanDone[String(nextFac).toLowerCase()]=1;
+      anaActTxSave();
+    }catch(e){/* stays unscanned; the fallback below covers visible rows */}
+  }
+  /* Fallback for the newest launches still missing a transaction:
+     the explorer's indexed creation hash for the token address. */
+  var launches=LIVE_TOKENS.filter(function(t){return !!t.launchTs}).slice().sort(function(a,b){return b.launchTs-a.launchTs}).slice(0,12);
+  var tried=0;
+  for(var i=0;i<launches.length&&tried<2;i++){
+    var key=String(launches[i].address).toLowerCase();
+    if(ANA_ACT.launchTx[key]||ANA_ACT.launchBsTried[key])continue;
+    ANA_ACT.launchBsTried[key]=1; tried++;
+    try{var ad=await bsFetchJson('/addresses/'+launches[i].address);if(ad&&ad.creation_transaction_hash){ANA_ACT.launchTx[key]=ad.creation_transaction_hash;anaActTxSave()}}catch(e){}
+  }
+}
+async function anaActCollectGrads(){
+  anaActGradLoad();
+  var todo=LIVE_TOKENS.filter(function(t){
+    var key=String(t.address).toLowerCase();
+    return t.graduated&&t.curve&&!ANA_ACT.grad[key]&&((ANA_ACT.gradTries[key]||0)<3);
+  }).slice(0,3);
+  for(var i=0;i<todo.length;i++){
+    if(!await anaYieldPoint())return;
+    var t=todo[i], key=String(t.address).toLowerCase();
+    ANA_ACT.gradTries[key]=(ANA_ACT.gradTries[key]||0)+1;
+    try{
+      if(typeof window.ethers==='undefined')break;
+      var cv=curveContract(t.curve);
+      var evs=await queryChunked(cv,cv.filters.Graduate(),function(){var c=curveContract(t.curve);return [c,c.filters.Graduate()]});
+      if(evs&&evs.length){
+        var e0=evs[0];
+        var tsMap=await profBlockTsMap([e0.blockNumber]);
+        var ts=tsMap[e0.blockNumber]||null;
+        if(ts!=null){
+          var info=pairInfoForToken(t);
+          var amt=info.native?(fmtEth(e0.args.pairAmount)+' LOOP'):(fmtUnitsSmart(e0.args.pairAmount,info.dec)+' '+info.sym);
+          ANA_ACT.grad[key]={ts:ts,tx:e0.transactionHash,amountTxt:amt};
+          anaActGradSave();
+        }
+      }
+    }catch(e){/* no GRADUATED row for this token — never fabricated */}
+  }
+}
+function anaActEvents(){
+  anaActTxLoad(); anaActGradLoad();
+  var out=[];
+  Object.keys(ANA_ACT.store).forEach(function(k){out.push(ANA_ACT.store[k])});
+  LIVE_TOKENS.forEach(function(t){
+    var key=String(t.address).toLowerCase();
+    if(t.launchTs)out.push({kind:'launch',addr:t.address,name:t.name,ticker:t.symbol,pairSym:pairInfoForToken(t).sym,ts:t.launchTs,tx:ANA_ACT.launchTx[key]||null,key:'l|'+key});
+    var g=ANA_ACT.grad[key];
+    if(g)out.push({kind:'graduated',addr:t.address,name:t.name,ticker:t.symbol,amountTxt:g.amountTxt,ts:g.ts,tx:g.tx,key:'g|'+key});
+  });
+  out.sort(function(a,b){return (b.ts-a.ts)||(a.key<b.key?-1:(a.key>b.key?1:0))});
+  return out.slice(0,10);
+}
+function anaActRowHtml(ev){
+  var badge=ev.kind==='buy'?'<span class="ana-badge buy">BUY</span>':ev.kind==='sell'?'<span class="ana-badge sell">SELL</span>':ev.kind==='launch'?'<span class="ana-badge launch">LAUNCH</span>':'<span class="ana-badge grad">GRADUATED</span>';
+  var sub='';
+  if(ev.kind==='buy'||ev.kind==='sell'){
+    sub='<span>'+anaAddr63(ev.trader)+'</span>'+(ev.amountTxt?'<span>'+escHtml(ev.amountTxt)+'</span>':'');
+  }else if(ev.kind==='launch'){
+    sub='<span>'+escHtml(ev.pairSym||'')+'</span>';
+  }else if(ev.amountTxt){
+    sub='<span>'+escHtml(ev.amountTxt)+'</span>';
+  }
+  var href=ev.tx?(W3C.explorer+'/tx/'+ev.tx):(W3C.explorer+'/address/'+ev.addr);
+  return badge+'<span class="ana-act-main"><span class="ana-act-name">'+escHtml(ev.name)+' <small>$'+escHtml(ev.ticker)+'</small></span><span class="ana-act-sub">'+sub+'</span></span>'
+    +'<span class="ana-act-right"><span class="ana-act-time" data-ts="'+ev.ts+'">'+anaActRel(ev.ts)+'</span><a class="ana-act-exp" data-act="ana-act-exp" href="'+href+'" target="_blank" rel="noopener">Explorer ↗</a></span>';
+}
+function anaActPaintTimes(){
+  var body=el('anaActBody');
+  if(body)body.querySelectorAll('.ana-act-time[data-ts]').forEach(function(n){
+    var ts=Number(n.getAttribute('data-ts'));
+    if(ts){var v=anaActRel(ts);if(n.textContent!==v)n.textContent=v}
+  });
+  var up=el('anaActUpdated');
+  if(up){var ut=ANA_ACT.updatedAt?('Updated '+anaRelAgo(ANA_ACT.updatedAt)):'';if(up.textContent!==ut)up.textContent=ut}
+}
+function anaRenderActivity(){
+  var body=el('anaActBody'); if(!body)return;
+  var lb=el('anaActLive'), lt=el('anaActLiveText');
+  if(lb&&lt){var ok=liveLoadState==='ok';var want=ok?'Live on Loop':'Reconnecting…';if(lt.textContent!==want)lt.textContent=want;lb.classList.toggle('off',!ok)}
+  anaActPaintTimes();
+  if(!liveRegistryLoaded){
+    if(ANA_ACT.sig!=='skel'){ANA_ACT.sig='skel';body.innerHTML='<div class="ana-act-skelrows"><span class="ana-skel" style="width:100%;height:44px"></span><span class="ana-skel" style="width:100%;height:44px"></span><span class="ana-skel" style="width:100%;height:44px"></span></div>'}
+    return;
+  }
+  var evs=anaActEvents();
+  if(!evs.length){
+    if(ANA_ACT.sig!=='empty'){ANA_ACT.sig='empty';body.innerHTML='<p class="ana-act-empty">No activity yet.</p>'}
+    return;
+  }
+  var sig=evs.map(function(e){return e.key+'|'+(e.amountTxt||'')+'|'+(e.tx||'')}).join(';');
+  if(sig===ANA_ACT.sig)return;
+  var existing={}, hasRows=false;
+  Array.prototype.slice.call(body.children).forEach(function(n){if(n.dataset&&n.dataset.key){existing[n.dataset.key]=n;hasRows=true}});
+  if(!hasRows)body.innerHTML='';
+  var firstDone=ANA_ACT.rendered;
+  evs.forEach(function(ev){
+    var node=existing[ev.key];
+    if(node){
+      delete existing[ev.key];
+      var h=anaActRowHtml(ev);
+      if(node._h!==h){node.innerHTML=h;node._h=h}
+    }else{
+      node=document.createElement('div');
+      node.className='ana-act-row';
+      node.setAttribute('data-act','live-token');
+      node.setAttribute('data-addr',ev.addr);
+      node.setAttribute('role','button');
+      node.setAttribute('tabindex','0');
+      node.dataset.key=ev.key;
+      node._h=anaActRowHtml(ev);
+      node.innerHTML=node._h;
+      if(firstDone&&!ANA_RM&&node.animate){
+        try{
+          node.animate([{transform:'translateY(-8px)'},{transform:'translateY(0)'}],{duration:250,easing:'ease-out'});
+          node.animate([{backgroundColor:'rgba(255,92,138,0.08)'},{backgroundColor:'rgba(255,92,138,0)'}],{duration:600,easing:'ease-out'});
+        }catch(e){}
+      }
+    }
+    body.appendChild(node);
+  });
+  Object.keys(existing).forEach(function(k){existing[k].remove()});
+  ANA_ACT.sig=sig; ANA_ACT.rendered=true;
+}
+/* ================= Top Coins price series (blueprint 4.7) ========
+   ANA_HIST holds no per-trade price, so % change and the sparkline
+   need their own pass over the SAME Blockscout machinery: walk a
+   token's transfers newest-first (max 12 pages), resolve each
+   trade's pair leg, and record {ts, px} with px = leg ÷ token
+   amount (a float ratio in pair-asset base units per token base
+   unit — unit-consistent within a token, and both outputs are
+   unit-invariant). A pass stops once the walk covers the last 7
+   days; reaching the token's first trade (or running out of
+   pages) marks the series exhausted, which is what licenses the
+   All Time figures. Honesty rule: a row shows % change + sparkline
+   ONLY when anaTcChange and anaTcSpark both return values for the
+   selected range — otherwise both are omitted for that row. */
+var ANA_TC_SERIES={}, ANA_TC_SERIES_AT={}, ANA_TC_SERIES_INFLIGHT={};
+var ANA_TC_HOLDERS={}, ANA_TC_HOLDERS_INFLIGHT={};
+var anaTcSort='vol';
+function liveAnaTcSort(k){if(k==='vol'||k==='mcap'){anaTcSort=k;try{renderLiveAnalytics()}catch(e){}}}
+/* Pure: percent change of a price series over a window. startTs is
+   the window start in seconds, or null for All Time. Reference =
+   last point at or before startTs; if none and the series reaches
+   the token's first trade (firstEver), the first point; if none
+   and not firstEver, null. Current = last point overall. Null when
+   the reference is missing, non-positive, or the same single point
+   as the current price. */
+function anaTcChange(pts,startTs,firstEver){
+  if(!pts||!pts.length)return null;
+  var lastI=pts.length-1, refI=-1;
+  if(startTs==null){
+    if(!firstEver)return null;
+    refI=0;
+  }else{
+    for(var i=lastI;i>=0;i--){if(pts[i].ts<=startTs){refI=i;break}}
+    if(refI<0){if(firstEver)refI=0;else return null}
+  }
+  if(refI===lastI)return null;
+  var ref=pts[refI].px, cur=pts[lastI].px;
+  if(!(ref>0)||!(cur>0))return null;
+  return (cur-ref)/ref*100;
+}
+/* Pure: 7 carry-forward samples evenly spaced across the window
+   (All Time spans the token's life and requires firstEver).
+   Samples before the first point are dropped from the front;
+   fewer than 2 remaining values returns null. */
+function anaTcSpark(pts,startTs,nowTs,firstEver){
+  if(!pts||!pts.length)return null;
+  var from;
+  if(startTs==null){
+    if(!firstEver)return null;
+    from=pts[0].ts;
+  }else from=startTs;
+  if(!(nowTs>from))return null;
+  var vals=[];
+  for(var i=0;i<7;i++){
+    var st=from+(nowTs-from)*i/6, v=null;
+    for(var j=pts.length-1;j>=0;j--){if(pts[j].ts<=st){v=pts[j].px;break}}
+    vals.push(v);
+  }
+  while(vals.length&&vals[0]==null)vals.shift();
+  if(vals.length<2)return null;
+  for(var k=0;k<vals.length;k++){if(vals[k]==null)return null}
+  return vals;
+}
+function anaTcSparkSvg(vals,up){
+  var w=62,h=24,pad=2;
+  var min=Math.min.apply(null,vals), max=Math.max.apply(null,vals), rng=(max-min)||1;
+  var pts=vals.map(function(v,i){
+    var x=pad+(w-2*pad)*i/(vals.length-1);
+    var y=pad+(h-2*pad)*(1-(v-min)/rng);
+    return x.toFixed(1)+','+y.toFixed(1);
+  }).join(' ');
+  return '<svg class="tc2-spark" width="62" height="24" viewBox="0 0 62 24" aria-hidden="true"><polyline points="'+pts+'" fill="none" stroke="'+(up?'var(--green)':'var(--red)')+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+}
+function anaTcSeriesKick(feedRows){
+  if(!anaViewOpen())return;
+  var now=Date.now();
+  (feedRows||[]).forEach(function(f){
+    var key=String(f.addr).toLowerCase();
+    if(ANA_TC_SERIES_INFLIGHT[key])return;
+    if(ANA_TC_SERIES_AT[key]&&now-ANA_TC_SERIES_AT[key]<60000)return;
+    var t=LIVE_BY_ADDR[key]; if(!t)return;
+    ANA_TC_SERIES_AT[key]=now; ANA_TC_SERIES_INFLIGHT[key]=1;
+    anaTcSeriesRun(t,key);
+  });
+}
+async function anaTcSeriesRun(t,key){
+  try{
+    var info=pairInfoForToken(t);
+    var cps=[]; if(t.curve)cps.push(String(t.curve).toLowerCase()); if(t.pairAddr)cps.push(String(t.pairAddr).toLowerCase());
+    var legAsset=info.native?BS_WLOOP:String(info.addr).toLowerCase();
+    var nowS=Math.floor(Date.now()/1000), launchTs=t.launchTs||0;
+    var pts=[], next=null, pages=0, exhausted=false;
+    while(pages<12){
+      if(!await anaYieldPoint()){delete ANA_TC_SERIES_INFLIGHT[key];return}
+      var q=next?('?'+bsQuery(next)):'';
+      var d=await bsFetchJson('/tokens/'+t.address+'/transfers'+q);
+      var evs=bsTradeEvents(t,(d&&d.items)||[]);
+      var legs=[];
+      for(var li=0;li<evs.length;li+=8){
+        if(!await anaYieldPoint()){delete ANA_TC_SERIES_INFLIGHT[key];return}
+        var part=await Promise.all(evs.slice(li,li+8).map(function(e){return bsLoopAmount(e.transactionHash,cps,legAsset)}));
+        for(var lj=0;lj<part.length;lj++)legs.push(part[lj]);
+      }
+      evs.forEach(function(e,i){
+        var leg=legs[i];
+        if(leg==null||e.ts==null)return;
+        var px=Number(leg)/Number(e.args.tokenAmount);
+        if(isFinite(px)&&px>0)pts.push({ts:e.ts,px:px});
+      });
+      pages++;
+      next=(d&&d.next_page_params)?d.next_page_params:null;
+      if(!next){exhausted=true;break}
+      var oldest=null;
+      evs.forEach(function(e){if(e.ts!=null&&(oldest===null||e.ts<oldest))oldest=e.ts});
+      if(oldest==null)break;
+      if(launchTs&&oldest<=launchTs){exhausted=true;break}
+      if(oldest<nowS-604800&&(!launchTs||launchTs<=nowS-604800))break;
+    }
+    pts.sort(function(a,b){return a.ts-b.ts});
+    ANA_TC_SERIES[key]={pts:pts,exhausted:exhausted,at:Date.now()};
+  }catch(e){/* a failed pass keeps any previous series; the 60s throttle stamp already applied */}
+  delete ANA_TC_SERIES_INFLIGHT[key];
+  if(anaViewOpen()){try{anaRenderTopCoins()}catch(e){}}
+}
+/* Desktop-only Holders cell: the same explorer holders source the
+   token detail page reads (items[0].token.holders), fetched lazily
+   only at desktop widths, cached ~120s per token, never invented. */
+function anaTcHoldersKick(f){
+  if(typeof window==='undefined'||window.innerWidth<1024)return;
+  var key=String(f.addr).toLowerCase();
+  var c=ANA_TC_HOLDERS[key];
+  if(c&&(Date.now()-c.at<120000))return;
+  if(ANA_TC_HOLDERS_INFLIGHT[key])return;
+  ANA_TC_HOLDERS_INFLIGHT[key]=1;
+  bsFetchJson('/tokens/'+f.addr+'/holders').then(function(d){
+    var n=null, items=(d&&d.items)||[];
+    if(items.length&&items[0].token&&items[0].token.holders!=null){var hn=Number(items[0].token.holders);if(!isNaN(hn))n=hn}
+    ANA_TC_HOLDERS[key]={n:n,at:Date.now()};
+  },function(){ANA_TC_HOLDERS[key]={n:null,at:Date.now()}}).then(function(){
+    delete ANA_TC_HOLDERS_INFLIGHT[key];
+    if(anaViewOpen()){try{anaRenderTopCoins()}catch(e){}}
+  });
+}
+
 /* ---------- Top Coins (real registry only) ------------------------ */
+/* ---------- Top Coins (blueprint 4.7: card list, FLIP reorder) ---
+   Rows are keyed by token address and reconciled: a row whose
+   data did not change keeps its DOM node untouched, a changed row
+   updates its inner HTML in place, and order changes animate with
+   FLIP (300ms ease-in-out; entering rows fade in 200ms, leaving
+   rows fade out 150ms — all instant under reduced motion). */
+var ANA_TC_SIG='';
+function anaTcRowItem(r,i,startTs,nowS){
+  var f=r.f, key=r.key;
+  var mcTxt=LOOP_USD?anaFmtUsd(f.mcapN*LOOP_USD):escHtml(f.mcapText);
+  var volHtml=ANA_DONE[key]?('<span class="tc2-val">'+anaVolCell(r.agg.vol)+'</span>'):'<span class="ana-skel" style="width:52px;height:13px"></span>';
+  var chgHtml='';
+  var ser=ANA_TC_SERIES[key];
+  if(ser&&ser.pts&&ser.pts.length){
+    var chg=anaTcChange(ser.pts,startTs,!!ser.exhausted);
+    var spark=anaTcSpark(ser.pts,startTs,nowS,!!ser.exhausted);
+    if(chg!=null&&spark){
+      var up=chg>=0;
+      chgHtml='<span class="tc2-chg '+(up?'up':'down')+'">'+(up?'+':'')+chg.toFixed(1)+'%</span>'+anaTcSparkSvg(spark,up);
+    }
+  }
+  var statusHtml;
+  if(f.grad){
+    statusHtml='<span class="tc2-grad">Graduated</span><span class="tc2-bar"><i class="grad" style="width:100%"></i></span>';
+  }else{
+    statusHtml='<span class="tc2-bar"><i style="width:'+Math.max(0,Math.min(100,f.prog))+'%"></i></span><span class="tc2-prog">'+Math.round(f.prog)+'% to graduation</span>';
+  }
+  anaTcHoldersKick(f);
+  var hc=ANA_TC_HOLDERS[key];
+  var holdersHtml=(hc&&hc.n!=null)?fmtInt(hc.n):'<span class="ana-skel" style="width:34px;height:13px"></span>';
+  var html='<span class="tc2-rank">'+(i+1)+'</span>'
+    +feedAvatar(f,'tavatar tc2-ava')
+    +'<span class="tc2-main"><span class="tc2-name">'+escHtml(f.name)+' <small>$'+escHtml(f.ticker)+'</small></span>'
+    +'<span class="tc2-sub"><span>MC <span class="tc2-val">'+mcTxt+'</span></span><span>Vol '+volHtml+'</span></span>'
+    +'<span class="tc2-status">'+statusHtml+'</span></span>'
+    +'<span class="tc2-desk"><small>Price</small><span>'+anaFmtPriceText(f.priceText,null)+'</span></span>'
+    +'<span class="tc2-desk"><small>Holders</small><span>'+holdersHtml+'</span></span>'
+    +'<span class="tc2-right">'+chgHtml+'</span>';
+  return {key:key,addr:f.addr,name:f.name,rank:i+1,html:html,sig:html};
+}
+function anaTcReconcile(box,items){
+  var prevTops={}, existing={};
+  Array.prototype.slice.call(box.children).forEach(function(n){
+    if(n.dataset&&n.dataset.key){existing[n.dataset.key]=n;if(!ANA_RM)prevTops[n.dataset.key]=n.getBoundingClientRect().top}
+    else n.remove();
+  });
+  var nodes=[];
+  items.forEach(function(it){
+    var node=existing[it.key];
+    if(node){
+      delete existing[it.key];
+      if(node._sig!==it.sig){node.innerHTML=it.html;node._sig=it.sig}
+      if(node.getAttribute('data-addr')!==it.addr)node.setAttribute('data-addr',it.addr);
+      var lbl='Rank '+it.rank+': '+it.name+'. Open token details';
+      if(node.getAttribute('aria-label')!==lbl)node.setAttribute('aria-label',lbl);
+    }else{
+      node=document.createElement('button');
+      node.type='button';
+      node.className='tc2-row';
+      node.setAttribute('data-act','live-token');
+      node.setAttribute('data-addr',it.addr);
+      node.setAttribute('aria-label','Rank '+it.rank+': '+it.name+'. Open token details');
+      node.dataset.key=it.key;
+      node.innerHTML=it.html;
+      node._sig=it.sig;
+      node._enter=true;
+    }
+    box.appendChild(node);
+    nodes.push(node);
+  });
+  /* Leaving rows leave the flow first (held at their old offset)
+     so retained rows measure their true new positions, then fade. */
+  Object.keys(existing).forEach(function(k){
+    var n=existing[k];
+    if(ANA_RM||!n.animate){n.remove();return}
+    try{
+      var ot=n.offsetTop;
+      n.style.position='absolute'; n.style.top=ot+'px'; n.style.left='4px'; n.style.right='4px';
+      var a=n.animate([{opacity:1},{opacity:0}],{duration:150,easing:'ease-out'});
+      a.onfinish=function(){n.remove()};
+    }catch(e){n.remove()}
+  });
+  if(!ANA_RM&&box.animate){
+    nodes.forEach(function(node,idx){
+      var it=items[idx];
+      if(node._enter){
+        node._enter=false;
+        try{node.animate([{opacity:0},{opacity:1}],{duration:200,easing:'ease-out'})}catch(e){}
+        return;
+      }
+      var pt=prevTops[it.key];
+      if(pt==null)return;
+      var dy=pt-node.getBoundingClientRect().top;
+      if(dy){try{node.animate([{transform:'translateY('+dy+'px)'},{transform:'translateY(0)'}],{duration:300,easing:'ease-in-out'})}catch(e){}}
+    });
+  }
+}
 function anaRenderTopCoins(){
   var box=el('topCoinsBody');
   if(!box)return;
-  if(anaFadeNext){anaFadeNext=false;if(!ANA_RM&&box.animate)box.animate([{opacity:0.25},{opacity:1}],{duration:200,easing:'ease-out'})}
-  var secs=ANA_WIN[anaTab];
-  document.querySelectorAll('#view-analytics .tc-tabs button').forEach(function(b){
+  anaFadeNext=false;
+  document.querySelectorAll('#view-analytics [data-act="ana-tab"]').forEach(function(b){
     var on=b.getAttribute('data-win')===anaTab;
     b.classList.toggle('active',on);
     b.setAttribute('aria-selected',on?'true':'false');
   });
-  var aV=el('arrowVol'), aT=el('arrowTrades');
-  if(aV)aV.textContent=tcSortLive==='vol'?'\u25bc':'';
-  if(aT)aT.textContent=tcSortLive==='trades'?'\u25bc':'';
-  var thV=el('thVol'), thT=el('thTrades');
-  if(thV)thV.classList.toggle('sorted',tcSortLive==='vol');
-  if(thT)thT.classList.toggle('sorted',tcSortLive==='trades');
-  var sub=el('anaTopSub');
-  if(!liveRegistryLoaded){
-    box.innerHTML='<tr><td colspan="7" style="color:var(--muted)">'+(liveLoadState==='error'?'Live data couldn\u2019t be loaded. Retrying automatically\u2026':'Loading live data from Loop\u2026')+'</td></tr>';
-    if(sub)sub.textContent='';
-    return;
-  }
-  if(!FEED.length){
-    box.innerHTML='<tr><td colspan="7" style="color:var(--muted)">No live tokens yet.</td></tr>';
-    if(sub)sub.textContent='';
-    return;
-  }
-  var rows=FEED.map(function(f){return {f:f,agg:anaAgg(String(f.addr).toLowerCase(),secs)}});
-  rows.sort(function(x,y){
-    var kx=tcSortLive==='trades'?(x.agg?x.agg.trades:-1):(x.agg?x.agg.vol:-1);
-    var ky=tcSortLive==='trades'?(y.agg?y.agg.trades:-1):(y.agg?y.agg.vol:-1);
-    if(ky!==kx)return ky-kx;
-    return y.f.volumeN-x.f.volumeN;
+  document.querySelectorAll('#view-analytics [data-act="ana-tc-sort"]').forEach(function(b){
+    var on=b.getAttribute('data-key')===anaTcSort;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-selected',on?'true':'false');
   });
+  var skelHtml='<div class="tc2-skelrows"><span class="ana-skel" style="width:100%;height:52px"></span><span class="ana-skel" style="width:100%;height:52px"></span><span class="ana-skel" style="width:100%;height:52px"></span><span class="ana-skel" style="width:100%;height:52px"></span></div>';
+  if(!liveRegistryLoaded){
+    if(ANA_TC_SIG!=='skel'){ANA_TC_SIG='skel';box.innerHTML=skelHtml}
+    return;
+  }
+  var secs=ANA_WIN[anaTab];
+  var nowS=Math.floor(Date.now()/1000);
+  var startTs=anaTab==='24h'?nowS-86400:(anaTab==='7d'?nowS-604800:null);
+  var rows=[];
+  FEED.forEach(function(f){
+    var key=String(f.addr).toLowerCase();
+    var agg=anaAgg(key,secs);
+    if(!agg||!(agg.trades>0))return;
+    rows.push({f:f,key:key,agg:agg});
+  });
+  rows.sort(function(x,y){
+    if(anaTcSort==='mcap'){
+      if(y.f.mcapN!==x.f.mcapN)return y.f.mcapN-x.f.mcapN;
+      return y.agg.vol-x.agg.vol;
+    }
+    if(y.agg.vol!==x.agg.vol)return y.agg.vol-x.agg.vol;
+    return y.f.mcapN-x.f.mcapN;
+  });
+  anaTcSeriesKick(rows.slice(0,14).map(function(r){return r.f}));
   var top=rows.slice(0,10);
-  if(sub)sub.textContent='Top '+top.length+' of '+fmtInt(FEED.length)+' tokens \u00b7 '+(anaTab==='24h'?'last 24 hours':anaTab==='7d'?'last 7 days':'all time')+' \u00b7 tap Volume or Trades to re-sort';
-  box.innerHTML=top.map(function(r,i){
-    var f=r.f, a=r.agg;
-    var status=f.grad?'<span class="ana-status-grad">Graduated</span>':(Math.round(f.prog)+'%');
-    return '<tr class="tc-row" data-act="live-token" data-addr="'+f.addr+'" tabindex="0" role="button" aria-label="Rank '+(i+1)+': '+escHtml(f.name)+'. Open token details">'
-      +'<td data-label="#"><span class="rank-num">'+(i+1)+'</span></td>'
-      +'<td data-label="Coin"><span class="coin-cell">'+feedAvatar(f)+'<span>'+escHtml(f.name)+' <small>$'+escHtml(f.ticker)+'</small></span></span></td>'
-      +'<td class="num" data-label="Price">'+anaFmtPriceText(f.priceText,null)+'</td>'
-      +'<td class="num" data-label="Market Cap">'+anaFmtPriceText(f.mcapText,f.mcapN)+'</td>'
-      +'<td class="num" data-label="Volume">'+(a?anaVolCell(a.vol):'\u2026')+'</td>'
-      +'<td class="num" data-label="Trades">'+(a?fmtInt(a.trades):'\u2026')+'</td>'
-      +'<td data-label="Status">'+status+'</td></tr>';
-  }).join('');
+  if(!top.length){
+    /* Nothing qualifies yet: while no token's history has settled
+       at all the section skeletons (final-only discipline); once
+       scans have settled, an empty window is a real result. */
+    var anySettled=!LIVE_TOKENS.length||LIVE_TOKENS.some(function(t){return !!ANA_DONE[String(t.address).toLowerCase()]});
+    if(!anySettled){
+      if(ANA_TC_SIG!=='skel'){ANA_TC_SIG='skel';box.innerHTML=skelHtml}
+      return;
+    }
+    if(ANA_TC_SIG!=='empty'){ANA_TC_SIG='empty';box.innerHTML='<p class="tc2-empty">No tokens traded in this period.</p>'}
+    return;
+  }
+  ANA_TC_SIG='rows';
+  anaTcReconcile(box,top.map(function(r,i){return anaTcRowItem(r,i,startTs,nowS)}));
 }
+
 /* ---------- Page render --------------------------------------------
    Each block writes ONLY when it holds a real value; whatever a
    section cannot compute yet keeps the value (or skeleton) it
@@ -9122,6 +9764,8 @@ function renderLiveAnalytics(){
   renderAnaFees();
   anaRenderChart();
   anaRenderTopCoins();
+  anaRenderStrip();
+  anaRenderActivity();
   /* The Analytics footer is one fixed line (blueprint 5.1).
      Connection state is carried by the header Live indicator and,
      on total failure, the honest error panel above — never by
@@ -13741,6 +14385,10 @@ async function bootLiveData(){
     else if(act==='wallet-options')profToggleWalletMenu();
     else if(act==='switch-wallet')profSwitchWallet();
     else if(act==='goto-fees'){var fp=el('feesPanel');if(fp)fp.scrollIntoView({behavior:'smooth',block:'start'})}
+    else if(act==='ana-strip-tokens'){goToView('profil');setProfileTab('tokens')}
+    else if(act==='ana-strip-fees'){goToView('profil');setProfileTab('overview');setTimeout(function(){var fp2=el('feesPanel');if(fp2)fp2.scrollIntoView({behavior:'smooth',block:'start'})},90)}
+    else if(act==='ana-act-exp'){/* The Explorer anchor keeps its native navigation; this branch only claims the click so the row's live-token action does not also fire. */}
+    else if(act==='ana-view-all'){goToView('jelajahi')}
     else if(act==='fees-tip'){var tip=el('feesTip');if(tip){var sh=tip.classList.toggle('show');b.setAttribute('aria-expanded',sh?'true':'false')}}
     else if(act==='profile-retry')profFullRetry();
     else if(act==='profile-sec-retry')profRetrySec(b.getAttribute('data-sec'));
