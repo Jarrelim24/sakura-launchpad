@@ -6262,11 +6262,19 @@ function bsIsOpen(t){
 function bsFetchJson(path){
   var ctl=(typeof AbortController!=='undefined')?new AbortController():null;
   var timer=ctl?setTimeout(function(){try{ctl.abort()}catch(e){}},25000):null;
+  /* The abort stays armed until the body is fully parsed, NOT just
+     until the headers land: on a flaky connection a response can
+     deliver its headers and then stall mid-body, and clearing the
+     timer at headers left r.json() unbounded — a fee pass awaiting
+     it hung past its own deadline (the deadline is only consulted
+     at yield points), wedged its busy flag, and the Fees & Revenue
+     section skeletoned forever with no settle and no failure
+     panel (round-2 diagnosis). */
+  function disarm(){if(timer){clearTimeout(timer);timer=null}}
   return fetch(BS_API+path,{signal:ctl?ctl.signal:undefined,headers:{'Accept':'application/json'}}).then(function(r){
-    if(timer)clearTimeout(timer);
-    if(!r.ok)throw new Error('Explorer API HTTP '+r.status);
+    if(!r.ok){disarm();throw new Error('Explorer API HTTP '+r.status)}
     return r.json();
-  }).catch(function(e){if(timer)clearTimeout(timer);throw e});
+  }).then(function(j){disarm();return j},function(e){disarm();throw e});
 }
 function bsQuery(params){
   return Object.keys(params||{}).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k])}).join('&');
@@ -7894,7 +7902,33 @@ var ANA_FEE_UPDATED_AT=0;
    Try again instead of an eternal skeleton. A pass abandoned
    because the view closed stays UNSETTLED — it resumes on the
    next visit, it is not a failure. */
-var ANA_FEE_ST={vault:{settled:false,failed:false},treasury:{settled:false,failed:false},pots:{settled:false,failed:false}};
+var ANA_FEE_ST={vault:{settled:false,failed:false,runAt:0},treasury:{settled:false,failed:false,runAt:0},pots:{settled:false,failed:false,runAt:0}};
+/* ----- Fees & Revenue render watchdog (round 2) -------------------
+   Round 1 proved every pass settles WHEN IT RUNS — but a live
+   visit still skeletoned past 3.5 minutes with no failure panel:
+   the vault and pots loaders carried a visibilityState==='hidden'
+   early return that neither started the pass nor recorded a
+   settle, so on a hidden/backgrounded document every render-cycle
+   invocation starved at that gate forever (the treasury loader
+   never had the gate; the gate is now removed from all three).
+   This watchdog is the structural guarantee that remains: while
+   the shown group has no snapshot and its body is in skeleton,
+   any dependency pass that has not settled by its own round-1
+   deadline + a 30s grace is recorded settled + failed from the
+   render layer, and the section falls to the 5.3 failure panel.
+   BOUND CHOICE: per-pass deadline + grace (vault 150+30 = 180s,
+   pots 90+30 = 120s, treasury 20+30 = 50s), NOT a flat 120s —
+   120s would misfire on a healthy vault pass still inside its
+   150s deadline, while deadline + 30s can never fire early: a
+   started pass self-settles by its deadline plus at most one
+   in-flight page fetch (25s bsFetchJson abort), inside the
+   grace. A pass that never started is measured from the moment
+   the section entered skeleton, so the worst case from view-open
+   to a guaranteed final state is the vault bound + one tick:
+   ~185s. Try again (anaFeeRetry) resets every stamp below. */
+var ANA_FEE_DEADLINE_MS={vault:150000,pots:90000,treasury:20000};
+var ANA_FEE_WD_GRACE_MS=30000;
+var anaFeeSkelSince=0, anaFeeSkelGroup=null, anaFeeViewAt=0, anaFeeWdTimer=null, anaFeeWdBusy=false;
 /* Vault scan checkpoint: an interrupted FeesAccrued log scan
    persists its cursor + accumulators as SCAN STATE (never as
    displayed numbers — publishing still happens only from a
@@ -7955,7 +7989,7 @@ function anaSetNum(id,val,fmt){
     if(p<1)requestAnimationFrame(step);
   })(t0);
 }
-function anaOnView(){anaKick();renderLiveAnalytics()}
+function anaOnView(){anaFeeViewAt=Date.now();anaFeeWatchdogArm();anaKick();renderLiveAnalytics()}
 function anaOnLeave(){if(anaHistTimer){clearTimeout(anaHistTimer);anaHistTimer=null}}
 /* The page can boot straight into #analytics (the hash router in
    the UI layer runs before this layer exists): adopt the visit.
@@ -8284,7 +8318,7 @@ async function anaLoadTreasury(){
     if(anaViewOpen()){ANA_FEE_ST.treasury.settled=true;ANA_FEE_ST.treasury.failed=true;try{renderAnaFees()}catch(e){}}
     return;
   }
-  anaTreasuryBusy=true;
+  anaTreasuryBusy=true; ANA_FEE_ST.treasury.runAt=Date.now();
   /* Same yield discipline as the scan: never start this read
      against an in-flight Lens read, and abandon it if the view
      closed while waiting. The wait is deadline-bounded (20s):
@@ -8350,7 +8384,12 @@ function anaVaultScanLoad(){
 function anaVaultScanClear(){try{localStorage.removeItem(ANA_VAULT_SCAN_KEY)}catch(e){}}
 async function anaLoadVaultFees(){
   if(!anaViewOpen()||anaVaultBusy)return;
-  if(document.visibilityState==='hidden')return;
+  /* Deliberately NO visibilityState gate (round 2): the hidden
+     early return that used to sit here neither started the pass
+     nor recorded a settle, so a backgrounded document starved
+     this loader at every render cycle forever — skeleton with
+     no failure panel. The pass is deadline-bounded and yields
+     to Lens reads; running it in a hidden tab is harmless. */
   if(anaVaultAt&&Date.now()-anaVaultAt<60000)return;
   if(typeof window.ethers==='undefined'){
     /* Guard settle: without the Web3 library this pass can never
@@ -8360,7 +8399,7 @@ async function anaLoadVaultFees(){
     if(anaViewOpen()){ANA_FEE_ST.vault.settled=true;ANA_FEE_ST.vault.failed=true;try{renderAnaFees()}catch(e){}}
     return;
   }
-  anaVaultBusy=true; anaVaultAt=Date.now();
+  anaVaultBusy=true; anaVaultAt=Date.now(); ANA_FEE_ST.vault.runAt=anaVaultAt;
   var aborted=false, failed=false;
   /* The whole pass is deadline-bounded (150s): every wait inside
      it can end — a page fetch (bsFetchJson aborts at 25s), the
@@ -8443,7 +8482,10 @@ async function anaLoadVaultFees(){
    atomically on complete success only; failure keeps the last. */
 async function anaLoadPots(){
   if(!anaViewOpen()||anaPotsBusy)return;
-  if(document.visibilityState==='hidden')return;
+  /* No visibilityState gate here either — see anaLoadVaultFees:
+     the hidden early return starved this pass (and, through
+     anaFeeGroupFailed, the whole Creators group's final state)
+     indefinitely on a backgrounded document. */
   if(ANA_POTS_DONE&&Date.now()-anaPotsAt<60000)return;
   if(typeof window.ethers==='undefined'){
     /* Guard settle: without the Web3 library this pass can never
@@ -8459,7 +8501,7 @@ async function anaLoadPots(){
     ANA_FEE_ST.pots.settled=true; ANA_FEE_ST.pots.failed=false;
     return;
   }
-  anaPotsBusy=true;
+  anaPotsBusy=true; ANA_FEE_ST.pots.runAt=Date.now();
   /* Deadline-bounded like the other fee passes (90s): each token
      read already carries the site's 15s withTimeout, the yield
      gate is bounded against this deadline, and any failure —
@@ -8633,25 +8675,72 @@ function anaFeeSkelHtml(){
 function anaFeeFailHtml(){
   return '<div class="ana-fee-fail"><h4>Can\u2019t reach Loop right now</h4><p>Live data is unavailable, so nothing is shown instead of stale numbers.</p><button type="button" class="btn btn-primary" data-act="ana-fee-retry" style="min-height:48px;padding:12px 26px">Try again</button></div>';
 }
+/* The passes a group's final state depends on (blueprint 6.4:
+   the Creators total may not publish — or fail — without the
+   pots pass whenever fee-destination tokens exist). Shared by
+   the failure test and the watchdog so they can never drift. */
+function anaFeeBlockers(group){
+  if(group==='protocol')return ['treasury'];
+  var b=['vault'];
+  if(LIVE_TOKENS.some(function(t){return t.feeDestination===1||t.feeDestination===2}))b.push('pots');
+  return b;
+}
 function anaFeeGroupFailed(group){
-  if(group==='protocol'){
-    var t=ANA_FEE_ST.treasury;
-    return !!(t.settled&&t.failed);
-  }
-  var blockers=[ANA_FEE_ST.vault];
-  if(LIVE_TOKENS.some(function(t){return t.feeDestination===1||t.feeDestination===2}))blockers.push(ANA_FEE_ST.pots);
+  var blockers=anaFeeBlockers(group).map(function(k){return ANA_FEE_ST[k]});
   var allSettled=blockers.every(function(s){return s.settled});
   var anyFailed=blockers.some(function(s){return s.failed});
   return allSettled&&anyFailed;
+}
+/* Render-level watchdog (see the state block at ANA_FEE_ST):
+   runs on a 5s tick and at the tail of every renderAnaFees.
+   Inert whenever a snapshot exists for the shown group (layers
+   non-null means numbers or the empty state are paintable) or
+   the view is closed (stamps reset — the next visit gets a full
+   bound). A pass is overdue only past its own deadline + grace,
+   measured from its run stamp, or — for a pass that never
+   started — from the moment the section entered skeleton. */
+function anaFeeWatchdogArm(){
+  if(anaFeeWdTimer)return;
+  try{anaFeeWdTimer=setInterval(anaFeeWatchdogCheck,5000)}catch(e){}
+}
+function anaFeeWatchdogCheck(){
+  if(anaFeeWdBusy)return;
+  if(!anaViewOpen()){anaFeeSkelSince=0;anaFeeSkelGroup=null;return}
+  anaFeeWdBusy=true;
+  try{
+    if(anaFeeLayersFor(anaFeeGroup)){anaFeeWdBusy=false;return}
+    var now=Date.now(), forced=false;
+    anaFeeBlockers(anaFeeGroup).forEach(function(k){
+      var st=ANA_FEE_ST[k];
+      if(!st||st.settled)return;
+      var ref=st.runAt||anaFeeSkelSince||anaFeeViewAt||now;
+      if(now-ref>ANA_FEE_DEADLINE_MS[k]+ANA_FEE_WD_GRACE_MS){
+        st.settled=true; st.failed=true; forced=true;
+        /* Release a wedged pass so Try again can start a fresh
+           one. If the wedged pass ever wakes, its publishes stay
+           monotonic and its own settle record simply rewrites
+           this one with the real outcome. */
+        if(k==='vault'){anaVaultBusy=false;anaVaultAt=0}
+        else if(k==='pots'){anaPotsBusy=false}
+        else if(k==='treasury'){anaTreasuryBusy=false}
+      }
+    });
+    if(forced)renderAnaFees();
+  }catch(e){}
+  anaFeeWdBusy=false;
 }
 /* Try again for THIS section: clear the settle/failure record and
    the loaders' throttles, then re-run all three fee passes. The
    vault scan resumes from its checkpoint if one exists. */
 function anaFeeRetry(){
   anaVaultAt=0; anaTreasuryAt=0; anaPotsAt=0;
-  ANA_FEE_ST.vault.settled=false; ANA_FEE_ST.vault.failed=false;
-  ANA_FEE_ST.treasury.settled=false; ANA_FEE_ST.treasury.failed=false;
-  ANA_FEE_ST.pots.settled=false; ANA_FEE_ST.pots.failed=false;
+  ANA_FEE_ST.vault.settled=false; ANA_FEE_ST.vault.failed=false; ANA_FEE_ST.vault.runAt=0;
+  ANA_FEE_ST.treasury.settled=false; ANA_FEE_ST.treasury.failed=false; ANA_FEE_ST.treasury.runAt=0;
+  ANA_FEE_ST.pots.settled=false; ANA_FEE_ST.pots.failed=false; ANA_FEE_ST.pots.runAt=0;
+  /* The watchdog restarts with the retry: a fresh skeleton
+     window is measured from the retry, not the original open. */
+  anaFeeSkelSince=0; anaFeeSkelGroup=null;
+  anaFeeWatchdogArm();
   try{renderAnaFees()}catch(e){}
   anaLoadTreasury();
   anaLoadVaultFees();
@@ -8703,6 +8792,18 @@ function renderAnaFees(){
   if(foldWasOpen){
     var nf=el('anaFeeOtherFold');
     if(nf){nf.classList.add('open');var tb=body.querySelector('[data-act="ana-fee-other"]');if(tb)tb.setAttribute('aria-expanded','true')}
+  }
+  /* Watchdog bookkeeping (round 2): a final state — snapshot or
+     failure panel — clears the skeleton clock; a skeleton paint
+     starts it for the shown group (a tab switch restarts it for
+     the newly shown group) and gives the watchdog an immediate
+     look, so an already-overdue pass is forced on this render
+     rather than at the next 5s tick. */
+  if(L||anaFeeGroupFailed(anaFeeGroup)){anaFeeSkelSince=0;anaFeeSkelGroup=null}
+  else{
+    if(anaFeeSkelGroup!==anaFeeGroup||!anaFeeSkelSince){anaFeeSkelSince=Date.now();anaFeeSkelGroup=anaFeeGroup}
+    anaFeeWatchdogArm();
+    anaFeeWatchdogCheck();
   }
 }
 /* Tab switch: crossfade the body (opacity only), swap the dataset,
