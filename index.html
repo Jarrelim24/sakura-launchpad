@@ -500,6 +500,9 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:20px 0 22px;colo
 .ana-fee-group-label{display:block;color:var(--faint);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 2px}
 .ana-fee-pot-sub{display:block;color:var(--faint);font-size:12px;font-weight:600}
 .ana-fee-empty{color:var(--muted);font-weight:600;margin:6px 0 2px}
+.ana-fee-fail{padding:6px 0 4px}
+.ana-fee-fail h4{margin:0 0 6px;font-size:17px;font-weight:800}
+.ana-fee-fail p{color:var(--muted);font-weight:600;margin:0 0 14px;max-width:52ch}
 #anaFeeProp{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--surface2);margin-top:14px}
 #anaFeeProp i{display:block;height:100%;transition:width .4s ease}
 #anaFeePropC{background:#ff5c8a}
@@ -4227,6 +4230,7 @@ document.addEventListener('click',function(e){
     else if(act==='ana-fee-tab')setAnaFeeTab(el.getAttribute('data-group'));
     else if(act==='ana-tip')toggleAnaTip(el);
     else if(act==='ana-retry'){if(typeof loadLiveTokens==='function')loadLiveTokens();if(typeof anaOnView==='function')anaOnView()}
+    else if(act==='ana-fee-retry'){if(typeof anaFeeRetry==='function')anaFeeRetry()}
     else if(act==='tc-open')openTopCoin(el.getAttribute('data-ticker'));
     else if(act==='fav')toggleFav();
     else if(act==='details-toggle')toggleDetailsFold();
@@ -7881,6 +7885,26 @@ var ANA_VAULT_DONE=false;
 var ANA_TREASURY_BY_ASSET=null;
 var ANA_POTS=null, ANA_POTS_DONE=false, anaPotsAt=0, anaPotsBusy=false;
 var ANA_FEE_UPDATED_AT=0;
+/* ----- Fee pass settle state (blueprint 6.4 / 8 rule 3) ------------
+   Every fee loader pass SETTLES: it ends either ok (snapshot
+   published) or failed (recorded here). renderAnaFees shows the
+   skeleton only while a pass the group depends on has not settled;
+   once every dependency has settled with a failure recorded and no
+   snapshot exists, the section shows the honest failure panel with
+   Try again instead of an eternal skeleton. A pass abandoned
+   because the view closed stays UNSETTLED — it resumes on the
+   next visit, it is not a failure. */
+var ANA_FEE_ST={vault:{settled:false,failed:false},treasury:{settled:false,failed:false},pots:{settled:false,failed:false}};
+/* Vault scan checkpoint: an interrupted FeesAccrued log scan
+   persists its cursor + accumulators as SCAN STATE (never as
+   displayed numbers — publishing still happens only from a
+   completed pass), so a reload or a Try again resumes the walk
+   instead of restarting from page 0. Checkpoints older than
+   10 minutes are discarded: the cursor walks newest-first, and a
+   stale resume could skip events that landed in between (the
+   next completed full pass recounts from page 0 anyway, and the
+   monotonic publish only ever raises the settled total). */
+var ANA_VAULT_SCAN_KEY='sakura.anaVaultScan.v1';
 var ANA_WIN={'24h':86400,'7d':604800,'all':Infinity};
 function liveTcSort(key){tcSortLive=key;anaFadeNext=true;renderLiveAnalytics()}
 function liveAnaTab(w){if(Object.prototype.hasOwnProperty.call(ANA_WIN,w)){anaTab=w;anaFadeNext=true;renderLiveAnalytics()}}
@@ -7957,6 +7981,19 @@ async function anaYieldPoint(){
     await sleep(300);
   }
 }
+/* Deadline-bounded variant for the fee loaders: same discipline,
+   but the wait CANNOT run forever. Returns false when the view
+   closed (caller abandons, pass stays unsettled) or when the
+   deadline passed with the Lens gate still shut (caller records
+   a failed, settled pass) — distinguishable via anaViewOpen(). */
+async function anaYieldPointBy(deadline){
+  while(true){
+    if(!anaViewOpen())return false;
+    if(!(LENS_INFLIGHT>0||Date.now()<LENS_FAIL_UNTIL))return true;
+    if(Date.now()>=deadline)return false;
+    await sleep(300);
+  }
+}
 /* ---------- Creator fees: monotonic publish ------------------------
    The Creator Fees tile NEVER moves backwards. FeesAccrued is an
    append-only event stream, so a recount that lands below the
@@ -7969,7 +8006,7 @@ function anaPublishFees(wei,byAsset,completePass){
   var fresh=wei!=null&&(ANALYTICS.feesAccruedWei==null||wei>=ANALYTICS.feesAccruedWei);
   if(fresh)ANALYTICS.feesAccruedWei=wei;
   if(byAsset&&(fresh||!ANALYTICS.feesByAsset||!ANALYTICS.feesByAsset.length))ANALYTICS.feesByAsset=byAsset;
-  if(completePass){ANA_VAULT_DONE=true;ANA_FEE_UPDATED_AT=Date.now();anaCacheSaveSoon()}
+  if(completePass){ANA_VAULT_DONE=true;ANA_FEE_UPDATED_AT=Date.now();ANA_FEE_ST.vault.settled=true;ANA_FEE_ST.vault.failed=false;anaCacheSaveSoon()}
 }
 /* ---------- Persistent scan cache (localStorage) -------------------
    Completed per-token scan results and the settled fee totals
@@ -8038,6 +8075,7 @@ function anaCacheLoad(){
       /* The cache only ever persists completed passes, so a restored
          breakdown counts as a completed vault snapshot. */
       ANA_VAULT_DONE=true;
+      ANA_FEE_ST.vault.settled=true; ANA_FEE_ST.vault.failed=false;
     }
   }catch(e){/* a corrupt or unavailable cache scans from scratch */}
 }
@@ -8237,12 +8275,26 @@ function anaAllSettled(){
 async function anaLoadTreasury(){
   if(!anaViewOpen()||anaTreasuryBusy)return;
   if(ANA_TREASURY_WEI!=null&&Date.now()-anaTreasuryAt<60000)return;
-  if(typeof window.ethers==='undefined'||!W3C.contracts.treasury||!W3C.abi.treasury)return;
+  if(typeof window.ethers==='undefined'||!W3C.contracts.treasury||!W3C.abi.treasury){
+    /* Guard settle: with the Web3 library or the Treasury wiring
+       unavailable this pass can never run — record it settled +
+       failed (same mechanism as the yield-timeout path below) and
+       re-render the section, so the Protocol group reaches its
+       final state instead of holding the skeleton forever. */
+    if(anaViewOpen()){ANA_FEE_ST.treasury.settled=true;ANA_FEE_ST.treasury.failed=true;try{renderAnaFees()}catch(e){}}
+    return;
+  }
   anaTreasuryBusy=true;
   /* Same yield discipline as the scan: never start this read
      against an in-flight Lens read, and abandon it if the view
-     closed while waiting. */
-  if(!await anaYieldPoint()){anaTreasuryBusy=false;return}
+     closed while waiting. The wait is deadline-bounded (20s):
+     a Lens gate that never opens records a FAILED, settled pass
+     instead of hanging the Protocol tab on a skeleton forever. */
+  if(!await anaYieldPointBy(Date.now()+20000)){
+    anaTreasuryBusy=false;
+    if(anaViewOpen()){ANA_FEE_ST.treasury.settled=true;ANA_FEE_ST.treasury.failed=true;try{renderLiveAnalytics()}catch(e){}}
+    return;
+  }
   try{
     /* Fase 2: protocolBalance is a per-asset mapping — read EVERY
        claim asset in one pass and publish the per-asset snapshot
@@ -8260,27 +8312,75 @@ async function anaLoadTreasury(){
       if(bals[i]>0n)byAsset.push({asset:assets[i].address,amount:bals[i]});
     }
     ANA_TREASURY_BY_ASSET=byAsset; anaTreasuryAt=Date.now(); ANA_FEE_UPDATED_AT=Date.now();
-  }catch(e){/* keep the last good figure */}
+    ANA_FEE_ST.treasury.settled=true; ANA_FEE_ST.treasury.failed=false;
+  }catch(e){/* keep the last good figure — and record the failure so the section can settle on the honest failure state */
+    ANA_FEE_ST.treasury.settled=true; ANA_FEE_ST.treasury.failed=true;
+  }
   anaTreasuryBusy=false;
   try{renderLiveAnalytics()}catch(e){}
 }
 /* ---------- Creator fees: FeeVault FeesAccrued from indexed logs -- */
+/* Scan-state checkpoint (see ANA_VAULT_SCAN_KEY above): saved after
+   every page, resumed by the next pass, cleared on completion.
+   It holds cursor + accumulators ONLY — never rendered numbers. */
+function anaVaultScanSave(next,pages,acc,byAsset,order,got){
+  try{
+    var ba={};
+    order.forEach(function(a){var r=byAsset[a];ba[a]={asset:r.asset,amount:r.amount.toString(),symbol:r.symbol,decimals:r.decimals}});
+    localStorage.setItem(ANA_VAULT_SCAN_KEY,JSON.stringify({v:1,at:Date.now(),vault:W3C.contracts.feeVault,next:next,pages:pages,acc:acc.toString(),got:got?1:0,order:order,byAsset:ba}));
+  }catch(e){/* storage unavailable — the scan simply restarts next time */}
+}
+function anaVaultScanLoad(){
+  try{
+    var raw=localStorage.getItem(ANA_VAULT_SCAN_KEY);
+    if(!raw)return null;
+    var d=JSON.parse(raw);
+    if(!d||d.v!==1||!d.next)return null;
+    if(String(d.vault||'').toLowerCase()!==String(W3C.contracts.feeVault).toLowerCase())return null;
+    if(Date.now()-(d.at||0)>600000)return null;
+    var byAsset={}, order=Array.isArray(d.order)?d.order:[];
+    for(var i=0;i<order.length;i++){
+      var r=(d.byAsset||{})[order[i]];
+      if(!r)return null;
+      byAsset[order[i]]={asset:r.asset,amount:BigInt(r.amount),symbol:r.symbol,decimals:r.decimals||18};
+    }
+    return {next:d.next,pages:d.pages||0,acc:BigInt(d.acc||'0'),got:!!d.got,order:order,byAsset:byAsset};
+  }catch(e){return null}
+}
+function anaVaultScanClear(){try{localStorage.removeItem(ANA_VAULT_SCAN_KEY)}catch(e){}}
 async function anaLoadVaultFees(){
   if(!anaViewOpen()||anaVaultBusy)return;
   if(document.visibilityState==='hidden')return;
   if(anaVaultAt&&Date.now()-anaVaultAt<60000)return;
-  if(typeof window.ethers==='undefined')return;
+  if(typeof window.ethers==='undefined'){
+    /* Guard settle: without the Web3 library this pass can never
+       run — record it settled + failed and re-render the section,
+       so the Creators group reaches its final state instead of
+       holding the skeleton forever. */
+    if(anaViewOpen()){ANA_FEE_ST.vault.settled=true;ANA_FEE_ST.vault.failed=true;try{renderAnaFees()}catch(e){}}
+    return;
+  }
   anaVaultBusy=true; anaVaultAt=Date.now();
-  var aborted=false;
+  var aborted=false, failed=false;
+  /* The whole pass is deadline-bounded (150s): every wait inside
+     it can end — a page fetch (bsFetchJson aborts at 25s), the
+     Lens yield gate (anaYieldPointBy against this deadline), or
+     the 80-page chunk cap below. It SETTLES ok or failed, always. */
+  var deadline=Date.now()+150000;
   try{
     var topic=String(ethers.id('FeesAccrued(address,address,uint256)')).toLowerCase();
-    var acc=0n, byAsset={}, order=[], next=null, pages=0, got=false, completedPass=false;
-    while(pages<80){
+    var resume=anaVaultScanLoad();
+    var acc=resume?resume.acc:0n, byAsset=resume?resume.byAsset:{}, order=resume?resume.order:[], next=resume?resume.next:null, pages=resume?resume.pages:0, got=resume?resume.got:false, completedPass=false;
+    var passPages=0;
+    while(passPages<80){
       /* Yield point, same discipline as the history scan: pause
          for an in-flight Lens read; abandon the pass if the
          view closed. The settled totals stay untouched either
          way — only a completed pass publishes as final. */
-      if(!await anaYieldPoint()){aborted=true;break}
+      if(!await anaYieldPointBy(deadline)){
+        if(!anaViewOpen())aborted=true; else failed=true;
+        break;
+      }
       var q=next?('?'+bsQuery(next)):'';
       var d=await bsFetchJson('/addresses/'+W3C.contracts.feeVault+'/logs'+q);
       ((d&&d.items)||[]).forEach(function(it){
@@ -8302,14 +8402,32 @@ async function anaLoadVaultFees(){
         anaPublishFees(acc,order.map(function(a){return byAsset[a]}),false);
         try{renderLiveAnalytics()}catch(e){}
       }
-      pages++;
+      passPages++; pages++;
       next=(d&&d.next_page_params)?d.next_page_params:null;
       if(!next){completedPass=true;break}
+      /* Checkpoint the walk BEFORE the next page: if this pass
+         dies here (host failure, deadline, reload), the next
+         pass resumes at this cursor instead of page 0. */
+      anaVaultScanSave(next,pages,acc,byAsset,order,got);
     }
-    if(got&&completedPass){
+    if(completedPass){
+      /* Completion publishes as final EVEN when the vault holds
+         no FeesAccrued logs at all: a finished scan that found
+         nothing is the honest "No fees collected yet." state,
+         not a skeleton that never ends. */
+      anaVaultScanClear();
       anaPublishFees(acc,order.map(function(a){return byAsset[a]}),true);
+    }else if(!aborted){
+      /* Chunk cap reached with pages still to walk, or the
+         deadline hit: the checkpoint above lets the next pass
+         (or Try again) resume mid-walk, and the pass records a
+         failure so the section settles honestly meanwhile. */
+      failed=true;
     }
-  }catch(e){/* keep the last good totals */}
+  }catch(e){/* keep the last good totals — and record the failure so the section can settle on the honest failure state */
+    failed=true;
+  }
+  if(failed){ANA_FEE_ST.vault.settled=true;ANA_FEE_ST.vault.failed=true}
   /* An abandoned pass retries on the next visit instead of
      waiting out the one-minute throttle. */
   if(aborted)anaVaultAt=0;
@@ -8327,17 +8445,35 @@ async function anaLoadPots(){
   if(!anaViewOpen()||anaPotsBusy)return;
   if(document.visibilityState==='hidden')return;
   if(ANA_POTS_DONE&&Date.now()-anaPotsAt<60000)return;
-  if(typeof window.ethers==='undefined')return;
+  if(typeof window.ethers==='undefined'){
+    /* Guard settle: without the Web3 library this pass can never
+       run — record it settled + failed and re-render the section,
+       so the Creators group reaches its final state instead of
+       holding the skeleton forever. */
+    if(anaViewOpen()){ANA_FEE_ST.pots.settled=true;ANA_FEE_ST.pots.failed=true;try{renderAnaFees()}catch(e){}}
+    return;
+  }
   var dest=LIVE_TOKENS.filter(function(t){return t.feeDestination===1||t.feeDestination===2});
   if(!dest.length){
     if(!ANA_POTS_DONE){ANA_POTS={flow:{},potNow:{}};ANA_POTS_DONE=true;anaPotsAt=Date.now()}
+    ANA_FEE_ST.pots.settled=true; ANA_FEE_ST.pots.failed=false;
     return;
   }
   anaPotsBusy=true;
+  /* Deadline-bounded like the other fee passes (90s): each token
+     read already carries the site's 15s withTimeout, the yield
+     gate is bounded against this deadline, and any failure —
+     including ONE token's read — settles the pass as failed
+     (the creators group may not publish without the pots when
+     destination tokens exist, blueprint 6.4: no partial totals). */
+  var potsDeadline=Date.now()+90000;
   try{
     var flow={}, potNow={};
     for(var i=0;i<dest.length;i++){
-      if(!await anaYieldPoint()){anaPotsBusy=false;return}
+      if(!await anaYieldPointBy(potsDeadline)){
+        if(!anaViewOpen()){anaPotsBusy=false;return}
+        throw new Error('Fee pot pass deadline exceeded');
+      }
       var t=dest[i];
       var c=feeDestContractForToken(t);
       if(!c)throw new Error('FeeDestinations unavailable');
@@ -8350,7 +8486,10 @@ async function anaLoadPots(){
       potNow[akey]=(potNow[akey]||0n)+pot;
     }
     ANA_POTS={flow:flow,potNow:potNow}; ANA_POTS_DONE=true; anaPotsAt=Date.now(); ANA_FEE_UPDATED_AT=Date.now();
-  }catch(e){/* keep the last good snapshot */}
+    ANA_FEE_ST.pots.settled=true; ANA_FEE_ST.pots.failed=false;
+  }catch(e){/* keep the last good snapshot — and record the failure so the section can settle on the honest failure state */
+    ANA_FEE_ST.pots.settled=true; ANA_FEE_ST.pots.failed=true;
+  }
   anaPotsBusy=false;
   try{renderLiveAnalytics()}catch(e){}
 }
@@ -8487,6 +8626,37 @@ function anaFeeBodyHtml(L,group){
 function anaFeeSkelHtml(){
   return '<div class="ana-fee-total-label">TOTAL \u00b7 ALL ASSETS (USD)</div><div style="margin-top:8px"><span class="ana-skel" style="width:150px;height:30px"></span></div><div class="ana-fee-rows"><span class="ana-skel" style="width:100%;height:62px"></span><span class="ana-skel" style="width:100%;height:62px"></span></div>';
 }
+/* The section's third and final state (blueprint 5.3): shown only
+   when every pass the group depends on has SETTLED, at least one
+   recorded a failure, and no snapshot (live or last-good) exists
+   to show. Same copy as the page-level honest panel. */
+function anaFeeFailHtml(){
+  return '<div class="ana-fee-fail"><h4>Can\u2019t reach Loop right now</h4><p>Live data is unavailable, so nothing is shown instead of stale numbers.</p><button type="button" class="btn btn-primary" data-act="ana-fee-retry" style="min-height:48px;padding:12px 26px">Try again</button></div>';
+}
+function anaFeeGroupFailed(group){
+  if(group==='protocol'){
+    var t=ANA_FEE_ST.treasury;
+    return !!(t.settled&&t.failed);
+  }
+  var blockers=[ANA_FEE_ST.vault];
+  if(LIVE_TOKENS.some(function(t){return t.feeDestination===1||t.feeDestination===2}))blockers.push(ANA_FEE_ST.pots);
+  var allSettled=blockers.every(function(s){return s.settled});
+  var anyFailed=blockers.some(function(s){return s.failed});
+  return allSettled&&anyFailed;
+}
+/* Try again for THIS section: clear the settle/failure record and
+   the loaders' throttles, then re-run all three fee passes. The
+   vault scan resumes from its checkpoint if one exists. */
+function anaFeeRetry(){
+  anaVaultAt=0; anaTreasuryAt=0; anaPotsAt=0;
+  ANA_FEE_ST.vault.settled=false; ANA_FEE_ST.vault.failed=false;
+  ANA_FEE_ST.treasury.settled=false; ANA_FEE_ST.treasury.failed=false;
+  ANA_FEE_ST.pots.settled=false; ANA_FEE_ST.pots.failed=false;
+  try{renderAnaFees()}catch(e){}
+  anaLoadTreasury();
+  anaLoadVaultFees();
+  anaLoadPots();
+}
 function syncAnaFeeTabs(){
   document.querySelectorAll('#view-analytics [data-act="ana-fee-tab"]').forEach(function(b){
     var on=b.getAttribute('data-group')===anaFeeGroup;
@@ -8523,7 +8693,13 @@ function renderAnaFees(){
   var L=anaFeeGroup==='creators'?cL:pL;
   var foldWasOpen=false, prevFold=el('anaFeeOtherFold');
   if(prevFold&&prevFold.classList.contains('open'))foldWasOpen=true;
-  body.innerHTML=L?anaFeeBodyHtml(L,anaFeeGroup):anaFeeSkelHtml();
+  /* Three final states only (blueprint 6.4 / 8 rule 3): a snapshot
+     (numbers or the honest empty state), the failure panel once
+     the group's passes have settled with a failure, or — only
+     while a pass is genuinely still running — the skeleton. */
+  if(L)body.innerHTML=anaFeeBodyHtml(L,anaFeeGroup);
+  else if(anaFeeGroupFailed(anaFeeGroup))body.innerHTML=anaFeeFailHtml();
+  else body.innerHTML=anaFeeSkelHtml();
   if(foldWasOpen){
     var nf=el('anaFeeOtherFold');
     if(nf){nf.classList.add('open');var tb=body.querySelector('[data-act="ana-fee-other"]');if(tb)tb.setAttribute('aria-expanded','true')}
