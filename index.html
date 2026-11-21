@@ -846,7 +846,7 @@ button.pf-item:active{transform:scale(.985);opacity:.85}
 /* Detail overflow hardening: nothing inside the trade panel (or a
    long unbroken token name in the header) may force the detail view
    wider than the viewport — rows wrap, groups wrap, tracks shrink. */
-#tradePanel{min-width:0;max-width:100%}
+#tradePanel{min-width:0;max-width:100%;position:sticky;top:14px}
 #tradePanel .slip-group{flex-wrap:wrap;justify-content:flex-end}
 .quick>*{min-width:0}
 #tradeBtn{max-width:100%}
@@ -866,6 +866,124 @@ button.pf-item:active{transform:scale(.985);opacity:.85}
 .h-ext:hover{border-color:var(--pink);color:var(--pink-dark)}
 .h-ext svg{width:14px;height:14px}
 @media(max-width:560px){#cvChart{height:260px}.d-panel{padding:15px}.chart-panel{padding:12px}.chart-hero-val{font-size:31px}}
+
+/* ===== Token detail redesign (blueprint v-final): price bar,
+   graduation block, 6-cell grid + Details fold, fees split bar,
+   mode stat panels, premium separated rows, slippage popover ===== */
+.status-chip{text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+.status-chip:not(.grad){color:var(--pink);border-color:color-mix(in srgb,var(--pink) 45%, transparent);background:color-mix(in srgb,var(--pink) 10%, transparent)}
+.pricebar-panel{padding:16px 18px}
+.pb-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.pb-price{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.pb-chg{font-weight:800;font-size:15px}
+.pb-chg.up{color:var(--green)}
+.pb-chg.down{color:var(--red)}
+.pb-mcap{color:var(--muted);font-weight:600;font-size:14.5px;margin-top:5px}
+.pb-mcap strong{color:var(--ink);font-weight:800}
+.snap-xfade{animation:snapFade .2s ease}
+@keyframes snapFade{from{opacity:.25}to{opacity:1}}
+.gradblock{padding:16px 18px}
+.gb-top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
+.gb-label{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+.gb-word{font-size:19px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-top:3px}
+.gb-word.grad{color:var(--green)}
+.gb-word.bond{color:var(--pink)}
+.gb-pct{font-size:26px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.gb-bar{height:9px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:12px}
+.gb-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pink),#ff7aa8);transition:width .45s ease}
+.gb-sub{color:var(--muted);font-size:13px;font-weight:600;margin:9px 0 0}
+.stats2-panel{padding:16px 18px}
+.stats2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat2-cell{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;min-width:0}
+.stat2-cell .s2-label{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;display:block}
+.stat2-cell .s2-val{font-weight:800;font-size:16.5px;display:block;margin-top:3px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+@media(max-width:640px){.stats2-grid{grid-template-columns:1fr 1fr}}
+.details-toggle{border:0;background:none;color:var(--ink);font-weight:800;font-size:14.5px;cursor:pointer;padding:12px 2px 2px;min-height:44px;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.details-toggle .pf-chev{transition:transform .25s ease}
+.details-toggle[aria-expanded="true"] .pf-chev{transform:rotate(180deg)}
+.details-fold{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
+.details-fold.open{grid-template-rows:1fr}
+.details-fold>.det-rows{overflow:hidden;min-height:0}
+.det-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.det-row:last-child{border-bottom:0}
+.det-label{color:var(--muted);font-weight:600;flex:none}
+.det-val{font-weight:700;display:flex;align-items:center;gap:7px;justify-content:flex-end;min-width:0;font-variant-numeric:tabular-nums}
+.fee-panel,.mode-panel,.about-panel{padding:16px 18px;border-color:var(--line)}
+.fee-panel h3,.mode-panel h3,.about-panel h3{font-size:15px;margin:0}
+.fee-panel-head{display:flex;align-items:center;gap:9px;position:relative}
+.fee-q{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--muted);font-weight:800;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none}
+.fee-q:hover{border-color:var(--pink);color:var(--pink)}
+.fee-tip{position:absolute;top:34px;left:0;z-index:30;max-width:330px;background:var(--surface);border:1px solid var(--line2);border-radius:12px;padding:11px 13px;font-size:13px;font-weight:600;color:var(--muted);line-height:1.5;box-shadow:0 14px 34px rgba(0,0,0,.45)}
+.split-bar{display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:13px;background:var(--surface2)}
+.split-bar i{display:block;height:100%}
+.split-bar .sb-a{background:var(--pink)}
+.split-bar .sb-b{background:#8a5a70}
+.split-bar .sb-c{background:var(--line2)}
+.fee-line{color:var(--muted);font-size:13.5px;font-weight:600;margin:8px 0 0}
+.fee-split-label{color:var(--ink);font-weight:700}
+.fee-dest{color:var(--ink);font-weight:700}
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.mode-cell{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.mode-cell span{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;display:block}
+.mode-cell strong{font-size:15px;display:block;margin-top:3px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.mode-note{color:var(--muted);font-size:13px;font-weight:700;margin:11px 0 0}
+.about-panel p{color:var(--muted);margin:8px 0 0;line-height:1.6;max-width:68ch}
+.about-body{display:grid;grid-template-rows:1fr}
+.about-more{border:0;background:none;color:var(--pink-dark);font-weight:800;font-size:13.5px;cursor:pointer;padding:10px 2px 0;min-height:44px;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.about-more .pf-chev{transition:transform .25s ease}
+.about-more[aria-expanded="true"] .pf-chev{transform:rotate(180deg)}
+/* Trades/Holders: premium separated mini-card rows inside a
+   fixed-height, internally scrolling card (about 5 rows tall). */
+.tabs-panel .panel-scroll{position:relative}
+.tabs-panel .trades-scroll{max-height:308px}
+.tabs-panel .holders-scroll{max-height:308px}
+.trade-table{border-collapse:separate;border-spacing:0 6px;min-width:0;width:100%}
+.trade-table thead th{padding:2px 8px 0;border:0}
+.trade-table tbody td{background:var(--surface2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 8px}
+.trade-table tbody td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+.trade-table tbody td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+.trade-table tbody tr td[colspan]{background:transparent;border:0}
+.holders{list-style:none;margin:0;padding:2px 0;display:flex;flex-direction:column;gap:6px}
+.holders li.holder-row{display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.holders li:not(.holder-row){padding:10px 4px;color:var(--muted);font-weight:600}
+#dTradesWrap{position:relative}
+#dTradesWrap::after{content:"";position:absolute;left:0;right:6px;bottom:0;height:26px;background:linear-gradient(to bottom,transparent,var(--surface));pointer-events:none}
+.scroll-fade{position:relative}
+.scroll-fade::after{content:"";position:absolute;left:0;right:6px;bottom:0;height:26px;background:linear-gradient(to bottom,transparent,var(--surface));pointer-events:none}
+.holders-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:11px}
+.holders-nav-label{color:var(--faint);font-size:12.5px;font-weight:700}
+.holders-nav-btns{display:inline-flex;gap:8px}
+.h-arrow{width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:opacity .15s,transform .12s}
+.h-arrow:active{transform:scale(.96)}
+.h-arrow.dim{opacity:.32}
+/* Trade panel: gear + slippage popover, side-colored execute */
+.tp-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.slip-gear-wrap{display:inline-flex;align-items:center;gap:8px}
+.slip-gear{width:44px;height:44px;border-radius:11px;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:transform .12s,border-color .15s}
+.slip-gear:hover{border-color:var(--pink)}
+.slip-gear:active{transform:scale(.96)}
+.slip-gear svg{width:19px;height:19px}
+.slip-gear-val{font-weight:800;font-size:13.5px;color:var(--muted)}
+.slip-pop{border:1px solid var(--line2);border-radius:14px;background:var(--surface2);padding:13px 14px;margin-bottom:13px}
+.slip-pop-title{font-weight:800;font-size:13.5px;margin-bottom:10px}
+.slip-pop-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.slip-pop-row button{border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:999px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer;min-height:44px;font-family:inherit;transition:transform .12s}
+.slip-pop-row button.sel{background:var(--pink);border-color:var(--pink);color:#fff}
+.slip-pop-row button:active{transform:scale(.985)}
+.slip-pop-input{width:96px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:999px;padding:9px 13px;font-weight:700;font-size:13px;min-height:44px;font-family:inherit}
+.slip-pop-warn{color:var(--red);font-weight:700;font-size:12.5px;margin:10px 0 0}
+.slip-pop-note{color:var(--faint);font-weight:600;font-size:12px;margin:9px 0 0}
+.trade-status-line{color:var(--muted);font-size:12.5px;font-weight:700;margin:12px 0 0}
+.trade-safety{color:var(--faint);font-size:12px;font-weight:600;margin:10px 0 0;text-align:center}
+#tradeBtn.is-buy{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 8px 22px color-mix(in srgb,var(--green) 32%, transparent)}
+#tradeBtn.is-sell{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 8px 22px color-mix(in srgb,var(--red) 30%, transparent)}
+.quick button:active,.btn-max:active{transform:scale(.985);opacity:.85}
+.fav-btn.pulse{animation:favPulse .15s ease}
+@keyframes favPulse{0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(1)}}
+#chartBox{transition:opacity .3s ease}
+#chartBox.mode-fade{opacity:.25}
+@media(prefers-reduced-motion: reduce){.snap-xfade,.fav-btn.pulse{animation:none}.gb-bar i{transition:none}#chartBox{transition:none}}
+
 /* ===== Loop pair mark (the real logo replaces every letter tile) ===== */
 .loop-ic{height:15px;width:auto;display:inline-block;vertical-align:-3px}
 .pair-tag{display:inline-flex;align-items:center;gap:5px}
@@ -1845,26 +1963,36 @@ button.qrow{cursor:pointer}
          permissionless migration, offered to any connected wallet. -->
     <div id="migBanner" style="display:none;margin-top:16px;background:var(--pink-pale);border:1.5px solid var(--pink-soft);border-radius:16px;padding:16px 18px">
       <strong style="font-size:16px">Graduated — waiting for migration</strong>
-      <p style="color:var(--muted);font-size:13.5px;font-weight:600;margin:6px 0 12px">The curve is full, so curve trading has stopped. One step moves the liquidity to Uniswap V2 — anyone can run it.</p>
-      <button class="btn btn-primary" data-act="migrate" style="min-height:48px;padding:12px 22px">Migrate to Uniswap V2</button>
+      <p style="color:var(--muted);font-size:13.5px;font-weight:600;margin:6px 0 12px">The curve is full, so curve trading has stopped. One step moves the liquidity to its pool — anyone can run it.</p>
+      <button class="btn btn-primary" data-act="migrate" style="min-height:48px;padding:12px 22px">Migrate to the pool</button>
     </div>
 
-    <section class="d-panel stats-panel" aria-label="Token statistics">
-      <div class="stat-row"><span class="s-label">Market cap</span><span class="s-val s-val-stack"><span id="dStatMcap">…</span><small class="s-sub" id="dStatMcapSub"></small></span></div>
-      <div class="stat-row"><span class="s-label">Token price</span><span class="s-val s-val-stack"><span id="dStatPrice">…</span><small class="s-sub" id="dStatPriceSub"></small></span></div>
-      <div class="stat-row" id="dStatLiqRow"><span class="s-label" id="dStatLiqLabel">Curve reserves</span><span class="s-val" id="dStatLiq">…</span></div>
-      <div class="stat-row" id="dStatHoldersTile"><span class="s-label">Holders</span><span class="s-val" id="dStatHolders">…</span></div>
-      <div class="stat-row"><span class="s-label">Trades</span><span class="s-val" id="dStatTrades">…</span></div>
-      <div class="stat-row"><span class="s-label">Volume</span><span class="s-val s-val-stack"><span id="dStatVol">…</span><small class="s-sub" id="dStatVolSub"></small></span></div>
-      <div class="stat-row"><span class="s-label">Supply</span><span class="s-val" id="dStatSupply">1B</span></div>
-      <div class="stat-row"><span class="s-label" id="dPoolLabel">Curve</span><span class="s-val"><span id="dAddrPool">—</span><button class="copy-mini" id="dPoolCopy" data-act="copy-pool" aria-label="Copy pool address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span></div>
-      <div class="stat-row" id="dTaxRow" style="display:none"><span class="s-label">Creator tax</span><span class="s-val" id="dStatTax">—</span></div>
-      <div class="stat-row"><span class="s-label">Created</span><span class="s-val" id="dLaunched">—</span></div>
-      <div class="progress-label" style="margin-top:16px"><span id="dProgLabel">Bonding curve progress</span><span id="dProgPct">—</span></div>
-      <div class="progress"><i id="dProgBar" style="width:50%"></i></div>
+
+
+    <!-- Price bar + graduation status: both render from the single
+         DETAIL_SNAP snapshot built by paintLiveDetail — the same
+         object that feeds the stats grid and the chart hero, so a
+         figure can never appear twice with two different values. -->
+    <section class="d-panel pricebar-panel" aria-label="Token price">
+      <div class="pb-row">
+        <span class="pb-price" id="dStatPrice"><span class="ana-skel"></span></span>
+        <span class="pb-chg" id="dPriceChg"></span>
+      </div>
+      <div class="pb-mcap">Market cap <strong id="dStatMcap"><span class="ana-skel"></span></strong> <span class="s-sub" id="dStatMcapSub"></span></div>
+      <span id="dStatPriceSub" style="display:none"></span>
+    </section>
+
+    <section class="d-panel gradblock" aria-label="Graduation status">
+      <div class="gb-top">
+        <div>
+          <div class="gb-label">GRADUATION STATUS</div>
+          <div class="gb-word" id="dGradWord">—</div>
+        </div>
+        <div class="gb-pct" id="dGradPct">—</div>
+      </div>
+      <div class="gb-bar"><i id="dGradBar" style="width:0%"></i></div>
+      <p class="gb-sub" id="dGradSub">—</p>
       <p id="dTransferLock" style="display:none;color:var(--muted);font-size:13px;font-weight:700;margin:8px 0 0">Transfers unlock at graduation.</p>
-      <h3 style="font-size:16px;margin:18px 0 6px">About</h3>
-      <p id="dAbout" style="color:var(--muted);margin:0;max-width:68ch">—</p>
     </section>
 
     <section class="d-panel chart-panel" aria-label="Price chart">
@@ -1896,40 +2024,33 @@ button.qrow{cursor:pointer}
       <p id="chartNote" style="color:var(--faint);font-size:12px;font-weight:600;margin:8px 2px 0">Market cap history — from on-chain trades.</p>
     </section>
 
+
+    <section class="d-panel stats2-panel" aria-label="Token statistics">
+      <div class="stats2-grid">
+        <div class="stat2-cell"><span class="s2-label">Market cap</span><span class="s2-val" id="dGridMcap"><span class="ana-skel"></span></span></div>
+        <div class="stat2-cell" id="dStatLiqRow"><span class="s2-label" id="dStatLiqLabel">Liquidity</span><span class="s2-val" id="dStatLiq"><span class="ana-skel"></span></span></div>
+        <div class="stat2-cell" id="dStatHoldersTile"><span class="s2-label">Holders</span><span class="s2-val" id="dStatHolders"><span class="ana-skel"></span></span></div>
+        <div class="stat2-cell"><span class="s2-label">Volume 24h</span><span class="s2-val s-val-stack"><span id="dStatVol"><span class="ana-skel"></span></span><small class="s-sub" id="dStatVolSub"></small></span></div>
+        <div class="stat2-cell"><span class="s2-label">Trades</span><span class="s2-val" id="dStatTrades"><span class="ana-skel"></span></span></div>
+        <div class="stat2-cell"><span class="s2-label">Supply</span><span class="s2-val" id="dStatSupply">1B</span></div>
+      </div>
+      <button type="button" class="details-toggle" id="dDetailsToggle" data-act="details-toggle" aria-expanded="false">Details <span class="pf-chev" aria-hidden="true">▾</span></button>
+      <div class="details-fold" id="dDetailsFold">
+        <div class="det-rows">
+          <div class="det-row"><span class="det-label" id="dPoolLabel">Pool</span><span class="det-val"><span id="dAddrPool">—</span><button class="copy-mini" id="dPoolCopy" data-act="copy-pool" aria-label="Copy pool address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span></div>
+          <div class="det-row"><span class="det-label">Contract</span><span class="det-val"><span id="dDetContract">—</span><button class="copy-mini" data-act="copy-contract" aria-label="Copy token contract address"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span></div>
+          <div class="det-row"><span class="det-label">Creator</span><span class="det-val" id="dDetCreator">—</span></div>
+          <div class="det-row"><span class="det-label">Pair</span><span class="det-val" id="dDetPair">—</span></div>
+          <div class="det-row"><span class="det-label">Creator tax</span><span class="det-val" id="dStatTax">—</span></div>
+          <div class="det-row"><span class="det-label">Created</span><span class="det-val" id="dLaunched">—</span></div>
+        </div>
+      </div>
+    </section>
+
     <div id="dFees" style="display:none;margin-top:14px;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:14px;padding:14px 16px">
       <strong style="font-size:14.5px">Creator Fees — your token</strong><br/>
       <span style="color:var(--muted);font-size:13.5px;font-weight:600">This token has earned you <span id="dFeesEarned" style="color:var(--ink);font-weight:800">—</span> in creator fees, <span id="dFeesAmt" style="color:var(--ink);font-weight:800">—</span> of it still claimable. All your tokens' fees collect in your Profile — claim them all at once.</span>
       <div style="margin-top:11px"><button class="btn btn-primary" data-act="goto-claim" style="min-height:44px;padding:10px 18px">Claim in Profile →</button></div>
-    </div>
-
-    <!-- Gen-4/Gen-5/Gen-7 fee panels (live tokens launched by the
-         gen-4, gen-5 or gen-7 factory only): the LIVE fee recipient read from
-         the curve, the token's own fee facts, and — by fee
-         destination — the Holder Rewards or Buyback & Burn panel,
-         read live from SakuraFeeDestinations. Legacy tokens keep
-         the plain detail layout; this whole block stays hidden
-         for them. -->
-    <div id="dGen4Panels" style="display:none">
-      <div style="margin-top:14px;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:14px;padding:14px 16px">
-        <strong style="font-size:14.5px">Fees</strong><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4FeeRecipient">Reading the live fee recipient…</span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4CurveFee"></span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4TaxLine"></span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4PoolFee"></span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4DestLine"></span>
-      </div>
-      <div id="dG4Holders" style="display:none;margin-top:14px;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:14px;padding:14px 16px">
-        <strong style="font-size:14.5px">Holder Rewards</strong><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4Pot">…</span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4Paid">…</span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4NextRound">…</span>
-      </div>
-      <div id="dG4Burn" style="display:none;margin-top:14px;background:var(--pink-pale);border:1px solid var(--pink-soft);border-radius:14px;padding:14px 16px">
-        <strong style="font-size:14.5px">Buyback &amp; Burn</strong><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4Burned">…</span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4Spent">…</span><br/>
-        <span style="color:var(--muted);font-size:13.5px;font-weight:600" id="dG4BuybackPot">…</span>
-      </div>
     </div>
 
     <div class="d-grid">
@@ -1942,26 +2063,47 @@ button.qrow{cursor:pointer}
         <div id="dTradesWrap">
           <div class="panel-scroll trades-scroll">
             <table class="trade-table trade-compact"><thead><tr><th>Side</th><th>Trader</th><th class="num" id="dTokenCol">Token</th><th class="num" id="dPairCol">LOOP</th><th class="num">Price</th><th class="num">Age</th><th aria-hidden="true"></th></tr></thead><tbody id="dTradesBody"></tbody></table>
-            <div class="show-more-wrap"><button type="button" id="dTradesMore" class="btn btn-ghost btn-more" style="display:none" data-act="trades-more">Load more trades</button></div>
           </div>
         </div>
         <div id="dHoldersWrap" style="display:none">
-          <div class="th-head"><h4>Top holders</h4><span class="th-chip" id="dHoldersCount" style="display:none"></span></div>
-          <div class="th-cols"><span>Holder</span><span>Amount</span></div>
-          <div class="panel-scroll holders-scroll"><ul class="holders" id="dHoldersList"></ul></div>
-          <p class="th-foot" id="dHoldersFoot" style="display:none"></p>
+          <div class="panel-scroll holders-scroll" id="dHoldersScroll"><ul class="holders" id="dHoldersList"></ul></div>
+          <div class="holders-nav" id="dHoldersNav">
+            <span class="holders-nav-label">More holders below</span>
+            <span class="holders-nav-btns">
+              <button type="button" class="h-arrow" id="dHoldersUp" data-act="holders-up" aria-label="Scroll holders up">▲</button>
+              <button type="button" class="h-arrow" id="dHoldersDown" data-act="holders-down" aria-label="Scroll holders down">▼</button>
+            </span>
+          </div>
         </div>
       </section>
 
       <aside class="panel" id="tradePanel" style="padding:20px">
-        <h3 style="font-size:19px;margin-bottom:12px">Buy / Sell</h3>
+        <div class="tp-head">
+          <h3 style="font-size:19px;margin:0">Buy / Sell</h3>
+          <span class="slip-gear-wrap">
+            <button type="button" class="slip-gear" id="dSlipGear" data-act="slip-gear" aria-expanded="false" aria-label="Trade settings — slippage tolerance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>
+            <span class="slip-gear-val" id="dSlipVal">Auto</span>
+          </span>
+        </div>
+        <div class="slip-pop" id="dSlipPop" hidden>
+          <div class="slip-pop-title">Slippage tolerance</div>
+          <div class="slip-pop-row" role="group" aria-label="Slippage tolerance">
+            <button type="button" data-act="tslip" data-tslip="auto" class="sel" aria-pressed="true">Auto</button>
+            <button type="button" data-act="tslip" data-tslip="0.5" aria-pressed="false">0.5%</button>
+            <button type="button" data-act="tslip" data-tslip="1" aria-pressed="false">1%</button>
+            <button type="button" data-act="tslip" data-tslip="3" aria-pressed="false">3%</button>
+            <input class="slip-pop-input" id="tSlipCustomInput" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="Custom %" aria-label="Custom slippage percent"/>
+          </div>
+          <p class="slip-pop-warn" id="tSlipWarn" style="display:none">Very high — your trade can be front-run.</p>
+          <p class="slip-pop-note">Applies to this trade. Your default lives in Profile · Settings.</p>
+        </div>
         <!-- Fix H: in the graduated-unmigrated state the trade form
              is hidden entirely and this panel offers migration
              instead — curve Buy/Sell is never offered. -->
         <div id="migPanel" style="display:none">
           <p style="font-weight:800;font-size:15px;margin:0 0 6px">Graduated — waiting for migration</p>
-          <p style="color:var(--muted);font-size:13.5px;font-weight:600;margin:0 0 14px">Curve trading has stopped. Migrate to Uniswap V2 to open pool trading — anyone can do it.</p>
-          <button class="btn btn-primary" data-act="migrate" style="width:100%;min-height:50px;padding:14px">Migrate to Uniswap V2</button>
+          <p style="color:var(--muted);font-size:13.5px;font-weight:600;margin:0 0 14px">Curve trading has stopped. Migrate to the pool to open pool trading — anyone can do it.</p>
+          <button class="btn btn-primary" data-act="migrate" style="width:100%;min-height:50px;padding:14px">Migrate to the pool</button>
           <p class="trade-error" id="migError" role="alert"></p>
           <p class="wallet-hint" id="migWalletHint">If the confirmation doesn’t appear, tap your wallet icon.</p>
         </div>
@@ -1972,19 +2114,52 @@ button.qrow{cursor:pointer}
         <div class="amount-row"><input class="amount" id="tradeAmount" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="0.10" aria-label="Trade amount"/><button type="button" class="btn-max" data-act="max-amt" aria-label="Use maximum available amount">MAX</button></div>
         <div class="quick" id="quickChips"><button data-act="amt" data-amt="0.01">0.01</button><button data-act="amt" data-amt="0.05">0.05</button><button data-act="amt" data-amt="0.10">0.10</button><button data-act="amt" data-amt="0.50">0.50</button></div>
         <div class="fee-row"><span style="color:var(--muted)">You receive ≈</span><strong id="tradeReceive">—</strong></div>
-        <div class="fee-row"><span style="color:var(--muted)" id="tradeFeeLabel">Fee 1%</span><span id="tradeFee">—</span></div>
-        <div class="fee-row" id="tradeSnipeRow"><span style="color:var(--muted)">Anti-snipe tax</span><span id="tradeSnipeVal">0% — past 5 seconds</span></div>
-        <div class="fee-row" id="tradeSlipRow" style="display:none"><span style="color:var(--muted)">Slippage</span><span class="slip-group" role="group" aria-label="Slippage tolerance"><button type="button" data-act="slip" data-slip="0.5">0.5%</button><button type="button" data-act="slip" data-slip="1" class="sel" aria-pressed="true">1%</button><button type="button" data-act="slip" data-slip="2">2%</button><button type="button" data-act="slip-custom" id="slipCustomBtn" aria-pressed="false">Custom</button><input class="slip-custom-input" id="slipCustomInput" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0.0%" aria-label="Custom slippage percent" style="display:none"/></span></div>
-        <p class="slip-hint" id="slipHint" role="alert"></p>
+        <div class="fee-row"><span style="color:var(--muted)" id="tradeFeeLine">Fee ≈ —</span></div>
+        <div class="fee-row" id="tradeSnipeRow" style="display:none"><span style="color:var(--muted)">Anti-snipe tax</span><span id="tradeSnipeVal">0% — past 5 seconds</span></div>
         <p id="quoteNote" style="display:none;font-size:12px;color:var(--gold);font-weight:700;margin:10px 0 0"></p>
         <p class="trade-error" id="tradeError" role="alert"></p>
-        <button class="btn btn-primary" id="tradeBtn" style="width:100%;margin-top:14px;padding:14px" data-act="toast" data-msg="Connect your wallet to trade">Trade Now</button>
+        <p class="trade-status-line" id="tradeStatusLine"></p>
+        <button class="btn btn-primary" id="tradeBtn" style="width:100%;margin-top:10px;padding:14px" data-act="toast" data-msg="Connect your wallet to trade">Trade Now</button>
         <p class="wallet-hint" id="tradeWalletHint">If the confirmation doesn’t appear, tap your wallet icon.</p>
-        <p id="tradeNote" style="font-size:12.5px;color:var(--muted)">The price climbs as people buy. Sell back into the curve any time before graduation.</p>
+        <p class="trade-safety">Fixed 1B supply · No hidden mint · LP locked forever</p>
         </div><!-- /tradeFormBody -->
-        <div style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13px"><strong>Safety checks</strong><br><span style="color:var(--muted)">Fixed 1B supply · No hidden mint · No wallet freeze · LP locked forever after graduation</span></div>
       </aside>
     </div>
+    <div id="dGen4Panels" style="display:none">
+      <section class="d-panel fee-panel" aria-label="Fees">
+        <div class="fee-panel-head"><h3>Fees</h3><button type="button" class="fee-q" data-act="fee-tip" aria-expanded="false" aria-label="How fees work on this token">?</button>
+          <div class="fee-tip" id="dFeeTip" hidden>Every trade pays the curve or pool fee plus this token's creator tax. The creator share follows the fee destination chosen at launch — it cannot be changed.</div>
+        </div>
+        <div class="split-bar" id="dG4SplitBar" aria-hidden="true"><i class="sb-a"></i><i class="sb-b"></i><i class="sb-c"></i></div>
+        <p class="fee-line fee-split-label" id="dG4SplitLabel"></p>
+        <p class="fee-line" id="dG4TaxLine" style="display:none"></p>
+        <p class="fee-line" id="dG4PoolLine" style="display:none"></p>
+        <p class="fee-line fee-dest" id="dG4DestLine"></p>
+      </section>
+      <section class="d-panel mode-panel" id="dG4Holders" style="display:none" aria-label="Holder Rewards">
+        <h3>Holder Rewards</h3>
+        <div class="mode-grid">
+          <div class="mode-cell"><span>In the pot</span><strong id="dG4Pot"><span class="ana-skel"></span></strong></div>
+          <div class="mode-cell"><span>Paid to holders</span><strong id="dG4Paid"><span class="ana-skel"></span></strong></div>
+          <div class="mode-cell"><span>Last round</span><strong id="dG4LastRound"><span class="ana-skel"></span></strong></div>
+        </div>
+        <p class="mode-note" id="dG4RoundLine" style="display:none">A new round can start now.</p>
+      </section>
+      <section class="d-panel mode-panel" id="dG4Burn" style="display:none" aria-label="Buyback and Burn">
+        <h3>Buyback &amp; Burn</h3>
+        <div class="mode-grid">
+          <div class="mode-cell"><span>In the pot</span><strong id="dG4BuybackPot"><span class="ana-skel"></span></strong></div>
+          <div class="mode-cell"><span>Burned so far</span><strong id="dG4Burned"><span class="ana-skel"></span></strong></div>
+          <div class="mode-cell"><span>Last buyback</span><strong id="dG4LastBuyback"><span class="ana-skel"></span></strong></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="d-panel about-panel" id="dAboutPanel" style="display:none" aria-label="About this token">
+      <h3>About</h3>
+      <div class="about-body" id="dAboutBody"><p id="dAbout"></p></div>
+      <button type="button" class="about-more" id="dAboutMore" data-act="about-more" aria-expanded="false" style="display:none">Read more <span class="pf-chev" aria-hidden="true">▾</span></button>
+    </section>
   </div>
   <div class="sticky-trade" id="stickyTrade" aria-hidden="false">
     <span class="st-info"><small id="stTicker">—</small><strong id="stPrice">—</strong></span>
@@ -2750,7 +2925,7 @@ function renderDetailTabs(){
   document.getElementById('dPairCol').textContent=t.pair;
   document.getElementById('dTokenCol').textContent=t.ticker;
   document.getElementById('dTradesTotal').textContent=tradesCount(t).toLocaleString('en-US')+' total';
-  var wallets=t.grad?["Bonding Curve → Uniswap Pool","0x7a…F3d9","0xMo…chi7","0xNe…ko22","0xHa…na09"]:["Bonding Curve","0x7a…F3d9","0xMo…chi7","0xNe…ko22","0xHa…na09"];
+  var wallets=t.grad?["Bonding Curve → Pool","0x7a…F3d9","0xMo…chi7","0xNe…ko22","0xHa…na09"]:["Bonding Curve","0x7a…F3d9","0xMo…chi7","0xNe…ko22","0xHa…na09"];
   var pcts=t.grad?["— (pool)","9.2%","6.7%","4.1%","3.3%"]:["38.4% (curve)","9.2%","6.7%","4.1%","3.3%"], hh="";
   wallets.forEach(function(w,j){hh+='<li><span>'+(j+1)+'. '+w+'</span><span>'+pcts[j]+'</span></li>'});
   document.getElementById('dHoldersList').innerHTML=hh;
@@ -2791,7 +2966,7 @@ function calcTrade(){
   var price=parseFloat(t.price.replace('$',''))||0.00001;
   var tokens= price>0 ? Math.floor((amt*0.99)/price*(t.pair==='USDC'?1:3200)) : 0;
   document.getElementById('tradeReceive').textContent = side==='buy' ? tokens.toLocaleString('en-US')+' $'+t.ticker : (amt*0.99).toFixed(4)+' '+t.pair+' (est.)';
-  document.getElementById('tradeFee').textContent=(amt*0.01).toFixed(4)+' '+t.pair;
+  var tfEl=document.getElementById('tradeFee'); if(tfEl)tfEl.textContent=(amt*0.01).toFixed(4)+' '+t.pair;
 }
 function stickySide(s){
   setSide(s);
@@ -3588,6 +3763,15 @@ document.addEventListener('click',function(e){
     else if(act==='ana-retry'){if(typeof loadLiveTokens==='function')loadLiveTokens();if(typeof anaOnView==='function')anaOnView()}
     else if(act==='tc-open')openTopCoin(el.getAttribute('data-ticker'));
     else if(act==='fav')toggleFav();
+    else if(act==='details-toggle')toggleDetailsFold();
+    else if(act==='fee-tip')toggleFeeTip(el);
+    else if(act==='about-more')toggleAboutMore(el);
+    else if(act==='slip-gear')toggleSlipPop(el);
+    else if(act==='tslip')pickTradeSlip(el);
+    else if(act==='holders-up')scrollHolders(-1);
+    else if(act==='holders-down')scrollHolders(1);
+    else if(act==='trades-retry'){if(typeof currentLive!=='undefined'&&currentLive){var rst=BS_TRADES[String(currentLive.address).toLowerCase()];if(rst)rst.error=false;bsFetchTradesPage(currentLive,false)}}
+    else if(act==='holders-retry'){if(typeof currentLive!=='undefined'&&currentLive){delete HOLDERS_CACHE[String(currentLive.address).toLowerCase()];ensureHoldersLoaded(currentLive)}}
     else if(act==='chart-type')setChartType(el.getAttribute('data-ctype'));
     else if(act==='chart-range')setChartRange(el.getAttribute('data-range'));
     else if(act==='chart-tf')setChartTf(el.getAttribute('data-tf'));
@@ -3993,6 +4177,7 @@ var SAKURA_WEB3_CONFIG={
       'function totalBuybackSpent(address,address) view returns (uint256)',
       'function totalBurned(address) view returns (uint256)',
       'function lastRoundStartedAt(address,address) view returns (uint256)',
+      'function lastBuybackAt(address,address) view returns (uint256)',
       'function roundCount(address,address) view returns (uint256)',
       'function minRoundInterval() view returns (uint256)',
       'function minHoldersPot() view returns (uint256)'
@@ -4180,9 +4365,9 @@ function pairAssetDef(addr){
    named by address so figures still render honestly. */
 function pairInfoForToken(t){
   var a=t&&t.pairAsset?String(t.pairAsset):ZERO_ADDR;
-  if(a.toLowerCase()===ZERO_ADDR)return {native:true,addr:ZERO_ADDR,sym:'LOOP',ticker:'LOOP',dec:18,color:'#D63A6E'};
+  if(a.toLowerCase()===ZERO_ADDR)return {native:true,addr:ZERO_ADDR,sym:'LOOP',ticker:'LOOP',dec:18,color:'#D63A6E',name:'Loop'};
   var d=pairAssetDef(a);
-  if(d)return {native:false,addr:d.address,sym:d.symbol,ticker:d.ticker,dec:d.decimals,color:d.color};
+  if(d)return {native:false,addr:d.address,sym:d.symbol,ticker:d.ticker,dec:d.decimals,color:d.color,name:d.name};
   return {native:false,addr:a,sym:truncAddr(a),ticker:'?',dec:18,color:'#5A6B8A'};
 }
 /* TestAssetPeg prices, cached per asset: priceLoop(asset) in LOOP
@@ -5432,7 +5617,7 @@ function updateTradeCounts(t){
   var n=Object.keys(store.map).length;
   if(n&&(t.tradeCount==null||n>t.tradeCount))t.tradeCount=n;
   var st=el('dStatTrades'); if(st&&currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())st.textContent=String(t.tradeCount!=null?t.tradeCount:n);
-  if(dTab==='trades'){var tt=el('dTradesTotal'); if(tt)tt.textContent=(t.tradeCount!=null?t.tradeCount:n)+' total'}
+  if(dTab==='trades'){var tt=el('dTradesTotal'); if(tt)tt.textContent='Latest 20 of '+((t.tradeCount!=null?t.tradeCount:n)).toLocaleString('en-US')}
 }
 /* The detail stats panel's Volume row: USD is the primary
    figure whenever the live LOOP/USD rate is known, with the
@@ -5442,7 +5627,7 @@ function paintDetailVolume(t){
   var dv=el('dStatVol'); if(!dv||!t)return;
   if(!currentLive||String(currentLive.address).toLowerCase()!==String(t.address).toLowerCase())return;
   var dSub=el('dStatVolSub');
-  if(t.volumeWei==null){dv.textContent='\u2026';if(dSub)dSub.textContent='';return}
+  if(t.volumeWei==null){if(!dv.querySelector('.ana-skel'))dv.innerHTML='<span class="ana-skel"></span>';if(dSub)dSub.textContent='';return}
   var vInfo=pairInfoForToken(t);
   if(!vInfo.native){
     /* Volume is summed from Trade events in the pair asset:
@@ -5526,13 +5711,13 @@ var BS_TRADES={};
 var BS_LOOP_BY_TX={}, BS_LOOP_QUEUE=[], BS_LOOP_INFLIGHT=0;
 function bsState(t){
   var key=String(t.address).toLowerCase();
-  if(!BS_TRADES[key])BS_TRADES[key]={next:undefined,loading:false,loaded:false,error:false,visible:50,attemptAt:0};
+  if(!BS_TRADES[key])BS_TRADES[key]={next:undefined,loading:false,loaded:false,error:false,visible:20,attemptAt:0};
   return BS_TRADES[key];
 }
 function bsVisibleLimit(t){
-  if(!t||!t.address)return 50;
+  if(!t||!t.address)return 20;
   var st=BS_TRADES[String(t.address).toLowerCase()];
-  return (st&&st.visible)||50;
+  return (st&&st.visible)||20;
 }
 function bsIsOpen(t){
   return !!t&&detailMode==='live'&&!!currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase();
@@ -5640,11 +5825,11 @@ function bsPaintTradesState(t){
   if(tradeStoreHasRows(t)){renderTradesIncremental(t);updateTradeCounts(t);paintChartFromStore(t);return}
   var tb=el('dTradesBody'); if(!tb)return;
   if(st&&st.error){
-    tb.innerHTML='<tr><td colspan="7" style="color:var(--muted)">Trades couldn’t be loaded. Retrying…</td></tr>';
+    tb.innerHTML='<tr><td colspan="7" style="color:var(--muted)">Trades couldn\'t be loaded. <button type="button" class="btn btn-ghost" style="min-height:44px;padding:8px 16px;margin-left:8px" data-act="trades-retry">Try again</button></td></tr>';
   }else if(st&&st.loaded){
     tb.innerHTML='<tr><td colspan="7" style="color:var(--muted)">No trades yet</td></tr>';
     var se=el('dStatTrades'); if(se)se.textContent='0';
-    if(dTab==='trades'){var tt=el('dTradesTotal'); if(tt)tt.textContent='0 total'}
+    if(dTab==='trades'){var tt=el('dTradesTotal'); if(tt)tt.textContent='Latest 20 of 0'}
     paintChartFromStore(t);
   }
 }
@@ -6086,7 +6271,7 @@ function paintHoldersStat(t){
     tile.style.display='none';
   }else{
     tile.style.display='';
-    if(hs.textContent!=='…')hs.textContent='…';
+    if(!hs.querySelector('.ana-skel'))hs.innerHTML='<span class="ana-skel"></span>';
   }
 }
 function holdersChromeReset(){
@@ -6096,7 +6281,7 @@ function holdersChromeReset(){
 function renderHoldersError(t){
   var ul=el('dHoldersList'); if(!ul)return;
   holdersChromeReset();
-  ul.innerHTML='<li><span style="color:var(--muted)">Holders couldn’t be loaded. Retrying…</span><span><a class="ext-link" href="'+W3C.explorer+'/token/'+t.address+'" target="_blank" rel="noopener">Token on the explorer ↗</a></span></li>';
+  ul.innerHTML='<li><span style="color:var(--muted)">Holders couldn\'t be loaded.</span><span><button type="button" class="btn btn-ghost" style="min-height:44px;padding:8px 16px" data-act="holders-retry">Try again</button></span></li>';
 }
 function renderHoldersLoading(t){
   var ul=el('dHoldersList'); if(!ul)return;
@@ -6133,6 +6318,7 @@ function renderHolders(t){
     else foot.style.display='none';
   }
   if(currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())paintHoldersStat(t);
+  paintHolderArrows();
 }
 /* Holders come from the explorer's indexed holders endpoint —
    balances arrive pre-aggregated and ranked, paginated with
@@ -6255,6 +6441,79 @@ function syncSlipUI(){
     cb.textContent=isPreset?'Custom':('Custom '+String(v2SlippagePct).replace('.',',')+'%');
   }
 }
+/* The trade panel's ONE dynamic fee line: "Fee ≈ {amount} {pair}
+   ({total}%)" — total = active regime fee + creator tax. */
+function fmtFeeAmtNum(v){
+  if(v==null||isNaN(v))return null;
+  if(v>0&&v<0.000001)return '<0.000001';
+  return v.toLocaleString('en-US',{maximumFractionDigits:6});
+}
+function setTradeFeeLine(feeAmt,sym,totalBps){
+  var n=el('tradeFeeLine'); if(!n)return;
+  var a=fmtFeeAmtNum(feeAmt);
+  n.textContent=(a==null)?'Fee ≈ —':('Fee ≈ '+a+' '+sym+' ('+trimNumStr((totalBps/100).toFixed(2))+'%)');
+}
+/* Panel-local slippage (blueprint 5.9): the ⚙ popover holds ONE
+   setting. "Auto" follows the Profile · Settings default; a
+   preset or custom value applies to this trade only and never
+   overwrites the saved default. v2SlippagePct always mirrors the
+   effective value so every transaction builder sees one number. */
+var tradeSlipAuto=true, tradeSlipVal=null;
+function effTradeSlip(){return tradeSlipAuto?((typeof sakuraSettings!=='undefined'&&sakuraSettings.slippage)?sakuraSettings.slippage:1):(tradeSlipVal||1)}
+function paintSlipGear(){
+  var lbl=el('dSlipVal'); if(lbl)lbl.textContent=tradeSlipAuto?'Auto':(trimNumStr(String(tradeSlipVal))+'%');
+  document.querySelectorAll('#dSlipPop button[data-tslip]').forEach(function(b){
+    var k=b.getAttribute('data-tslip');
+    var on=tradeSlipAuto?(k==='auto'):(k!=='auto'&&parseFloat(k)===tradeSlipVal);
+    b.classList.toggle('sel',on); b.setAttribute('aria-pressed',on?'true':'false');
+  });
+  var ci=el('tSlipCustomInput');
+  if(ci&&document.activeElement!==ci)ci.value=(!tradeSlipAuto&&tradeSlipVal!=null&&[0.5,1,3].indexOf(tradeSlipVal)===-1)?String(tradeSlipVal):'';
+  var w=el('tSlipWarn'); if(w)w.style.display=effTradeSlip()>5?'block':'none';
+}
+function setTradeSlip(auto,val){
+  tradeSlipAuto=auto; tradeSlipVal=val;
+  v2SlippagePct=effTradeSlip();
+  paintSlipGear();
+  if(detailMode==='live')liveCalc();
+}
+function toggleSlipPop(btn){
+  var p=el('dSlipPop'); if(!p)return;
+  var show=p.hidden; p.hidden=!show;
+  if(btn)btn.setAttribute('aria-expanded',show?'true':'false');
+  paintSlipGear();
+}
+function pickTradeSlip(btn){
+  var k=btn.getAttribute('data-tslip');
+  if(k==='auto')setTradeSlip(true,null); else setTradeSlip(false,parseFloat(k));
+}
+function toggleDetailsFold(){
+  var f=el('dDetailsFold'), b=el('dDetailsToggle'); if(!f||!b)return;
+  var open=f.classList.toggle('open');
+  b.setAttribute('aria-expanded',open?'true':'false');
+}
+function toggleFeeTip(btn){
+  var tip=el('dFeeTip'); if(!tip)return;
+  var show=tip.hidden; tip.hidden=!show;
+  if(btn)btn.setAttribute('aria-expanded',show?'true':'false');
+}
+function toggleAboutMore(btn){
+  var body=el('dAbout'); if(!body||!DETAIL_ABOUT_FULL)return;
+  var open=btn.getAttribute('aria-expanded')==='true';
+  if(open){body.textContent=DETAIL_ABOUT_FULL.length>280?DETAIL_ABOUT_FULL.slice(0,280)+'…':DETAIL_ABOUT_FULL;btn.setAttribute('aria-expanded','false');btn.firstChild.textContent='Read more '}
+  else{body.textContent=DETAIL_ABOUT_FULL;btn.setAttribute('aria-expanded','true');btn.firstChild.textContent='Show less '}
+}
+function paintHolderArrows(){
+  var sc=el('dHoldersScroll'), up=el('dHoldersUp'), dn=el('dHoldersDown'); if(!sc)return;
+  var max=sc.scrollHeight-sc.clientHeight;
+  if(up)up.classList.toggle('dim',sc.scrollTop<=2);
+  if(dn)dn.classList.toggle('dim',max<=2||sc.scrollTop>=max-2);
+}
+function scrollHolders(dir){
+  var sc=el('dHoldersScroll'); if(!sc)return;
+  sc.scrollBy({top:dir*Math.max(120,Math.round(sc.clientHeight*0.8)),behavior:'smooth'});
+  setTimeout(paintHolderArrows,380);
+}
 function applySlippageValue(v){
   v2SlippagePct=v;
   /* The trade form and Profile → Settings share this one state:
@@ -6279,6 +6538,15 @@ function closeSlipCustom(){
   if(btn)btn.style.display='';
   syncSlipUI();
 }
+var tSlipInp=el('tSlipCustomInput');
+if(tSlipInp){
+  tSlipInp.addEventListener('input',function(){
+    var v=parseSlipValue(tSlipInp.value);
+    if(v!=null)setTradeSlip(false,v);
+  });
+}
+var hScrollEl=el('dHoldersScroll');
+if(hScrollEl)hScrollEl.addEventListener('scroll',function(){paintHolderArrows()},{passive:true});
 /* Verification hooks for the round-3 behaviours (probe tests). */
 window.__sakuraR3={
   tradeStore:TRADE_STORE,
@@ -6959,7 +7227,8 @@ function buildFeed(){
        stay denominated in the pair asset — never invented. */
     var mcapPairWei=t.spotPrice*t.totalSupply/(10n**BigInt(t.decimals));
     var pInfo=pairInfoForToken(t);
-    var pct=liveProgressPct(t);
+    var dpEl=el('dStatPrice'); if(dpEl&&dpEl.__lastTxt!==dpEl.textContent){dpEl.__lastTxt=dpEl.textContent;dpEl.classList.remove('snap-xfade');void dpEl.offsetWidth;dpEl.classList.add('snap-xfade')}
+  var pct=liveProgressPct(t);
     var change=null;
     /* For graduated tokens the live price comes from the V2 pool
        while firstSpot is a curve price — comparing across the
@@ -7789,12 +8058,18 @@ function resetDetailChrome(){
   var lb=el('liveBalanceLine'); if(lb)lb.style.display='none';
   var fl=el('tradeFeeLabel'); if(fl)fl.textContent='Fee 1%';
   var sv=el('tradeSnipeVal'); if(sv)sv.textContent='0% — past 5 seconds';
-  var snr=el('tradeSnipeRow'); if(snr)snr.style.display='';
+  var snr=el('tradeSnipeRow'); if(snr)snr.style.display='none';
   var slr=el('tradeSlipRow'); if(slr)slr.style.display='none';
   var tn=el('tradeNote'); if(tn)tn.textContent='The price climbs as people buy. Sell back into the curve any time before graduation.';
   var cb=el('dChangeBig'); if(cb)cb.style.color='';
   var ds=el('dSocials'); if(ds){ds.innerHTML='';ds.style.display='none'}
   var g4=el('dGen4Panels'); if(g4)g4.style.display='none';
+  var sp=el('dSlipPop'); if(sp)sp.hidden=true;
+  var ft=el('dFeeTip'); if(ft)ft.hidden=true;
+  var dfo=el('dDetailsFold'); if(dfo)dfo.classList.remove('open');
+  var dto=el('dDetailsToggle'); if(dto)dto.setAttribute('aria-expanded','false');
+  var apo=el('dAboutPanel'); if(apo)apo.style.display='none';
+  var pch=el('dPriceChg'); if(pch)pch.textContent='';
   var tl0=el('dTransferLock'); if(tl0)tl0.style.display='none';
 }
 function addExplorerLink(anchorEl,address){
@@ -7818,7 +8093,11 @@ function openLiveDetail(addr){
   var t=LIVE_BY_ADDR[String(addr||'').toLowerCase()];
   if(!t){toast('Still loading — try again in a moment');return}
   detailMode='live'; currentLive=t;
+  tradeSlipAuto=true; tradeSlipVal=null;
+  v2SlippagePct=(typeof sakuraSettings!=='undefined'&&sakuraSettings.slippage)?sakuraSettings.slippage:1;
+  paintSlipGear();
   resetDetailChrome();
+  if(typeof fetchTokenSummary==='function'){var smp=fetchTokenSummary(t); if(smp&&smp.then)smp.then(function(){if(detailMode==='live'&&currentLive&&String(currentLive.address).toLowerCase()===String(t.address).toLowerCase())paintPriceChg(currentLive)})}
   paintLiveDetail(t);
   goToView('detail');
   loadLiveChartAndTrades(t);
@@ -7833,6 +8112,45 @@ function openLiveDetail(addr){
   /* Fix G: viewing a token whose image upload is still pending
      retries that upload in the background (once per page load). */
   retryPendingIpfsFor(t.address);
+}
+var DETAIL_SNAP=null;
+/* Price-bar writes crossfade on refresh (200ms); the text itself
+   only changes when the new snapshot's value actually differs. */
+function setSnapText(node,txt){
+  if(!node||txt==null)return;
+  if(node.textContent===txt)return;
+  node.textContent=txt;
+  node.classList.remove('snap-xfade'); void node.offsetWidth; node.classList.add('snap-xfade');
+}
+/* 24h change for the price bar: the same per-token summary engine
+   that feeds the Launches cards (chg24 from real trades). Until
+   it answers, the change slot stays empty — never invented. */
+function paintPriceChg(t){
+  var n=el('dPriceChg'); if(!n||!t)return;
+  var sm=(typeof TOKEN_SUMMARIES!=='undefined')?TOKEN_SUMMARIES[String(t.address).toLowerCase()]:null;
+  if(!sm||sm.chg24==null){if(n.textContent)n.textContent='';return}
+  var v=sm.chg24;
+  n.textContent=(v>=0?'▲ ':'▼ ')+Math.abs(v).toFixed(1)+'% (24h)';
+  n.className='pb-chg '+(v>=0?'up':'down');
+}
+/* About exists ONLY when the launch metadata carries a real
+   description — verbatim, 280 chars visible, the rest behind
+   Read more. No description: the section is not rendered. */
+var DETAIL_ABOUT_FULL='';
+function paintAbout(t,meta){
+  var panel=el('dAboutPanel'), body=el('dAbout'), more=el('dAboutMore');
+  if(!panel||!body)return;
+  var desc=(meta&&meta.desc)?String(meta.desc):'';
+  if(!desc){panel.style.display='none';DETAIL_ABOUT_FULL='';return}
+  DETAIL_ABOUT_FULL=desc;
+  panel.style.display='';
+  if(desc.length>280){
+    body.textContent=desc.slice(0,280)+'…';
+    if(more){more.style.display='';more.setAttribute('aria-expanded','false');more.firstChild.textContent='Read more '}
+  }else{
+    body.textContent=desc;
+    if(more)more.style.display='none';
+  }
 }
 function paintLiveDetail(t){
   /* Monotonic freshness: a read produced from a lower block than
@@ -7867,7 +8185,7 @@ function paintLiveDetail(t){
   el('dTicker').textContent='$'+t.symbol;
   el('dVerified').innerHTML='';
   var fav=el('dFav'); if(fav){fav.style.display=''; if(typeof syncFav==='function')syncFav()}
-  var dMetaEl=el('dMeta'), dMetaHtml='by <strong style="color:var(--ink)">'+truncAddr(t.creator)+'</strong>'+(t.gradDex?' · '+(t.graduated?'Graduated to ':'Graduates to ')+t.gradDex:'');
+  var dMetaEl=el('dMeta'), dMetaHtml='by <strong style="color:var(--ink)">'+truncAddr(t.creator)+'</strong>';
   if(dMetaEl.__h!==dMetaHtml){dMetaEl.__h=dMetaHtml;dMetaEl.innerHTML=dMetaHtml}
   /* The pair line: native LOOP exactly as before; an ERC20 pair
      shows the asset's own icon + symbol. */
@@ -7899,31 +8217,46 @@ function paintLiveDetail(t){
   var chip=el('dStatusChip');
   if(chip){
     chip.style.display='inline-flex';
-    chip.textContent=t.pendingMigration?'Graduated · migration pending':(t.graduated?'Graduated':(pct.toFixed(1)+'% to graduation'));
+    chip.textContent=t.pendingMigration?'Graduated · migration pending':(t.graduated?'Graduated':('Bonding · '+trimNumStr(pct.toFixed(1))+'%'));
     chip.classList.toggle('grad',!!(t.graduated||t.pendingMigration));
   }
   /* Fix H: banner + no sticky Buy/Sell while migration is pending
      (curve trading is halted; there is nothing to buy or sell). */
   var migB=el('migBanner'); if(migB)migB.style.display=t.pendingMigration?'block':'none';
   var stk=el('stickyTrade'); if(stk)stk.style.display=t.pendingMigration?'none':'';
-  el('dProgBar').style.width=(t.graduated?100:pct)+'%';
-  el('dProgPct').textContent=t.pendingMigration?'100% · graduated — migration pending':(t.graduated?'100% · graduated':(pct.toFixed(2)+'% · '+(pInfo.native?(fmtEth(t.realReserves)+' / '+fmtEth(t.threshold)+' LOOP'):(fmtUnitsSmart(t.realReserves,pInfo.dec)+' / '+fmtUnitsSmart(t.threshold,pInfo.dec)+' '+pInfo.sym))));
-  el('dProgLabel').textContent=t.pendingMigration?'Graduated — waiting for migration':(t.graduated?(t.gradDex?'Graduated — now trading on '+t.gradDex:'Graduated'):'Bonding curve progress to graduation');
+  /* Graduation status block (always visible): word, percent, bar
+     and sub-line all read from this same snapshot's pct/reserves. */
+  var gWord=el('dGradWord'), gPct=el('dGradPct'), gBar=el('dGradBar'), gSub=el('dGradSub');
+  var amtOnly=function(wei){return pInfo.native?fmtEth(wei):fmtUnitsSmart(wei,pInfo.dec)};
+  if(gWord){gWord.textContent=t.pendingMigration?'GRADUATED ✓':(t.graduated?'GRADUATED ✓':'BONDING');gWord.className='gb-word '+((t.graduated||t.pendingMigration)?'grad':'bond')}
+  if(gPct)gPct.textContent=(t.graduated||t.pendingMigration)?'100%':(trimNumStr(pct.toFixed(1))+'%');
+  if(gBar)gBar.style.width=((t.graduated||t.pendingMigration)?100:pct)+'%';
+  if(gSub)gSub.textContent=t.pendingMigration?'Graduated — waiting for migration':(t.graduated?'Trading on its pool · LP locked forever':(amtOnly(t.realReserves)+' of '+amtOnly(t.threshold)+' '+pInfo.sym+' raised — graduates at '+amtOnly(t.threshold)));
   /* Transfer lock (gen-5 only): shown only while a gen-5 token
      is still on its curve — never for graduated/migrated tokens
      and never for generations 1–4. */
   var tl=el('dTransferLock'); if(tl)tl.style.display=isTransferLocked(t)?'block':'none';
   var mcapLoopWeiD=pInfo.native?mcapWei:pairToLoopWei(t,mcapWei);
+  /* SINGLE RENDER SNAPSHOT: the market cap string is computed
+     once here and written identically to the price bar and the
+     stats grid; the chart hero below derives from the same
+     mcapLoopWeiD. Two different market caps in one screen are
+     impossible by construction. */
+  var snapMcap, snapMcapSub='';
   if(pInfo.native){
-    el('dStatMcap').textContent=LOOP_USD?fmtUsdMcap(Number(unitsToDecimalStr(mcapWei,18))*LOOP_USD):fmtEth(mcapWei)+' LOOP';
-    var mSub=el('dStatMcapSub'); if(mSub)mSub.textContent=LOOP_USD?fmtEth(mcapWei)+' LOOP':'';
+    snapMcap=LOOP_USD?fmtUsdMcap(Number(unitsToDecimalStr(mcapWei,18))*LOOP_USD):fmtEth(mcapWei)+' LOOP';
+    snapMcapSub=LOOP_USD?fmtEth(mcapWei)+' LOOP':'';
   }else if(mcapLoopWeiD!=null){
-    el('dStatMcap').textContent=LOOP_USD?fmtUsdMcap(Number(unitsToDecimalStr(mcapLoopWeiD,18))*LOOP_USD):fmtEth(mcapLoopWeiD)+' LOOP';
-    var mSubE=el('dStatMcapSub'); if(mSubE)mSubE.textContent=fmtUnitsSmart(mcapWei,pInfo.dec)+' '+pInfo.sym;
+    snapMcap=LOOP_USD?fmtUsdMcap(Number(unitsToDecimalStr(mcapLoopWeiD,18))*LOOP_USD):fmtEth(mcapLoopWeiD)+' LOOP';
+    snapMcapSub=fmtUnitsSmart(mcapWei,pInfo.dec)+' '+pInfo.sym;
   }else{
-    el('dStatMcap').textContent=fmtUnitsSmart(mcapWei,pInfo.dec)+' '+pInfo.sym;
-    var mSubE2=el('dStatMcapSub'); if(mSubE2)mSubE2.textContent='';
+    snapMcap=fmtUnitsSmart(mcapWei,pInfo.dec)+' '+pInfo.sym;
   }
+  DETAIL_SNAP={addr:dKey,priceWei:t.spotPrice,mcapText:snapMcap,mcapLoopWei:mcapLoopWeiD,pct:pct,graduated:!!t.graduated};
+  setSnapText(el('dStatMcap'),snapMcap);
+  setSnapText(el('dGridMcap'),snapMcap);
+  var mSub=el('dStatMcapSub'); if(mSub)mSub.textContent=snapMcapSub;
+  paintPriceChg(t);
   /* Until the chart has candles of its own, the big number
      above it carries the live value for the active chart mode
      (price or market cap); once candles exist, paintReadout
@@ -7946,23 +8279,21 @@ function paintLiveDetail(t){
     }
   }
   paintHoldersStat(t);
-  el('dStatTrades').textContent=t.tradeCount!=null?String(t.tradeCount):'…';
+  var dTrEl=el('dStatTrades'); if(dTrEl){if(t.tradeCount!=null)dTrEl.textContent=String(t.tradeCount);else if(!dTrEl.querySelector('.ana-skel'))dTrEl.innerHTML='<span class="ana-skel"></span>'}
   paintDetailVolume(t);
   el('dStatSupply').textContent=fmtSupply(t);
   el('dAddrToken').textContent=shortA(t.address);
   addExplorerLink(el('dCaChip'),t.address);
-  var pl=el('dPoolLabel'); if(pl)pl.textContent=(t.graduated&&t.pairAddr)?'Pool · Uniswap V2':'Curve';
+  var pl=el('dPoolLabel'); if(pl)pl.textContent='Pool';
   el('dAddrPool').textContent=shortA((t.graduated&&t.pairAddr)?t.pairAddr:t.curve);
   var pc=el('dPoolCopy'); if(pc)pc.style.display='inline-flex';
   addExplorerLink(el('dAddrPool'),(t.graduated&&t.pairAddr)?t.pairAddr:t.curve);
   el('dLaunched').textContent=fmtDateTime(t.launchTs);
-  el('dTaxRow').style.display='flex';
-  el('dStatTax').textContent=isGen7Token(t)
-    ? 'Creator tax '+(t.taxBps/100)+'% · curve + pool · locked at launch'
-    : isGen4Token(t)
-    ? 'Creator tax '+(t.taxBps/100)+'% · pool phase only · locked at launch'
-    : 'Creator tax '+(t.taxBps/100)+'% · locked at launch';
-  el('dAbout').textContent=(meta&&meta.desc)?meta.desc:'Launched on Sakura. Price, reserves, and trades are read live from its contracts.';
+  el('dStatTax').textContent=trimNumStr(String(t.taxBps/100))+'% · locked at launch';
+  var dDetC=el('dDetContract'); if(dDetC)dDetC.textContent=shortA(t.address);
+  var dDetCr=el('dDetCreator'); if(dDetCr)dDetCr.textContent=truncAddr(t.creator);
+  var dDetP=el('dDetPair'); if(dDetP)dDetP.textContent=pInfo.sym+' · '+(pInfo.name||pInfo.sym);
+  paintAbout(t,meta);
   paintSocials(el('dSocials'),loadTokenSocials(t.address));
   el('stTicker').textContent='$'+t.symbol;
   el('stPrice').textContent=pInfo.native?fmtSpotDisp(t.spotPrice):(fmtPriceNum(Number(unitsToDecimalStr(t.spotPrice,pInfo.dec)))+' '+pInfo.sym);
@@ -8009,6 +8340,23 @@ function paintLiveDetail(t){
 var DEAD_ADDR='0x000000000000000000000000000000000000dEaD';
 var G4_PANEL_CACHE={}, G4_PANEL_AT={}, G4_PANEL_INFLIGHT={};
 function setG4(id,v){var n=el(id);if(n)n.textContent=v}
+function setG4Val(id,v){if(v==null)return;setG4(id,v)}
+/* Pot amounts use the shared formatter rules: below 0.000001 the
+   dust form "<0.000001 {symbol}"; otherwise thousand separators
+   with at most 4 decimals — never a raw long decimal. */
+function fmtPotAmt(t,wei){
+  var info=pairInfoForToken(t);
+  var v; try{v=Number(unitsToDecimalStr(wei,info.dec))}catch(e){return fmtPairAmt(t,wei)}
+  if(v>0&&v<0.000001)return '<0.000001 '+info.sym;
+  if(v===0)return '0 '+info.sym;
+  return v.toLocaleString('en-US',{maximumFractionDigits:4})+' '+info.sym;
+}
+function fmtTokAmtShared(t,wei){
+  var v; try{v=Number(unitsToDecimalStr(wei,t.decimals))}catch(e){return fmtTokUnits(wei,t.decimals)+' $'+t.symbol}
+  if(v>0&&v<0.000001)return '<0.000001 $'+t.symbol;
+  if(v===0)return '0 $'+t.symbol;
+  return v.toLocaleString('en-US',{maximumFractionDigits:4})+' $'+t.symbol;
+}
 function g4NextRoundText(c,t){
   var iv=c.interval||1800;
   if(!c.lastRound)return 'No distribution round has run yet — rounds can start every '+(Math.round(iv/60))+' minutes once the pot reaches '+(c.minPot!=null&&t?fmtPairAmt(t,c.minPot):'…')+'.';
@@ -8020,40 +8368,50 @@ function renderGen4Panels(t){
   var wrap=el('dGen4Panels'); if(!wrap)return;
   if(!t||detailMode!=='live'||!isFeePanelToken(t)){wrap.style.display='none';return}
   wrap.style.display='block';
-  /* Fee facts from THIS token's snapshotted Lens values: the curve
-     fee and its creator/platform split are computed per token. */
-  var feeBps=t.tradingFeeBps||0, shareBps=t.creatorShareBps||0;
-  var creatorBps=Math.round(feeBps*shareBps/10000), platBps=feeBps-creatorBps;
-  setG4('dG4CurveFee','Curve fee '+(feeBps/100)+'% — '+(creatorBps/100)+'% to the creator · '+(platBps/100)+'% to the platform.');
-  setG4('dG4TaxLine',isGen7Token(t)
-    ? 'Creator tax '+(t.taxBps/100)+'% — charged on curve and pool trades.'
-    : 'Creator tax '+(t.taxBps/100)+'% — charged in the pool phase only, never on the curve.');
-  setG4('dG4PoolFee',t.graduated
-    ? 'Pool fee: '+gradFeeLine(t)+'.'
-    : isGen7Token(t)
-    ? 'After graduation, pool swaps pay 0.3% — 0.10% to LPs (claimable anytime) · 0.05% to the creator · 0.15% to the platform — plus the '+(t.taxBps/100)+'% creator tax, every fee settled in '+pairInfoForToken(t).sym+'.'
-    : 'After graduation, pool swaps pay 0.3% — 0.10% stays in the pool · 0.05% to the creator · 0.15% to the platform — plus the '+(t.taxBps/100)+'% creator tax, every fee settled in '+pairInfoForToken(t).sym+'.');
-  setG4('dG4DestLine','Creator fees go to: '+(t.feeDestination===1?'Buyback & burn':(t.feeDestination===2?'Holders':'the creator’s fee wallet'))+'.');
+  var pInfo=pairInfoForToken(t);
+  var taxPct=trimNumStr(String(t.taxBps/100));
+  /* The split bar is the ONE place fee structure is explained on
+     this page (blueprint 5.5): curve 70/30 while bonding, the
+     pool split after graduation. */
+  var bar=el('dG4SplitBar'), lab=el('dG4SplitLabel');
+  if(t.graduated){
+    if(bar&&bar.children.length>=3){bar.children[0].style.width='33.33%';bar.children[1].style.width='16.67%';bar.children[2].style.width='50%'}
+    if(lab)lab.textContent='Pool fee 0.3% — 0.10% LPs · 0.05% creator · 0.15% platform';
+  }else{
+    var feeBps=t.tradingFeeBps||0, shareBps=t.creatorShareBps||0;
+    var cBps=Math.round(feeBps*shareBps/10000);
+    if(bar&&bar.children.length>=3){bar.children[0].style.width=(feeBps?(shareBps/100):70)+'%';bar.children[1].style.width=(feeBps?(100-shareBps/100):30)+'%';bar.children[2].style.width='0%'}
+    if(lab)lab.textContent=(feeBps===100&&cBps===70)?'Curve fee 1% — 0.7% creator · 0.3% platform':('Curve fee '+trimNumStr(String(feeBps/100))+'% — '+trimNumStr(String(cBps/100))+'% creator · '+trimNumStr(String((feeBps-cBps)/100))+'% platform');
+  }
+  var taxLine=el('dG4TaxLine');
+  if(taxLine){if(t.taxBps>0){taxLine.style.display='';taxLine.textContent='Creator tax '+taxPct+'% — on curve and pool trades'}else taxLine.style.display='none'}
+  var poolLine=el('dG4PoolLine');
+  if(poolLine){if(t.graduated){poolLine.style.display='';poolLine.textContent='Pool fee 0.3% + '+taxPct+'% tax — settled in '+pInfo.sym}else poolLine.style.display='none'}
   var c=G4_PANEL_CACHE[String(t.address).toLowerCase()];
-  var rec=el('dG4FeeRecipient');
-  if(rec){
-    if(c&&c.feeRecipient)rec.innerHTML='Fees currently land with <strong style="color:var(--ink)">'+truncAddr(c.feeRecipient)+'</strong> — the curve’s live fee recipient.';
-    else if(t.feeCreator)rec.innerHTML='Fees currently land with <strong style="color:var(--ink)">'+truncAddr(t.feeCreator)+'</strong> — the recipient set at graduation.';
-    else if(c&&c.feeRecipientFailed)rec.textContent='The live fee recipient couldn’t be read just now.';
-    else rec.textContent='Reading the live fee recipient…';
+  var dest=el('dG4DestLine');
+  if(dest){
+    if(t.feeDestination===2){dest.style.display='';dest.textContent='Creator fees go to holders'}
+    else if(t.feeDestination===1){dest.style.display='';dest.textContent='Creator fees fund buyback & burn'}
+    else{
+      var waddr=(c&&c.feeRecipient)||t.feeCreator||null;
+      dest.style.display=waddr?'':'none';
+      if(waddr)dest.textContent='Creator fees go to '+truncAddr(waddr);
+    }
   }
   var hp=el('dG4Holders'), bp=el('dG4Burn');
   if(hp)hp.style.display=t.feeDestination===2?'block':'none';
   if(bp)bp.style.display=t.feeDestination===1?'block':'none';
   if(t.feeDestination===2){
-    setG4('dG4Pot',c&&c.holdersPot!=null?fmtPairAmt(t,c.holdersPot)+' waiting in the pot':'…');
-    setG4('dG4Paid',c&&c.totalPaid!=null?fmtPairAmt(t,c.totalPaid)+' paid to holders so far':'…');
-    setG4('dG4NextRound',c&&c.lastRound!=null?g4NextRoundText(c,t):'…');
+    setG4Val('dG4Pot',c&&c.holdersPot!=null?fmtPotAmt(t,c.holdersPot):null);
+    setG4Val('dG4Paid',c&&c.totalPaid!=null?fmtPotAmt(t,c.totalPaid):null);
+    setG4Val('dG4LastRound',c&&c.lastRound!=null?(c.lastRound>0?fmtDateTime(c.lastRound):'Not yet'):null);
+    var rl=el('dG4RoundLine');
+    if(rl)rl.style.display=(c&&c.lastRound>0&&c.interval!=null&&(c.lastRound+c.interval)<=Math.floor(Date.now()/1000))?'':'none';
   }
   if(t.feeDestination===1){
-    setG4('dG4Burned',c&&c.burned!=null?fmtTokUnits(c.burned,t.decimals)+' $'+t.symbol+' burned so far':'…');
-    setG4('dG4Spent',c&&c.spent!=null?fmtPairAmt(t,c.spent)+' spent on buybacks':'…');
-    setG4('dG4BuybackPot',c&&c.buybackPot!=null?fmtPairAmt(t,c.buybackPot)+' waiting in the buyback pot':'…');
+    setG4Val('dG4BuybackPot',c&&c.buybackPot!=null?fmtPotAmt(t,c.buybackPot):null);
+    setG4Val('dG4Burned',c&&c.burned!=null?fmtTokAmtShared(t,c.burned):null);
+    setG4Val('dG4LastBuyback',c?((c.lastBuyback>0)?fmtDateTime(c.lastBuyback):((c.spent!=null&&c.spent>0n)?'—':'Not yet')):null);
   }
 }
 /* FeeDestinations reads route by the token's factory generation:
@@ -8088,6 +8446,7 @@ async function loadGen4Panels(t){
     }
     if(t.feeDestination===1){
       var bpot=await rd(feeDestC.buybackPot(t.address,asset)); if(bpot!=null)c.buybackPot=bpot;
+      try{var lbb=await rd(feeDestC.lastBuybackAt(t.address,asset)); if(lbb!=null)c.lastBuyback=Number(lbb)}catch(e){}
       var sp=await rd(feeDestC.totalBuybackSpent(t.address,asset)); if(sp!=null)c.spent=sp;
       var tb=await rd(feeDestC.totalBurned(t.address));
       var dead=await rd(tokenContract(t.address).balanceOf(DEAD_ADDR));
@@ -8221,28 +8580,19 @@ function paintLiveTradePanel(){
   var grad=!!t.graduated;
   var tpInfo=pairInfoForToken(t);
   el('tradeAmountLabel').textContent=side==='buy'?('Amount ('+tpInfo.sym+')'):('Amount ($'+t.symbol+')');
-  var fl=el('tradeFeeLabel'); if(fl)fl.textContent=grad?'Pool fee':'Total fee';
+  var tsl=el('tradeStatusLine'); if(tsl)tsl.textContent=grad?'Trading on its pool · LP locked forever.':'Bonding curve — instant trade, no pool yet.';
   var sv=el('tradeSnipeVal');
   if(sv)sv.textContent=side==='buy'?(t.snipeBps/100)+'% — live anti-snipe fee (buys only)':'0% — anti-snipe applies to buys only';
-  var snipeRow=el('tradeSnipeRow'); if(snipeRow)snipeRow.style.display=grad?'none':'flex';
+  var snipeRow=el('tradeSnipeRow'); if(snipeRow)snipeRow.style.display='none';
   /* Slippage (presets + Custom) applies to buy and sell on BOTH the
      curve and the pool forms (Fix E), so the row always shows in
      the live panel; every builder consumes v2SlippagePct. */
   var slipRow=el('tradeSlipRow'); if(slipRow)slipRow.style.display='flex';
   paintQuickChips();
-  syncSlipUI();
-  var note=el('tradeNote');
-  if(note)note.textContent=grad
-    ? (isClaimToken(t)
-      ? 'Graduated \u2014 trading on its Uniswap V2 pool. Each swap pays 0.3% in total: 0.10% to LPs (claimable anytime), 0.05% to the creator, 0.15% to the platform \u2014 plus a '+(((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0)/100)+'% creator tax. Every fee is settled in '+tpInfo.sym+'. LP fees are claimable anytime \u2014 they do not compound in the pool. LP locked permanently.'
-      : isCorrectedToken(t)
-      ? 'Graduated \u2014 trading on its Uniswap V2 pool. Each swap pays 0.3% in total: 0.10% stays in the pool, 0.05% to the creator, 0.15% to the platform \u2014 plus a '+(((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0)/100)+'% creator tax to the creator. Every fee is settled in '+tpInfo.sym+' in both directions \u2014 on sells, the fees come out of your '+tpInfo.sym+' proceeds. LP locked permanently.'
-      : isFeeSplitToken(t)
-      ? 'Graduated \u2014 trading on its Uniswap V2 pool. Each swap pays 0.3%: 0.20% stays in the pool, 0.05% to the creator, 0.05% to the platform \u2014 plus a '+(((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0)/100)+'% creator tax to the creator. LP locked permanently.'
-      : 'Graduated \u2014 trading on its Uniswap V2 pool. Swaps pay the standard 0.3% pool fee, which stays in the pool. LP locked permanently.')
-    : 'The price climbs as people buy. Sell back into the curve any time before graduation.';
+  v2SlippagePct=effTradeSlip();
+  paintSlipGear();
   var tb=el('tradeBtn');
-  if(tb){tb.setAttribute('data-act','trade-live');if(tradeBusy){tb.disabled=true}else{tb.textContent=(side==='buy'?'Buy $':'Sell $')+t.symbol;tb.disabled=false}}
+  if(tb){tb.setAttribute('data-act','trade-live');tb.classList.toggle('is-buy',side==='buy');tb.classList.toggle('is-sell',side==='sell');if(tradeBusy){tb.disabled=true}else{tb.textContent=(side==='buy'?'Buy $':'Sell $')+t.symbol;tb.disabled=false}}
   var qn=el('quoteNote');
   if(qn)qn.style.display='none';
   refreshLiveBalance();
@@ -8301,7 +8651,7 @@ function liveCalc(){
        The real minimum-out is re-quoted via getAmountsOut at
        signing time; this is the honest preview of it. */
     try{
-      if(!t.pairRes){el('tradeReceive').textContent='—';el('tradeFee').textContent=gradFeeLine(t);return}
+      if(!t.pairRes){el('tradeReceive').textContent='—';setTradeFeeLine(null,lcSym,30+(((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0)));return}
       var corr=isCorrectedToken(t)||isClaimToken(t);
       var taxBps=corr?((t.pairFeeTaxBps!=null?t.pairFeeTaxBps:t.taxBps)||0):((isFeeSplitToken(t)&&t.pairFeeTaxBps)?t.pairFeeTaxBps:0);
       if(side==='buy'){
@@ -8341,7 +8691,13 @@ function liveCalc(){
         }
         el('tradeReceive').textContent=fmtUnitsSmart(estL,lcDec)+' '+lcSym+' (est.)';
       }
-      el('tradeFee').textContent=gradFeeLine(t);
+      var poolTotalBps=30+taxBps;
+      if(side==='buy')setTradeFeeLine(amt>0?amt*poolTotalBps/10000:null,lcSym,poolTotalBps);
+      else{
+        var valPair=null;
+        try{if(amt>0&&t.pairRes&&t.pairRes.token>0n){var inT2=parseUnitsJS(String(amt),t.decimals);valPair=Number(unitsToDecimalStr(inT2*t.pairRes.loop/t.pairRes.token,lcDec))}}catch(e){}
+        setTradeFeeLine(valPair!=null?valPair*poolTotalBps/10000:null,lcSym,poolTotalBps);
+      }
     }catch(e){el('tradeReceive').textContent='—'}
     return;
   }
@@ -8355,7 +8711,7 @@ function liveCalc(){
         est=t.virtualToken*eff/(t.virtualPair+eff);
       }
       el('tradeReceive').textContent=fmtTokUnits(est,t.decimals)+' $'+t.symbol;
-      el('tradeFee').textContent=(amt*feeBps/10000).toFixed(6)+' '+lcSym+' ('+(feeBps/100)+'%)';
+      setTradeFeeLine(amt>0?amt*(t.tradingFeeBps+taxOnCurveBps(t))/10000:null,lcSym,t.tradingFeeBps+taxOnCurveBps(t));
     }else{
       var out=0n;
       if(amt>0){
@@ -8364,7 +8720,9 @@ function liveCalc(){
         out=gross*BigInt(10000-feeBps)/10000n;
       }
       el('tradeReceive').textContent=fmtUnitsSmart(out,lcDec)+' '+lcSym+' (est.)';
-      el('tradeFee').textContent=(feeBps/100)+'% of the sell value';
+      var sellTotalBps=t.tradingFeeBps+taxOnCurveBps(t), grossNum=null;
+      try{grossNum=Number(unitsToDecimalStr(gross,lcDec))}catch(e){}
+      setTradeFeeLine(grossNum!=null?grossNum*sellTotalBps/10000:null,lcSym,sellTotalBps);
     }
   }catch(e){
     el('tradeReceive').textContent='—';
@@ -8853,7 +9211,7 @@ function chartResetForToken(t){
   syncChartControls();
   chartSetMessage('Loading on-chain price history…');
 }
-function chartNoteStr(){return chartMode==='mcap'?'Market cap history \u2014 from on-chain trades.':'Price history \u2014 from on-chain trades.'}
+function chartNoteStr(){return chartMode==='price'?'Price history \u2014 from on-chain trades.':'From on-chain trades.'}
 function syncChartControls(){
   document.querySelectorAll('#tfSeg button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tf')===chartTf)});
   document.querySelectorAll('#modeSeg button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-mode')===chartMode)});
@@ -8868,6 +9226,7 @@ function setChartTf(tf){
 function setChartMode(m){
   if(m!=='price'&&m!=='mcap')return;
   chartMode=m;
+  var cbx=el('chartBox'); if(cbx){cbx.classList.add('mode-fade');setTimeout(function(){var b2=el('chartBox');if(b2)b2.classList.remove('mode-fade')},300)}
   syncChartControls();
   if(detailMode==='live'&&currentLive)paintChartFromStore(currentLive);
 }
@@ -9767,7 +10126,7 @@ async function doMigrate(){
     toastTx('Migration pending…',tx.hash);
     btns.forEach(function(b){b.textContent='Migration pending…'});
     await tx.wait();
-    toastTx(t.symbol+' migrated to Uniswap V2',tx.hash);
+    toastTx(t.symbol+' migrated to its pool',tx.hash);
     /* Re-read this token so the page flips to the pool view. */
     await refreshDetailToken(t);
     try{await loadLiveTokens()}catch(e){}
@@ -9777,7 +10136,7 @@ async function doMigrate(){
   }finally{
     migrateBusy=false;
     clearWalletHint('mig','migWalletHint');
-    btns.forEach(function(b){b.disabled=false;b.classList.remove('cta-working');b.textContent='Migrate to Uniswap V2'});
+    btns.forEach(function(b){b.disabled=false;b.classList.remove('cta-working');b.textContent='Migrate to the pool'});
   }
 }
 /* ================= Profile: single snapshot store =================
@@ -10526,6 +10885,7 @@ toggleFav=function(){
     var on=!LIVE_FAVS[a];
     if(on)LIVE_FAVS[a]=true; else delete LIVE_FAVS[a];
     saveLiveFavs(); syncFav(); renderProfWatchlist();
+    var fb=el('dFav'); if(fb){fb.classList.remove('pulse'); void fb.offsetWidth; fb.classList.add('pulse')}
     toast(on?currentLive.name+' added to your watchlist':'Removed from your watchlist');
     return;
   }
@@ -11582,7 +11942,7 @@ setDTab=function(name){
     });
     el('dTradesWrap').style.display=name==='trades'?'block':'none';
     el('dHoldersWrap').style.display=name==='holders'?'block':'none';
-    el('dTradesTotal').textContent=name==='trades'?((currentLive.tradeCount!=null?currentLive.tradeCount:0)+' total'):'';
+    el('dTradesTotal').textContent=name==='trades'?('Latest 20 of '+((currentLive.tradeCount!=null?currentLive.tradeCount:0)).toLocaleString('en-US')):'Top 50 holders';
     if(name==='holders'){
       /* Holders load lazily from the explorer's holders index the
          first time the tab is opened for this token; the loader
