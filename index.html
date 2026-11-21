@@ -5806,7 +5806,7 @@ function fmtEth(wei){
   if(wei==null)return '0';
   var s; try{s=unitsToDecimalStr(wei,18)}catch(e){return '0'}
   var n=Number(s);
-  if(n!==0&&Math.abs(n)<0.000001)return fmtPriceNum(n);
+  if(n!==0&&Math.abs(n)<0.000001)return fmtTinyPrice(n,'');
   if(s.indexOf('.')>-1){var p=s.split('.');if(p[1].length>6)s=p[0]+'.'+p[1].slice(0,6)}
   return trimNumStr(s);
 }
@@ -8335,10 +8335,22 @@ async function anaLoadTreasury(){
        atomically; any failure keeps the last-good snapshot. The
        native figure keeps feeding ANA_TREASURY_WEI for compat. */
     var assets=profClaimAssetList();
-    var bals=await withReadFailover('Treasury revenue read',20000,function(){
+    var bals=await withReadFailover('Treasury revenue read',20000,async function(){
       var prov=readProvider;
       var c=new ethers.Contract(W3C.contracts.treasury,W3C.abi.treasury,prov);
-      return Promise.all(assets.map(function(a){return c.protocolBalance(a.address)}));
+      /* The Blockscout eth-rpc gateway rejects JSON-RPC batches
+         larger than 5 (HTTP 413), and ethers batches concurrent
+         calls into one request — so the per-asset reads run in
+         sequential chunks of 4, keeping every batch under the
+         gateway limit with headroom for an unrelated same-window
+         call on the shared provider. */
+      var out=[];
+      for(var ci=0;ci<assets.length;ci+=4){
+        var chunk=assets.slice(ci,ci+4);
+        var part=await Promise.all(chunk.map(function(a){return c.protocolBalance(a.address)}));
+        out=out.concat(part);
+      }
+      return out;
     });
     var byAsset=[];
     for(var i=0;i<assets.length;i++){
