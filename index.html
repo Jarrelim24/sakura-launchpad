@@ -451,6 +451,15 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:20px 0 22px;colo
 /* ===== Analytics (rebuilt): headline tiles, skeletons, chart ===== */
 .ana-head-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 @media(max-width:900px){.ana-head-grid{grid-template-columns:repeat(2,1fr)}}
+/* Desktop panel pairing (§4): chart + Fees & Revenue side by side
+   (60/40), Live Activity + Top Coins side by side (40/60). Below
+   1024px the wrappers are plain blocks — layout exactly as before. */
+@media(min-width:1024px){
+  .ana-pair{display:grid;gap:16px;margin-bottom:16px}
+  .ana-pair-main{grid-template-columns:3fr 2fr}
+  .ana-pair-live{grid-template-columns:2fr 3fr;margin-bottom:0}
+  .ana-pair>.panel{margin-bottom:0!important}
+}
 .ana-skel{display:inline-block;width:84px;max-width:72%;height:19px;border-radius:6px;background:linear-gradient(100deg,var(--surface2) 40%,var(--line) 50%,var(--surface2) 60%);background-size:200% 100%;vertical-align:-3px;animation:anaShimmer 1.2s linear infinite}
 @keyframes anaShimmer{from{background-position:180% 0}to{background-position:-20% 0}}
 @keyframes anaPulse{0%,100%{opacity:.45}50%{opacity:1}}
@@ -2154,6 +2163,7 @@ body.in-promote{padding-bottom:96px}
       <div class="stat-card"><small>Traders 24h <button type="button" class="ana-help" data-act="ana-tip" data-tip="traders24h" aria-label="What Traders 24h means"><span aria-hidden="true">?</span></button></small><strong id="anaTraders"><span class="ana-skel"></span></strong><span id="anaTradersSub">0 all time</span></div>
     </div>
 
+    <div class="ana-pair ana-pair-main">
     <div class="panel" style="margin-bottom:16px">
       <div class="tc-head">
         <h3 id="anaChartTitle">Volume</h3>
@@ -2187,6 +2197,8 @@ body.in-promote{padding-bottom:96px}
       <p class="ana-fee-updated" id="anaFeeUpdated"></p>
     </div>
 
+    </div>
+    <div class="ana-pair ana-pair-live">
     <div class="panel" id="anaActPanel" style="margin-bottom:16px">
       <div class="tc-head">
         <h3>Live Activity<span class="ana-live" id="anaActLive"><span class="livedot" aria-hidden="true"></span><span id="anaActLiveText">Live on Loop</span></span></h3>
@@ -2212,6 +2224,7 @@ body.in-promote{padding-bottom:96px}
       </div>
       <div id="topCoinsBody"></div>
       <button type="button" class="tc2-viewall" data-act="ana-view-all">View all tokens</button>
+    </div>
     </div>
     <p class="updated-note" id="anaDataNote">Live · Read from Loop on-chain data</p>
   </div></section>
@@ -3998,7 +4011,18 @@ function toggleBreakdown(){
   var btn=document.querySelector('[data-act="breakdown"]'); if(btn)btn.setAttribute('aria-expanded',breakdownOpen?'true':'false');
 }
 function feeAsset(f){return TOKENS[f.i].pair}
-function fmtAmt(asset,v){return asset==='USDC'?v.toFixed(2)+' USDC':v.toFixed(4)+' LOOP'}
+/* §6.3 thousands grouping for a decimal string: commas in the
+   integer part only (en-US); the fraction is never touched, and
+   the work is done on the string itself so BigInt-exact amounts
+   never pass through a float. Shared by both script layers. */
+function groupAmtStr(s){
+  s=String(s);
+  var neg=s.charAt(0)==='-'; if(neg)s=s.slice(1);
+  var d=s.indexOf('.'), ip=d===-1?s:s.slice(0,d), fp=d===-1?'':s.slice(d), out='';
+  while(ip.length>3){out=','+ip.slice(-3)+out; ip=ip.slice(0,ip.length-3)}
+  return (neg?'-':'')+ip+out+fp;
+}
+function fmtAmt(asset,v){return asset==='USDC'?groupAmtStr(v.toFixed(2))+' USDC':groupAmtStr(v.toFixed(4))+' LOOP'}
 function feeTotals(key){
   var out={};
   FEES.forEach(function(f){var a=feeAsset(f); out[a]=(out[a]||0)+f[key]});
@@ -5863,7 +5887,7 @@ function fmtEth(wei){
   var n=Number(s);
   if(n!==0&&Math.abs(n)<0.000001)return fmtTinyPrice(n,'');
   if(s.indexOf('.')>-1){var p=s.split('.');if(p[1].length>6)s=p[0]+'.'+p[1].slice(0,6)}
-  return trimNumStr(s);
+  return groupAmtStr(trimNumStr(s));
 }
 /* Price formatter that keeps precision for tiny prices (never "0.0000") */
 function fmtPriceNum(v){
@@ -8182,7 +8206,7 @@ function fmtLoopAmt(v){
   else if(v>=1)s=trimNumStr(v.toFixed(3));
   else if(v>=0.0001)s=trimNumStr(v.toFixed(4));
   else s=fmtPriceNum(v);
-  return s+' LOOP';
+  return groupAmtStr(s)+' LOOP';
 }
 function fmtLoopWei(wei){if(wei==null)return '\u2026';try{return fmtLoopAmt(Number(unitsToDecimalStr(wei,18)))}catch(e){return '\u2026'}}
 /* Trading volume is USD-first across the site: the USD figure
@@ -13194,10 +13218,10 @@ function promoPayAsset(){
   return {key:'LOOP',symbol:'LOOP',address:null,decimals:18};
 }
 function fmtUsdX18(v){
-  try{return trimNumStr(unitsToDecimalStr(v,18))}catch(e){return '0'}
+  try{return groupAmtStr(trimNumStr(unitsToDecimalStr(v,18)))}catch(e){return '0'}
 }
 function fmtAssetAmt(v,dec){
-  try{return trimNumStr(unitsToDecimalStr(v,dec))}catch(e){return '0'}
+  try{return groupAmtStr(trimNumStr(unitsToDecimalStr(v,dec)))}catch(e){return '0'}
 }
 /* The cached quote for one tier under the SELECTED payment asset
    (null until loadPromoteQuotes lands). */
