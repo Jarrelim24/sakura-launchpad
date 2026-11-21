@@ -486,6 +486,28 @@ footer{border-top:1px solid var(--line);margin-top:30px;padding:20px 0 22px;colo
 .ana-err p{color:var(--muted);font-weight:600;max-width:46ch;margin:0 auto 18px;font-size:14px}
 @media(prefers-reduced-motion: reduce){.ana-skel{animation:none}.ana-live .livedot{animation:none}#anaTip{transition:none}}
 .ana-sub{display:block;color:var(--faint);font-size:12px;font-weight:600;margin-top:3px}
+/* ===== Fees & Revenue: multi-asset layered component (Fase 2) ===== */
+.ana-fee-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ana-fee-head h3{margin:0;display:flex;align-items:center;gap:2px}
+#anaFeeBody{min-height:196px;transition:opacity .2s ease;margin-top:12px}
+.ana-fee-total-label{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.ana-fee-total{font-size:30px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.15;margin-top:2px}
+.ana-fee-conv{color:var(--faint);font-size:12px;font-weight:600;margin-top:2px}
+.ana-fee-rows{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.pf-asset-card.has-share{flex-wrap:wrap}
+.fee-share{flex:1 1 100%;display:block;height:3px;background:var(--line);border-radius:99px;overflow:hidden}
+.fee-share i{display:block;height:100%;background:#ff5c8a;border-radius:99px}
+.ana-fee-group-label{display:block;color:var(--faint);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 2px}
+.ana-fee-pot-sub{display:block;color:var(--faint);font-size:12px;font-weight:600}
+.ana-fee-empty{color:var(--muted);font-weight:600;margin:6px 0 2px}
+#anaFeeProp{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--surface2);margin-top:14px}
+#anaFeeProp i{display:block;height:100%;transition:width .4s ease}
+#anaFeePropC{background:#ff5c8a}
+#anaFeePropP{background:var(--gold)}
+#anaFeeSummary{margin:10px 0 0;color:var(--muted);font-weight:600;font-size:13.5px}
+.ana-fee-updated{color:var(--faint);font-size:11.5px;font-weight:600;margin:6px 0 0;min-height:14px}
+.ana-fee-fold-toggle{margin-top:8px;text-align:left}
+@media(prefers-reduced-motion: reduce){#anaFeeBody{transition:none}#anaFeeProp i{transition:none}}
 .ana-cfg{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
 .ana-cfg p{margin:4px 0;color:var(--muted);font-weight:600;font-size:13.5px}
 .ana-cfg strong{color:var(--ink);font-weight:800}
@@ -2112,14 +2134,17 @@ body.in-promote{padding-bottom:96px}
     </div>
 
     <div class="panel" style="margin-bottom:16px">
-      <h3>Fees &amp; Revenue</h3>
-      <div class="kv" style="margin:10px 0 4px">
-        <div><small>Protocol Revenue <button type="button" class="ana-help" data-act="ana-tip" data-tip="protocol" aria-label="What Protocol means"><span aria-hidden="true">?</span></button></small><strong id="anaProtoRev"><span class="ana-skel"></span></strong><span class="ana-sub" id="anaProtoRevSub">Incl. banner sales</span></div>
-        <div><small>Creator Fees Accrued <button type="button" class="ana-help" data-act="ana-tip" data-tip="creatorfees" aria-label="What Creator fees means"><span aria-hidden="true">?</span></button></small><strong id="anaFeesCreators"><span class="ana-skel"></span></strong><span class="ana-sub" id="anaFeesCreatorsSub">Across all tokens</span></div>
+      <div class="ana-fee-head">
+        <h3>Fees &amp; Revenue <button type="button" class="ana-help" id="anaFeeHelp" data-act="ana-tip" data-tip="creatorfees" aria-label="About fees"><span aria-hidden="true">?</span></button></h3>
+        <div class="ana-seg" role="tablist" aria-label="Fees group">
+          <button type="button" data-act="ana-fee-tab" data-group="creators" role="tab" aria-selected="true" class="active">Creators</button>
+          <button type="button" data-act="ana-fee-tab" data-group="protocol" role="tab" aria-selected="false">Protocol</button>
+        </div>
       </div>
-      <div class="split-bar" aria-hidden="true"><i id="anaSplitCreator" style="width:70%;background:var(--pink)"></i><i id="anaSplitProtocol" style="width:30%;background:var(--gold)"></i></div>
-      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:13.5px"><span style="color:var(--pink-dark)" id="anaSplitCreatorLabel">Creators · 70%</span><span style="color:var(--gold)" id="anaSplitProtocolLabel">Protocol · 30%</span></div>
-      <p style="margin:10px 0 0;color:var(--muted);font-weight:600;font-size:13.5px" id="anaFeeSummary">Curve fee 1% · 70% creators / 30% protocol — pool fee 0.3% + creator tax after graduation.</p>
+      <div id="anaFeeBody"><div class="ana-fee-total-label">TOTAL · ALL ASSETS (USD)</div><div style="margin-top:8px"><span class="ana-skel" style="width:150px;height:30px"></span></div><div class="ana-fee-rows"><span class="ana-skel" style="width:100%;height:62px"></span><span class="ana-skel" style="width:100%;height:62px"></span></div></div>
+      <div id="anaFeeProp" aria-hidden="true" style="display:none"><i id="anaFeePropC" style="width:0%"></i><i id="anaFeePropP" style="width:0%"></i></div>
+      <p id="anaFeeSummary"></p>
+      <p class="ana-fee-updated" id="anaFeeUpdated"></p>
     </div>
 
     <div class="panel">
@@ -4199,6 +4224,7 @@ document.addEventListener('click',function(e){
     else if(act==='ana-tab')setAnaTab(el.getAttribute('data-win'));
     else if(act==='ana-range')setAnaRange(el.getAttribute('data-range'));
     else if(act==='ana-metric')setAnaMetric(el.getAttribute('data-metric'));
+    else if(act==='ana-fee-tab')setAnaFeeTab(el.getAttribute('data-group'));
     else if(act==='ana-tip')toggleAnaTip(el);
     else if(act==='ana-retry'){if(typeof loadLiveTokens==='function')loadLiveTokens();if(typeof anaOnView==='function')anaOnView()}
     else if(act==='tc-open')openTopCoin(el.getAttribute('data-ticker'));
@@ -4311,6 +4337,7 @@ function setTcSort(key){if(typeof liveTcSort==='function')liveTcSort(key)}
 function setAnaTab(w){if(typeof liveAnaTab==='function')liveAnaTab(w)}
 function setAnaRange(r){if(typeof liveAnaRange==='function')liveAnaRange(r)}
 function setAnaMetric(m){if(typeof liveAnaMetric==='function')liveAnaMetric(m)}
+function setAnaFeeTab(g){if(typeof liveAnaFeeTab==='function')liveAnaFeeTab(g)}
 /* Analytics tooltips (blueprint 5.2): one sentence, tap to show,
    tap again or tap elsewhere to hide. */
 var ANA_TIPS={
@@ -7839,6 +7866,21 @@ var ANA_HIST={}, ANA_HIST_AT={}, ANA_HIST_INFLIGHT={}, anaHistTimer=null;
 var ANA_DONE={};
 var ANA_TREASURY_WEI=null, anaTreasuryAt=0, anaTreasuryBusy=false;
 var anaVaultAt=0, anaVaultBusy=false;
+/* ----- Fase 2 fee snapshots (blueprint 4.5 / 6.4) ------------------
+   Raw per-asset snapshots publish ONLY from completed passes; the
+   last-good snapshot stays on screen during refreshes. ANA_VAULT_DONE
+   marks a completed vault pass (or a cache restore of one — the cache
+   only ever persists completed passes). ANA_POTS holds the lifetime
+   creator-side flow through FeeDestinations pots, which never enters
+   the FeeVault. ANA_POOL_FEE_BPS: SakuraConfig exposes no pool-fee
+   getter — the pool fee is fixed by the DEX fork — so this single
+   named constant is its source, exactly as Phase 1 published 0.3%. */
+var ANA_POOL_FEE_BPS=30;
+var anaFeeGroup='creators';
+var ANA_VAULT_DONE=false;
+var ANA_TREASURY_BY_ASSET=null;
+var ANA_POTS=null, ANA_POTS_DONE=false, anaPotsAt=0, anaPotsBusy=false;
+var ANA_FEE_UPDATED_AT=0;
 var ANA_WIN={'24h':86400,'7d':604800,'all':Infinity};
 function liveTcSort(key){tcSortLive=key;anaFadeNext=true;renderLiveAnalytics()}
 function liveAnaTab(w){if(Object.prototype.hasOwnProperty.call(ANA_WIN,w)){anaTab=w;anaFadeNext=true;renderLiveAnalytics()}}
@@ -7927,7 +7969,7 @@ function anaPublishFees(wei,byAsset,completePass){
   var fresh=wei!=null&&(ANALYTICS.feesAccruedWei==null||wei>=ANALYTICS.feesAccruedWei);
   if(fresh)ANALYTICS.feesAccruedWei=wei;
   if(byAsset&&(fresh||!ANALYTICS.feesByAsset||!ANALYTICS.feesByAsset.length))ANALYTICS.feesByAsset=byAsset;
-  if(completePass)anaCacheSaveSoon();
+  if(completePass){ANA_VAULT_DONE=true;ANA_FEE_UPDATED_AT=Date.now();anaCacheSaveSoon()}
 }
 /* ---------- Persistent scan cache (localStorage) -------------------
    Completed per-token scan results and the settled fee totals
@@ -7993,6 +8035,9 @@ function anaCacheLoad(){
     if(d.feesWei!=null){try{ANALYTICS.feesAccruedWei=BigInt(d.feesWei)}catch(e){}}
     if(Array.isArray(d.feesByAsset)&&d.feesByAsset.length){
       ANALYTICS.feesByAsset=d.feesByAsset.map(function(r){return {asset:r.asset,amount:BigInt(r.amount),symbol:r.symbol,decimals:r.decimals||18}});
+      /* The cache only ever persists completed passes, so a restored
+         breakdown counts as a completed vault snapshot. */
+      ANA_VAULT_DONE=true;
     }
   }catch(e){/* a corrupt or unavailable cache scans from scratch */}
 }
@@ -8199,12 +8244,22 @@ async function anaLoadTreasury(){
      closed while waiting. */
   if(!await anaYieldPoint()){anaTreasuryBusy=false;return}
   try{
-    var bal=await withReadFailover('Treasury revenue read',15000,function(){
+    /* Fase 2: protocolBalance is a per-asset mapping — read EVERY
+       claim asset in one pass and publish the per-asset snapshot
+       atomically; any failure keeps the last-good snapshot. The
+       native figure keeps feeding ANA_TREASURY_WEI for compat. */
+    var assets=profClaimAssetList();
+    var bals=await withReadFailover('Treasury revenue read',20000,function(){
       var prov=readProvider;
       var c=new ethers.Contract(W3C.contracts.treasury,W3C.abi.treasury,prov);
-      return c.protocolBalance(ZERO_ADDR);
+      return Promise.all(assets.map(function(a){return c.protocolBalance(a.address)}));
     });
-    ANA_TREASURY_WEI=bal; anaTreasuryAt=Date.now();
+    var byAsset=[];
+    for(var i=0;i<assets.length;i++){
+      if(String(assets[i].address).toLowerCase()===ZERO_ADDR)ANA_TREASURY_WEI=bals[i];
+      if(bals[i]>0n)byAsset.push({asset:assets[i].address,amount:bals[i]});
+    }
+    ANA_TREASURY_BY_ASSET=byAsset; anaTreasuryAt=Date.now(); ANA_FEE_UPDATED_AT=Date.now();
   }catch(e){/* keep the last good figure */}
   anaTreasuryBusy=false;
   try{renderLiveAnalytics()}catch(e){}
@@ -8212,7 +8267,8 @@ async function anaLoadTreasury(){
 /* ---------- Creator fees: FeeVault FeesAccrued from indexed logs -- */
 async function anaLoadVaultFees(){
   if(!anaViewOpen()||anaVaultBusy)return;
-  if(anaVaultAt&&Date.now()-anaVaultAt<300000)return;
+  if(document.visibilityState==='hidden')return;
+  if(anaVaultAt&&Date.now()-anaVaultAt<60000)return;
   if(typeof window.ethers==='undefined')return;
   anaVaultBusy=true; anaVaultAt=Date.now();
   var aborted=false;
@@ -8255,11 +8311,238 @@ async function anaLoadVaultFees(){
     }
   }catch(e){/* keep the last good totals */}
   /* An abandoned pass retries on the next visit instead of
-     waiting out the five-minute throttle. */
+     waiting out the one-minute throttle. */
   if(aborted)anaVaultAt=0;
   anaVaultBusy=false;
   try{renderLiveAnalytics()}catch(e){}
 }
+/* ---------- Fee pots: creator-side flow that skips the vault ------
+   For Holder Rewards (feeDestination 2) and Buyback & Burn (1)
+   tokens the curve credits SakuraFeeDestinations pots DIRECTLY —
+   that creator share never enters the FeeVault, so the vault scan
+   excludes it. Lifetime flow per token = current pot + what has
+   already been distributed. Aggregated per pair asset and published
+   atomically on complete success only; failure keeps the last. */
+async function anaLoadPots(){
+  if(!anaViewOpen()||anaPotsBusy)return;
+  if(document.visibilityState==='hidden')return;
+  if(ANA_POTS_DONE&&Date.now()-anaPotsAt<60000)return;
+  if(typeof window.ethers==='undefined')return;
+  var dest=LIVE_TOKENS.filter(function(t){return t.feeDestination===1||t.feeDestination===2});
+  if(!dest.length){
+    if(!ANA_POTS_DONE){ANA_POTS={flow:{},potNow:{}};ANA_POTS_DONE=true;anaPotsAt=Date.now()}
+    return;
+  }
+  anaPotsBusy=true;
+  try{
+    var flow={}, potNow={};
+    for(var i=0;i<dest.length;i++){
+      if(!await anaYieldPoint()){anaPotsBusy=false;return}
+      var t=dest[i];
+      var c=feeDestContractForToken(t);
+      if(!c)throw new Error('FeeDestinations unavailable');
+      var assetAddr=t.pairAsset||ZERO_ADDR, akey=String(assetAddr).toLowerCase();
+      function rd(p){return withTimeout(p,15000,'Fee pot read')}
+      var pot, dist;
+      if(t.feeDestination===2){pot=await rd(c.holdersPot(t.address,assetAddr)); dist=await rd(c.totalPaidToHolders(t.address,assetAddr))}
+      else{pot=await rd(c.buybackPot(t.address,assetAddr)); dist=await rd(c.totalBuybackSpent(t.address,assetAddr))}
+      flow[akey]=(flow[akey]||0n)+pot+dist;
+      potNow[akey]=(potNow[akey]||0n)+pot;
+    }
+    ANA_POTS={flow:flow,potNow:potNow}; ANA_POTS_DONE=true; anaPotsAt=Date.now(); ANA_FEE_UPDATED_AT=Date.now();
+  }catch(e){/* keep the last good snapshot */}
+  anaPotsBusy=false;
+  try{renderLiveAnalytics()}catch(e){}
+}
+/* ---------- Shared fee model (Analytics + Profile claim) ----------
+   ONE converter for every fee figure on the site (blueprint 4.5):
+   test stablecoins are worth exactly 1 USD each, independent of the
+   LOOP rate; every other asset goes through the site's existing
+   peg/rate resolver. The stored scan decimals are never trusted —
+   symbol/decimals always come from profAssetMeta at render time. */
+function feeUsdFor(meta,amount){
+  if(!meta)return null;
+  var pd=pairAssetDef(meta.asset);
+  if(pd&&pd.group==='stable'){try{return Number(unitsToDecimalStr(amount,meta.decimals))}catch(e){return null}}
+  return profAssetUsd(meta,amount);
+}
+/* PURE layering model (no DOM): rows are {amount(BigInt), usd,
+   loopWei} plus passthrough fields. mode 'usd' values rows by usd;
+   mode 'loop' (the site's fallback when no LOOP/USD rate exists)
+   values them by their LOOP amount. Priced rows sort by value
+   descending; in usd mode anything worth < $1 is dust and ALWAYS
+   lands in layer 3. total is summed over the same priced array the
+   layers are cut from, so total === Σ layer2 + Σ layer3 exactly.
+   Returns priced/layer2/layer3 as {row, value} wrappers and
+   unpriced as bare rows. */
+function feeBuildLayers(rows,mode){
+  function val(r){
+    if(mode==='usd')return (r.usd==null?null:r.usd);
+    if(r.loopWei==null)return null;
+    try{return Number(unitsToDecimalStr(r.loopWei,18))}catch(e){return null}
+  }
+  var priced=[], unpriced=[];
+  (rows||[]).forEach(function(r){
+    if(!r||!(r.amount>0n))return;
+    var v=val(r);
+    if(v==null)unpriced.push(r); else priced.push({row:r,value:v});
+  });
+  priced.sort(function(a,b){return b.value-a.value});
+  var total=0; priced.forEach(function(p){total+=p.value});
+  var thresh=mode==='usd'?1:0;
+  var eligible=priced.filter(function(p){return p.value>=thresh});
+  var layer2=eligible.slice(0,4);
+  var inL2={}; layer2.forEach(function(p){inL2[priced.indexOf(p)]=1});
+  var layer3=priced.filter(function(p,i){return !inL2[i]});
+  var layer3Total=0; layer3.forEach(function(p){layer3Total+=p.value});
+  return {mode:mode,total:total,layer2:layer2,layer3:layer3,layer3Total:layer3Total,unpriced:unpriced,priced:priced};
+}
+/* PURE summary line (blueprint 5.1): percentages formatted without
+   trailing zeros — 1, 70, 0.3, 1.25. */
+function anaFeeSummaryText(cfg){
+  function pct(bps){return String(Number((bps/100).toFixed(4)))}
+  var b=cfg.creatorShareBps/100, c=100-b;
+  return 'Curve fee '+pct(cfg.tradingFeeBps)+'% \u00b7 '+pct(cfg.creatorShareBps)+'% creators / '+String(Number(c.toFixed(4)))+'% protocol \u2014 pool fee '+pct(cfg.poolFeeBps)+'% + creator tax after graduation.';
+}
+function anaRelAgo(ts){
+  var s=Math.max(0,Math.floor((Date.now()-ts)/1000));
+  if(s<60)return s+'s ago';
+  var m=Math.floor(s/60); if(m<60)return m+'m ago';
+  var h=Math.floor(m/60); if(h<24)return h+'h ago';
+  return Math.floor(h/24)+'d ago';
+}
+/* Creators raw snapshot: vault FeesAccrued per asset PLUS lifetime
+   pot flow per asset. Null until a completed vault pass exists AND
+   (when dest tokens exist) a completed pots pass — never partial. */
+function anaCreatorsRaw(){
+  if(!ANA_VAULT_DONE)return null;
+  var hasDest=LIVE_TOKENS.some(function(t){return t.feeDestination===1||t.feeDestination===2});
+  if(hasDest&&!ANA_POTS_DONE)return null;
+  var map={}, order=[];
+  (ANALYTICS.feesByAsset||[]).forEach(function(r){
+    var a=String(r.asset).toLowerCase();
+    if(order.indexOf(a)<0)order.push(a);
+    map[a]=(map[a]||0n)+r.amount;
+  });
+  if(ANA_POTS)Object.keys(ANA_POTS.flow).forEach(function(a){
+    if(order.indexOf(a)<0)order.push(a);
+    map[a]=(map[a]||0n)+ANA_POTS.flow[a];
+  });
+  return order.map(function(a){return {asset:a,amount:map[a]}}).filter(function(r){return r.amount>0n});
+}
+function anaFeeLayersFor(group){
+  var raw=group==='creators'?anaCreatorsRaw():ANA_TREASURY_BY_ASSET;
+  if(raw==null)return null;
+  var rows=raw.map(function(r){
+    var meta=profAssetMeta(r.asset);
+    return {asset:r.asset,amount:r.amount,meta:meta,symbol:meta.symbol,decimals:meta.decimals,usd:feeUsdFor(meta,r.amount),loopWei:profAssetLoopWei(meta,r.amount)};
+  });
+  return feeBuildLayers(rows,LOOP_USD?'usd':'loop');
+}
+function anaFeeRowHtml(p,total,mode){
+  var r=p.row;
+  var val=mode==='usd'?anaFmtUsd(p.value):(fmtEth(r.loopWei)+' LOOP');
+  var share=total>0?Math.max(0,Math.min(100,p.value/total*100)):0;
+  return '<div class="pf-asset-card has-share">'+profAssetIcon(r.meta,38)
+    +'<span class="pf-main"><span class="trow-name" style="font-size:14.5px">'+escHtml(r.symbol)+'</span></span>'
+    +'<span class="pf-right"><strong style="font-size:15px" title="'+escHtml(profFullAmt(r.amount,r.decimals))+'">'+fmtUnitsSmart(r.amount,r.decimals)+' '+escHtml(r.symbol)+'</strong><br/><span style="color:var(--faint);font-size:12.5px;font-weight:600">'+val+'</span></span>'
+    +'<span class="fee-share" aria-hidden="true"><i style="width:'+share+'%"></i></span></div>';
+}
+function anaFeeRowPlain(r,subLabel){
+  return '<div class="pf-asset-card">'+profAssetIcon(r.meta,38)
+    +'<span class="pf-main"><span class="trow-name" style="font-size:14.5px">'+escHtml(r.symbol)+'</span>'+(subLabel?'<br/><span class="ana-fee-pot-sub">'+escHtml(subLabel)+'</span>':'')+'</span>'
+    +'<span class="pf-right"><strong style="font-size:15px" title="'+escHtml(profFullAmt(r.amount,r.decimals))+'">'+fmtUnitsSmart(r.amount,r.decimals)+' '+escHtml(r.symbol)+'</strong></span></div>';
+}
+function anaFeeBodyHtml(L,group){
+  if(!L.priced.length&&!L.unpriced.length)return '<p class="ana-fee-empty">No fees collected yet.</p>';
+  var mode=L.mode;
+  var totalLoopWei=L.priced.reduce(function(s,p){return s+(p.row.loopWei||0n)},0n);
+  var totalDisp=mode==='usd'?anaFmtUsd(L.total):(fmtEth(totalLoopWei)+' LOOP');
+  var html='<div class="ana-fee-total-label">TOTAL \u00b7 ALL ASSETS (USD)</div>'
+    +'<div class="ana-fee-total">'+totalDisp+'</div>'
+    +'<div class="ana-fee-conv">Converted at live peg prices</div>';
+  if(L.layer2.length)html+='<div class="ana-fee-rows">'+L.layer2.map(function(p){return anaFeeRowHtml(p,L.total,mode)}).join('')+'</div>';
+  if(L.layer3.length||L.unpriced.length){
+    var nFold=L.layer3.length+L.unpriced.length;
+    var foldVal=mode==='usd'?anaFmtUsd(L.layer3Total):(fmtEth(L.layer3.reduce(function(s,p){return s+(p.row.loopWei||0n)},0n))+' LOOP');
+    html+='<button type="button" class="pf-asset-card pf-fold-toggle ana-fee-fold-toggle" data-act="ana-fee-other" aria-expanded="false" style="width:100%;cursor:pointer;font-family:inherit"><span class="pf-main" style="text-align:left"><span class="trow-name" style="font-size:14.5px">Other assets</span><br/><span style="color:var(--faint);font-size:12.5px;font-weight:600">'+nFold+' asset'+(nFold===1?'':'s')+'</span></span><span class="pf-right"><strong style="font-size:15px">'+foldVal+'</strong></span><span class="pf-chev" aria-hidden="true">\u25be</span></button>'
+      +'<div class="pf-fold" id="anaFeeOtherFold"><div class="ana-fee-rows">'
+      +L.layer3.map(function(p){return anaFeeRowHtml(p,L.total,mode)}).join('');
+    if(group==='creators'&&ANA_POTS){
+      var potAssets=Object.keys(ANA_POTS.potNow).filter(function(a){return ANA_POTS.potNow[a]>0n});
+      if(potAssets.length){
+        html+='<span class="ana-fee-group-label">In fee pots</span>'+potAssets.map(function(a){
+          var meta=profAssetMeta(a);
+          return anaFeeRowPlain({asset:a,amount:ANA_POTS.potNow[a],meta:meta,symbol:meta.symbol,decimals:meta.decimals},'Holder Rewards \u00b7 Buyback & Burn');
+        }).join('');
+      }
+    }
+    if(L.unpriced.length){
+      html+='<span class="ana-fee-group-label">Unpriced assets</span>'+L.unpriced.map(function(r){return anaFeeRowPlain(r)}).join('');
+    }
+    html+='</div></div>';
+  }
+  return html;
+}
+function anaFeeSkelHtml(){
+  return '<div class="ana-fee-total-label">TOTAL \u00b7 ALL ASSETS (USD)</div><div style="margin-top:8px"><span class="ana-skel" style="width:150px;height:30px"></span></div><div class="ana-fee-rows"><span class="ana-skel" style="width:100%;height:62px"></span><span class="ana-skel" style="width:100%;height:62px"></span></div>';
+}
+function syncAnaFeeTabs(){
+  document.querySelectorAll('#view-analytics [data-act="ana-fee-tab"]').forEach(function(b){
+    var on=b.getAttribute('data-group')===anaFeeGroup;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-selected',on?'true':'false');
+  });
+  var help=el('anaFeeHelp');
+  if(help)help.setAttribute('data-tip',anaFeeGroup==='protocol'?'protocol':'creatorfees');
+}
+function renderAnaFees(){
+  var body=el('anaFeeBody'); if(!body)return;
+  syncAnaFeeTabs();
+  var cL=anaFeeLayersFor('creators'), pL=anaFeeLayersFor('protocol');
+  /* Proportion bar: the two groups' ACTUAL totals in the shared
+     mode unit — never config percentages. Hidden until both
+     snapshots exist and their combined total is positive. */
+  var prop=el('anaFeeProp');
+  if(prop){
+    if(cL&&pL&&(cL.total+pL.total)>0){
+      prop.style.display='flex';
+      var cw=cL.total/(cL.total+pL.total)*100;
+      var pc=el('anaFeePropC'), pp=el('anaFeePropP');
+      if(pc)pc.style.width=cw+'%';
+      if(pp)pp.style.width=(100-cw)+'%';
+    }else prop.style.display='none';
+  }
+  if(LENS_CONFIG){
+    var sm=el('anaFeeSummary');
+    var txt=anaFeeSummaryText({tradingFeeBps:LENS_CONFIG.tradingFeeBps,creatorShareBps:LENS_CONFIG.creatorShareBps,poolFeeBps:ANA_POOL_FEE_BPS});
+    if(sm&&sm.textContent!==txt)sm.textContent=txt;
+  }
+  var up=el('anaFeeUpdated');
+  if(up){var ut=ANA_FEE_UPDATED_AT?('Updated '+anaRelAgo(ANA_FEE_UPDATED_AT)):''; if(up.textContent!==ut)up.textContent=ut}
+  var L=anaFeeGroup==='creators'?cL:pL;
+  var foldWasOpen=false, prevFold=el('anaFeeOtherFold');
+  if(prevFold&&prevFold.classList.contains('open'))foldWasOpen=true;
+  body.innerHTML=L?anaFeeBodyHtml(L,anaFeeGroup):anaFeeSkelHtml();
+  if(foldWasOpen){
+    var nf=el('anaFeeOtherFold');
+    if(nf){nf.classList.add('open');var tb=body.querySelector('[data-act="ana-fee-other"]');if(tb)tb.setAttribute('aria-expanded','true')}
+  }
+}
+/* Tab switch: crossfade the body (opacity only), swap the dataset,
+   keep aria-selected and the help tooltip in step. */
+var anaFeeFadeTimer=null;
+function liveAnaFeeTab(g){
+  if(g!=='creators'&&g!=='protocol')return;
+  anaFeeGroup=g;
+  syncAnaFeeTabs();
+  var body=el('anaFeeBody');
+  if(!body||ANA_RM){renderAnaFees();return}
+  body.style.opacity='0';
+  if(anaFeeFadeTimer)clearTimeout(anaFeeFadeTimer);
+  anaFeeFadeTimer=setTimeout(function(){anaFeeFadeTimer=null;renderAnaFees();body.style.opacity='1'},150);
+}
+
 /* ---------- Area chart (blueprint 4.4) ------------------------------
    Grafik area gradien pink, default 7D, metrik Volume | Launches.
    Hari kosong = 0 dari data nyata; tidak ada titik yang dikarang.
@@ -8479,6 +8762,7 @@ function renderLiveAnalytics(){
   anaKick();
   anaLoadTreasury();
   anaLoadVaultFees();
+  anaLoadPots();
   function set(id,v){var n=el(id);if(n)n.textContent=v}
   /* Live indicator + honest error state (blueprint 4.1 / 5.3):
      the dot pulses only while reads succeed; a total failure with
@@ -8511,20 +8795,9 @@ function renderLiveAnalytics(){
     set('anaGradRate','of all launches');
     if(!LIVE_TOKENS.length){set('anaVolume','$0.00');set('anaVolumeSub','Last 24 hours');set('anaTraders','0');set('anaTradersSub','0 all time')}
   }
-  /* Fees summary line — the ONLY fee text left on this page
-     (blueprint 4.5 lapis 1). Percentages are read from the live
-     SakuraConfig payload (LENS_CONFIG), never hardcoded anew:
-     curve fee + creator share come from config; the 0.3% pool
-     fee is the gen-7 model figure the site already publishes. */
-  if(LENS_CONFIG){
-    var cfgA=LENS_CONFIG.tradingFeeBps/100, cfgB=LENS_CONFIG.creatorShareBps/100, cfgC=100-cfgB;
-    set('anaFeeSummary','Curve fee '+cfgA+'% \u00b7 '+cfgB+'% creators / '+cfgC+'% protocol \u2014 pool fee 0.3% + creator tax after graduation.');
-    var sb1=el('anaSplitCreator'), sb2=el('anaSplitProtocol');
-    if(sb1)sb1.style.width=cfgB+'%';
-    if(sb2)sb2.style.width=cfgC+'%';
-    set('anaSplitCreatorLabel','Creators \u00b7 '+cfgB+'%');
-    set('anaSplitProtocolLabel','Protocol \u00b7 '+cfgC+'%');
-  }
+  /* Fees & Revenue (Fase 2): the layered multi-asset component —
+     totals, proportion bar, summary line and updated line are all
+     painted by renderAnaFees from the completed-pass snapshots. */
   /* KPI 3–4 — 24h windows over the trade histories. FINAL-ONLY
      (blueprint 6.4 rule 1): while any token's scan pass is still
      unfinished these tiles keep their skeleton (first visit) or
@@ -8557,20 +8830,7 @@ function renderLiveAnalytics(){
     anaSetNum('anaTraders',Object.keys(traders24).length,function(v){return fmtInt(Math.round(v))});
     set('anaTradersSub',fmtInt(Object.keys(tradersAll).length)+' all time');
   }
-  /* Fees & revenue. */
-  if(ANA_TREASURY_WEI!=null){
-    set('anaProtoRev',fmtLoopWei(ANA_TREASURY_WEI));
-    var pu=null;
-    if(LOOP_USD){try{pu=fmtUsdMcap(Number(unitsToDecimalStr(ANA_TREASURY_WEI,18))*LOOP_USD)}catch(e){}}
-    set('anaProtoRevSub',pu?('\u2248 '+pu+' \u00b7 incl. banner sales'):'Incl. banner sales');
-  }
-  if(ANALYTICS.feesAccruedWei!=null||(ANALYTICS.feesByAsset&&ANALYTICS.feesByAsset.length)){
-    set('anaFeesCreators',fmtLoopWei(ANALYTICS.feesAccruedWei||0n));
-    /* Fase 1: the old token-denominated count line is deleted
-       (blueprint Bagian 3) — the multi-asset breakdown itself
-       is Fase 2. */
-    set('anaFeesCreatorsSub','Across all tokens');
-  }
+  renderAnaFees();
   anaRenderChart();
   anaRenderTopCoins();
   /* The Analytics footer is one fixed line (blueprint 5.1).
@@ -10895,7 +11155,7 @@ async function buildProfFees(acct){
   for(var i=0;i<assets.length;i++){
     if(amts[i]>0n){
       var meta=profAssetMeta(assets[i].address);
-      rows.push({asset:meta.asset,symbol:meta.symbol,decimals:meta.decimals,amount:amts[i],meta:meta,usd:profAssetUsd(meta,amts[i]),loopWei:profAssetLoopWei(meta,amts[i])});
+      rows.push({asset:meta.asset,symbol:meta.symbol,decimals:meta.decimals,amount:amts[i],meta:meta,usd:feeUsdFor(meta,amts[i]),loopWei:profAssetLoopWei(meta,amts[i])});
     }
   }
   rows.sort(function(a,b){
@@ -10907,7 +11167,10 @@ async function buildProfFees(acct){
      total additionally needs the live LOOP/USD rate. Assets with
      no live price at all are the unpriced group. */
   var priced=rows.filter(function(r){return r.loopWei!=null}), unpriced=rows.filter(function(r){return r.loopWei==null});
-  var totalUsd=(LOOP_USD&&priced.length)?priced.reduce(function(s,r){return s+(r.usd||0)},0):(rows.length?null:0);
+  /* Total via the shared fee converter (feeUsdFor): test stables
+     count 1:1 even without a LOOP/USD rate; any priced row the
+     converter cannot value keeps the total null, as before. */
+  var totalUsd=(priced.length&&priced.every(function(r){return r.usd!=null}))?priced.reduce(function(s,r){return s+r.usd},0):(rows.length?null:0);
   var totalLoopWei=priced.reduce(function(s,r){return s+(r.loopWei||0n)},0n);
   PROF.snap.fees={rows:rows,priced:priced,unpriced:unpriced,totalUsd:totalUsd,totalLoopWei:totalLoopWei,anyClaim:rows.length>0};
   liveClaimRows=rows.map(function(r){return {asset:r.asset,amount:r.amount,symbol:r.symbol,decimals:r.decimals}});
@@ -10929,7 +11192,7 @@ async function buildProfClaimed(acct){
     if(!byAsset[a]){var meta=profAssetMeta(e.args.asset);byAsset[a]={asset:e.args.asset,symbol:meta.symbol,decimals:meta.decimals,meta:meta,amount:0n,usd:null};ord.push(a)}
     byAsset[a].amount+=e.args.amount;
   });
-  ord.forEach(function(a){byAsset[a].usd=profAssetUsd(byAsset[a].meta,byAsset[a].amount)});
+  ord.forEach(function(a){byAsset[a].usd=feeUsdFor(byAsset[a].meta,byAsset[a].amount)});
   var claimedList=ord.map(function(a){return byAsset[a]}).sort(function(x,y){return (y.usd==null?-1:y.usd)-(x.usd==null?-1:x.usd)});
   var claimedUsd=claimedList.every(function(r){return r.usd!=null})&&claimedList.length?claimedList.reduce(function(s,r){return s+r.usd},0):null;
   /* Claim history: one entry per claim transaction. */
@@ -10948,7 +11211,7 @@ async function buildProfClaimed(acct){
   var history=txOrd.map(function(h){
     var g=byTx[h];
     var list=g.ord.map(function(a){return g.assets[a]});
-    var usd=list.every(function(r){return profAssetUsd(r.meta,r.amount)!=null})?list.reduce(function(s,r){return s+profAssetUsd(r.meta,r.amount)},0):null;
+    var usd=list.every(function(r){return feeUsdFor(r.meta,r.amount)!=null})?list.reduce(function(s,r){return s+feeUsdFor(r.meta,r.amount)},0):null;
     return {tx:g.tx,block:g.block,ts:g.ts,assets:list,usd:usd};
   }).sort(function(a,b){return b.block-a.block});
   /* Earnings, last 7 days: FeesAccrued events bucketed per day,
@@ -10959,7 +11222,7 @@ async function buildProfClaimed(acct){
     var ts=tsMap[e.blockNumber]; if(ts==null||ts<day0)return;
     anyEv=true;
     var meta=profAssetMeta(e.args.asset);
-    var u=profAssetUsd(meta,e.args.amount);
+    var u=feeUsdFor(meta,e.args.amount);
     if(u!=null)buckets[Math.min(6,Math.floor((ts-day0)/86400))]+=u;
   });
   PROF.snap.claimed={
@@ -11147,7 +11410,7 @@ async function buildProfAttrib(acct){
     var byA=perToken[String(t.address).toLowerCase()]||{};
     var parts=Object.keys(byA).filter(function(a){return byA[a]>0n}).map(function(a){
       var meta=profAssetMeta(a);
-      return {asset:a,amount:byA[a],symbol:meta.symbol,decimals:meta.decimals,usd:profAssetUsd(meta,byA[a])};
+      return {asset:a,amount:byA[a],symbol:meta.symbol,decimals:meta.decimals,usd:feeUsdFor(meta,byA[a])};
     });
     parts.sort(function(x,y){return (y.usd==null?-1:y.usd)-(x.usd==null?-1:x.usd)});
     rows.push({t:t,dest:0,pot:null,claim:parts});
@@ -11219,15 +11482,20 @@ function renderProfStats(){
     }
   }
 }
-function profAssetCard(r,showUsd){
+function profAssetCard(r,showUsd,share){
   var usdHtml='';
   if(showUsd){
     if(r.usd!=null)usdHtml='<span style="color:var(--faint);font-size:12.5px;font-weight:600">'+(r.usd>0&&r.usd<0.01?'&lt;$0.01':anaFmtUsd(r.usd))+'</span>';
     else if(r.loopWei!=null)usdHtml='<span style="color:var(--faint);font-size:12.5px;font-weight:600">'+fmtEth(r.loopWei)+' LOOP</span>';
   }
-  return '<div class="pf-asset-card">'+profAssetIcon(r.meta,38)
+  /* Optional third argument (Fase 2 claim list only): the row's
+     share of the group total, drawn as a thin bar under the card.
+     Callers that omit it (claimed assets) render exactly as before. */
+  var shareHtml='';
+  if(typeof share==='number'&&isFinite(share))shareHtml='<span class="fee-share" aria-hidden="true"><i style="width:'+Math.max(0,Math.min(100,share*100))+'%"></i></span>';
+  return '<div class="pf-asset-card'+(shareHtml?' has-share':'')+'">'+profAssetIcon(r.meta,38)
     +'<span class="pf-main"><span class="trow-name" style="font-size:14.5px">'+escHtml(profAssetSource(r.meta))+'</span></span>'
-    +'<span class="pf-right"><strong style="font-size:15px" title="'+escHtml(profFullAmt(r.amount,r.decimals))+'">'+fmtUnitsSmart(r.amount,r.decimals)+' '+escHtml(r.symbol)+'</strong>'+(usdHtml?'<br/>'+usdHtml:'')+'</span></div>';
+    +'<span class="pf-right"><strong style="font-size:15px" title="'+escHtml(profFullAmt(r.amount,r.decimals))+'">'+fmtUnitsSmart(r.amount,r.decimals)+' '+escHtml(r.symbol)+'</strong>'+(usdHtml?'<br/>'+usdHtml:'')+'</span>'+shareHtml+'</div>';
 }
 function renderProfFees(){
   var snap=PROF.snap; if(!snap)return;
@@ -11250,16 +11518,22 @@ function renderProfFees(){
   if(list){
     if(!f.rows.length)list.innerHTML='<p style="color:var(--muted);font-weight:600;margin:6px 0 2px">No fees collected yet.</p>';
     else{
+      /* Fase 2: the claim list is cut by the SAME layered model as
+         Analytics (feeBuildLayers) — top 4 by value with share
+         bars, dust and the rest in the fold, unpriced assets
+         inside the fold with no value and no share bar. */
       var html='';
-      var top=f.priced.slice(0,4), rest=f.priced.slice(4);
-      top.forEach(function(r){html+=profAssetCard(r,true)});
-      if(rest.length){
-        var restVal=rest.every(function(r){return r.usd!=null})?anaFmtUsd(rest.reduce(function(s,r){return s+r.usd},0)):(fmtEth(rest.reduce(function(s,r){return s+(r.loopWei||0n)},0n))+' LOOP');
-        html+='<button type="button" class="pf-asset-card pf-fold-toggle" data-act="other-assets" aria-expanded="false" style="width:100%;cursor:pointer;font-family:inherit"><span class="pf-main" style="text-align:left"><span class="trow-name" style="font-size:14.5px">Other assets</span><br/><span style="color:var(--faint);font-size:12.5px;font-weight:600">'+rest.length+' more asset'+(rest.length===1?'':'s')+'</span></span><span class="pf-right"><strong style="font-size:15px">'+restVal+'</strong></span><span class="pf-chev" aria-hidden="true">▾</span></button>'
-          +'<div class="pf-fold" id="feeOtherFold"><div class="pf-list" style="margin-top:8px">'+rest.map(function(r){return profAssetCard(r,true)}).join('')+'</div></div>';
-      }
-      if(f.unpriced.length){
-        html+='<div style="margin-top:6px"><span class="wc-label" style="color:var(--faint);opacity:1">Unpriced assets</span><div class="pf-list" style="margin-top:8px">'+f.unpriced.map(function(r){return profAssetCard(r,false)}).join('')+'</div></div>';
+      var L=feeBuildLayers(f.rows,LOOP_USD?'usd':'loop');
+      function shareOf(p){return L.total>0?p.value/L.total:0}
+      L.layer2.forEach(function(p){html+=profAssetCard(p.row,true,shareOf(p))});
+      if(L.layer3.length||L.unpriced.length){
+        var nFold=L.layer3.length+L.unpriced.length;
+        var restVal=LOOP_USD?anaFmtUsd(L.layer3Total):(fmtEth(L.layer3.reduce(function(s,p){return s+(p.row.loopWei||0n)},0n))+' LOOP');
+        html+='<button type="button" class="pf-asset-card pf-fold-toggle" data-act="other-assets" aria-expanded="false" style="width:100%;cursor:pointer;font-family:inherit"><span class="pf-main" style="text-align:left"><span class="trow-name" style="font-size:14.5px">Other assets</span><br/><span style="color:var(--faint);font-size:12.5px;font-weight:600">'+nFold+' asset'+(nFold===1?'':'s')+'</span></span><span class="pf-right"><strong style="font-size:15px">'+restVal+'</strong></span><span class="pf-chev" aria-hidden="true">▾</span></button>'
+          +'<div class="pf-fold" id="feeOtherFold"><div class="pf-list" style="margin-top:8px">'
+          +L.layer3.map(function(p){return profAssetCard(p.row,true,shareOf(p))}).join('')
+          +(L.unpriced.length?'<div style="margin-top:6px"><span class="wc-label" style="color:var(--faint);opacity:1">Unpriced assets</span><div class="pf-list" style="margin-top:8px">'+L.unpriced.map(function(r){return profAssetCard(r,false)}).join('')+'</div></div>':'')
+          +'</div></div>';
       }
       list.innerHTML=html;
     }
@@ -13184,6 +13458,7 @@ async function bootLiveData(){
     else if(act==='activity-more'){PROF.activityShown+=20;renderProfActivity()}
     else if(act==='claimed-more'){var cmf=el('claimedMoreFold');if(cmf){var co=cmf.classList.toggle('open');b.setAttribute('aria-expanded',co?'true':'false')}}
     else if(act==='other-assets'){var of=el('feeOtherFold');if(of){var oo=of.classList.toggle('open');b.setAttribute('aria-expanded',oo?'true':'false')}}
+    else if(act==='ana-fee-other'){var af=el('anaFeeOtherFold');if(af){var ao=af.classList.toggle('open');b.setAttribute('aria-expanded',ao?'true':'false')}}
     else if(act==='unstar'){e.stopPropagation();var ua=String(b.getAttribute('data-addr')||'').toLowerCase();if(LIVE_FAVS[ua]){delete LIVE_FAVS[ua];saveLiveFavs();renderProfWatchlist();if(detailMode==='live'&&currentLive&&String(currentLive.address).toLowerCase()===ua)syncFav();toast('Removed from your watchlist')}}
     else if(act==='max-amt'){chipSelKey=null;paintQuickChips();applyMaxAmount()}
     else if(act==='wallet-profile'){var wm3=el('walletMenu');if(wm3)wm3.classList.remove('show');goToView('profil')}
